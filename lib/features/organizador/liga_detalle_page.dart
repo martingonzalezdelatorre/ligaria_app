@@ -3,11 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets.dart';
 import '../../data/models.dart';
 import 'organizador_providers.dart';
+import 'resultado_page.dart';
 
 /// Calendario y clasificación de una liga organizada.
 class LigaDetallePage extends ConsumerWidget {
-  const LigaDetallePage({super.key, required this.liga});
+  const LigaDetallePage({super.key, required this.liga, required this.escuelaId});
   final Liga liga;
+  final String escuelaId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +41,12 @@ class LigaDetallePage extends ConsumerWidget {
                       child: Text('Jornada $j · ${fechaCorta(porJornada[j]!.first.fecha)}',
                           style: Theme.of(context).textTheme.titleSmall),
                     ),
-                    for (final e in porJornada[j]!) TarjetaEncuentro(encuentro: e),
+                    for (final e in porJornada[j]!)
+                      TarjetaEncuentro(
+                        encuentro: e,
+                        onTap: () => Navigator.of(context)
+                            .push(MaterialPageRoute(builder: (_) => ResultadoPage(escuelaId: escuelaId, encuentro: e))),
+                      ),
                   ],
                 ],
               );

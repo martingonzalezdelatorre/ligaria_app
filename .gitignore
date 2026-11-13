@@ -53,3 +53,6 @@ node_modules/
 *.jks
 key.properties
 local.properties
+
+# Claves locales de la app (copiar de env.example.json)
+env.json

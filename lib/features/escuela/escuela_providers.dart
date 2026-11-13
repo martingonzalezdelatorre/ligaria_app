@@ -4,8 +4,8 @@ import '../../data/models.dart';
 
 final usuariosEscuelaProvider = FutureProvider.family<List<UsuarioEscuela>, String>(
     (ref, escuelaId) => ref.watch(ligaRepositoryProvider).usuarios(escuelaId));
-final personasEscuelaProvider = FutureProvider.family<List<PersonaLite>, String>(
-    (ref, escuelaId) => ref.watch(ligaRepositoryProvider).personas(escuelaId));
+final jugadoresOrgProvider = FutureProvider.family<List<JugadorLite>, String>(
+    (ref, escuelaId) => ref.watch(ligaRepositoryProvider).jugadoresOrg(escuelaId));
 final equiposEscuelaProvider = FutureProvider.family<List<EquipoLite>, String>(
     (ref, escuelaId) => ref.watch(ligaRepositoryProvider).equipos(escuelaId));
 final jugadoresEquipoEscuelaProvider = FutureProvider.family<List<Jugador>, String>(
@@ -24,12 +24,16 @@ int edadDe(DateTime nac, [DateTime? hoy]) {
 /// Traduce errores del servidor a mensajes comprensibles (sin detalles técnicos).
 String mensajeErrorEscuela(Object e) {
   final t = e.toString().toLowerCase();
-  if (t.contains('sin consentimiento')) return 'Falta el consentimiento del tutor.';
+  if (t.contains('escuela_existe') || t.contains('email_existe')) {
+    return 'No se puede crear la cuenta, contacte con el departamento técnico en tecnico@ligaria.es';
+  }
   if (t.contains('deporte del equipo no coincide')) return 'El deporte del equipo no coincide con el de la liga.';
-  if (t.contains('categoría del equipo no coincide') || t.contains('categoria del equipo no coincide')) {
-    return 'La categoría del equipo no coincide con la de la liga.';
+  if (t.contains('no está abierta') || t.contains('ya no admite inscripciones')) {
+    return 'La liga no está abierta a inscripción.';
   }
   if (t.contains('calendario ya está generado')) return 'La liga ya tiene calendario; no admite más inscripciones.';
+  if (t.contains('privada de su organización')) return 'Esta liga es privada de su organización.';
+  if (t.contains('no pertenece a la organización')) return 'El jugador no pertenece a la organización del equipo.';
   if (t.contains('duplicate key') || t.contains('23505')) return 'Ya existe un registro igual.';
   if (t.contains('sin permiso') || t.contains('42501') || t.contains('row-level security')) {
     return 'No tienes permiso para hacer esto.';

@@ -69,7 +69,7 @@ class _CuerpoState extends ConsumerState<_Cuerpo> {
     super.initState();
     final d = widget.datos;
     for (final j in [...d.local, ...d.visitante]) {
-      _nombres[j.personaId] = j.nombreCompleto;
+      _nombres[j.jugadorId] = j.nombreCompleto;
     }
     _incomparecencia = d.detalle.incomparecencia != null;
     _ausente = d.detalle.incomparecencia;
@@ -89,7 +89,7 @@ class _CuerpoState extends ConsumerState<_Cuerpo> {
     if (plantilla.isEmpty) return List<String?>.filled(n, null);
     return [
       for (var k = 0; k < n; k++)
-        (plantilla.length > k || n == 1) ? plantilla[(indice + k) % plantilla.length].personaId : null,
+        (plantilla.length > k || n == 1) ? plantilla[(indice + k) % plantilla.length].jugadorId : null,
     ];
   }
 
@@ -150,12 +150,12 @@ class _CuerpoState extends ConsumerState<_Cuerpo> {
           'sets': sets,
         });
       }
-      if (partidos.isEmpty) return avisar(context, 'Añade al menos un set para enviar el resultado.');
+      if (partidos.isEmpty) return avisar(context, 'Añade al menos un set para guardar el resultado.');
       json = {'incomparecencia': null, 'partidos': partidos};
     }
     setState(() => _enviando = true);
     try {
-      await ref.read(ligaRepositoryProvider).proponerResultado(e.id, json);
+      await ref.read(ligaRepositoryProvider).registrarResultado(e.id, json);
       if (mounted) Navigator.of(context).pop(true);
     } catch (err) {
       if (mounted) {
@@ -179,11 +179,10 @@ class _CuerpoState extends ConsumerState<_Cuerpo> {
                 Text('${e.local}  vs  ${e.visitante}', style: tema.textTheme.titleMedium, textAlign: TextAlign.center),
                 const SizedBox(height: 4),
                 Text(fechaCorta(e.fecha), style: tema.textTheme.bodySmall),
-                if (e.propuesto)
+                if (e.confirmado)
                   const Padding(
                     padding: EdgeInsets.only(top: 6),
-                    child: Text('Ya hay un resultado propuesto; puedes modificarlo hasta que se confirme.',
-                        textAlign: TextAlign.center),
+                    child: Text('Este encuentro ya tiene resultado; al guardar se corregirá.', textAlign: TextAlign.center),
                   ),
               ]),
             ),
@@ -223,7 +222,7 @@ class _CuerpoState extends ConsumerState<_Cuerpo> {
               onPressed: _enviando ? null : _enviar,
               child: _enviando
                   ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Text('Enviar resultado'),
+                  : const Text('Guardar resultado'),
             ),
           ),
         ),
@@ -268,7 +267,7 @@ class _CuerpoState extends ConsumerState<_Cuerpo> {
   Widget _jugadores(int i, String lado, String equipo, List<String?> sel, List<Jugador> plantilla) {
     // Si no se puede leer la plantilla (rival) no hay desplegable: el lado queda vacío.
     if (plantilla.isEmpty && sel.every((s) => s == null)) return const SizedBox.shrink();
-    final ids = {...plantilla.map((j) => j.personaId), ...sel.whereType<String>()};
+    final ids = {...plantilla.map((j) => j.jugadorId), ...sel.whereType<String>()};
     return Padding(
       padding: const EdgeInsets.only(bottom: 6),
       child: Row(children: [

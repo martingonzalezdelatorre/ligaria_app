@@ -1,1245 +1,1307 @@
-
 -- ============================================
 -- migrations/0001_schema.sql
 -- ============================================
--- Ligaria · 0001 · Esquema base (multi-tenant)
--- Todo dato privado cuelga de una escuela (escuela_id / organization_id).
--- Las claves foráneas compuestas garantizan que hijos y padres comparten escuela.
+-- =====================================================================
+-- Gestión de ligas de pádel y tenis - Esquema para Supabase (PostgreSQL)
+-- Ejecutar completo en: Supabase > SQL Editor > New query > Run
+-- Pensado para un proyecto nuevo (sin tablas con estos nombres).
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- 1. Tipos enumerados
+-- ---------------------------------------------------------------------
+create type organizacion_tipo    as enum ('AYUNTAMIENTO', 'ESCUELA', 'GRUPO_AMIGOS');
+create type deporte_tipo         as enum ('TENIS', 'PADEL');
+create type equipo_tipo          as enum ('EQUIPO', 'PAREJA', 'INDIVIDUAL');
+create type competicion_tipo     as enum ('MUNICIPAL', 'ENTRE_ESCUELAS', 'ESCUELA', 'AMIGOS');
+create type competicion_formato  as enum ('LIGA', 'ELIMINATORIA', 'MIXTO');
+create type competicion_estado   as enum ('BORRADOR', 'INSCRIPCION_ABIERTA', 'EN_CURSO', 'FINALIZADA', 'CANCELADA');
+create type inscripcion_estado   as enum ('PENDIENTE', 'ACEPTADA', 'RECHAZADA', 'RETIRADA');
+create type invitacion_estado    as enum ('PENDIENTE', 'ACEPTADA', 'RECHAZADA');
+create type encuentro_estado     as enum ('PROGRAMADO', 'EN_JUEGO', 'FINALIZADO', 'APLAZADO', 'SUSPENDIDO', 'NO_PRESENTADO');
+create type partido_tipo         as enum ('INDIVIDUAL', 'DOBLES');
+create type lado_tipo            as enum ('LOCAL', 'VISITANTE');
+create type genero_tipo          as enum ('MASCULINO', 'FEMENINO', 'MIXTO');
+create type mano_tipo            as enum ('DIESTRO', 'ZURDO', 'AMBIDIESTRO');
+
+-- ---------------------------------------------------------------------
+-- 2. Función auxiliar para updated_at
+-- ---------------------------------------------------------------------
+create or replace function public.set_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+-- ---------------------------------------------------------------------
+-- 3. Usuarios, roles y permisos
+-- ---------------------------------------------------------------------
+-- "usuario" es el perfil de la cuenta de Supabase Auth (auth.users).
+create table public.usuario (
+  id          uuid primary key references auth.users (id) on delete cascade,
+  email       text not null unique,
+  nombre      text,
+  apellidos   text,
+  telefono    text,
+  activo      boolean not null default true,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create trigger trg_usuario_updated_at
+  before update on public.usuario
+  for each row execute function public.set_updated_at();
+
+-- Crea automáticamente el perfil al registrarse un usuario en Auth.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  insert into public.usuario (id, email, nombre, apellidos)
+  values (
+    new.id,
+    new.email,
+    new.raw_user_meta_data ->> 'nombre',
+    new.raw_user_meta_data ->> 'apellidos'
+  );
+  return new;
+end;
+$$;
+
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+create table public.rol (
+  id      smallint generated always as identity primary key,
+  codigo  text not null unique,
+  nombre  text not null
+);
+
+create table public.permiso (
+  id           int generated always as identity primary key,
+  codigo       text not null unique,
+  descripcion  text
+);
+
+create table public.rol_permiso (
+  rol_id      smallint not null references public.rol (id) on delete cascade,
+  permiso_id  int      not null references public.permiso (id) on delete cascade,
+  primary key (rol_id, permiso_id)
+);
+
+-- ---------------------------------------------------------------------
+-- 4. Organizaciones (ayuntamientos, escuelas, grupos de amigos)
+-- ---------------------------------------------------------------------
+create table public.organizacion (
+  id          uuid primary key default gen_random_uuid(),
+  tipo        organizacion_tipo not null,
+  nombre      text not null,
+  ciudad      text,
+  activa      boolean not null default true,
+  created_at  timestamptz not null default now()
+);
+
+create table public.sede (
+  id               uuid primary key default gen_random_uuid(),
+  organizacion_id  uuid not null references public.organizacion (id) on delete cascade,
+  nombre           text not null,
+  direccion        text
+);
+
+create table public.pista (
+  id          uuid primary key default gen_random_uuid(),
+  sede_id     uuid not null references public.sede (id) on delete cascade,
+  nombre      text not null,
+  superficie  text,
+  deporte     deporte_tipo not null
+);
+
+-- ---------------------------------------------------------------------
+-- 5. Jugadores, tutores y equipos
+-- ---------------------------------------------------------------------
+-- usuario_id es opcional: un menor puede existir sin cuenta propia.
+create table public.jugador (
+  id                uuid primary key default gen_random_uuid(),
+  usuario_id        uuid unique references public.usuario (id) on delete set null,
+  nombre            text not null,
+  apellidos         text,
+  fecha_nacimiento  date,
+  genero            genero_tipo,
+  nivel             text,
+  mano_dominante    mano_tipo,
+  created_at        timestamptz not null default now()
+);
+
+create table public.tutor_jugador (
+  tutor_usuario_id  uuid not null references public.usuario (id) on delete cascade,
+  jugador_id        uuid not null references public.jugador (id) on delete cascade,
+  parentesco        text,
+  primary key (tutor_usuario_id, jugador_id)
+);
+
+-- Un "equipo" puede ser un equipo, una pareja (pádel) o un jugador individual.
+create table public.equipo (
+  id               uuid primary key default gen_random_uuid(),
+  organizacion_id  uuid not null references public.organizacion (id) on delete cascade,
+  nombre           text not null,
+  tipo             equipo_tipo not null default 'EQUIPO',
+  deporte          deporte_tipo not null,
+  created_at       timestamptz not null default now(),
+  unique (organizacion_id, nombre)
+);
+
+create table public.equipo_miembro (
+  equipo_id   uuid not null references public.equipo (id) on delete cascade,
+  jugador_id  uuid not null references public.jugador (id) on delete cascade,
+  capitan     boolean not null default false,
+  fecha_alta  date not null default current_date,
+  primary key (equipo_id, jugador_id)
+);
+
+create table public.entrenador_equipo (
+  equipo_id   uuid not null references public.equipo (id) on delete cascade,
+  usuario_id  uuid not null references public.usuario (id) on delete cascade,
+  primary key (equipo_id, usuario_id)
+);
+
+-- ---------------------------------------------------------------------
+-- 6. Competiciones
+-- ---------------------------------------------------------------------
+create table public.competicion (
+  id               uuid primary key default gen_random_uuid(),
+  organizacion_id  uuid not null references public.organizacion (id) on delete restrict,
+  organizador_id   uuid not null references public.usuario (id) on delete restrict,
+  nombre           text not null,
+  tipo             competicion_tipo not null,
+  deporte          deporte_tipo not null,
+  formato          competicion_formato not null default 'LIGA',
+  estado           competicion_estado not null default 'BORRADOR',
+  fecha_inicio     date,
+  fecha_fin        date,
+  created_at       timestamptz not null default now(),
+  updated_at       timestamptz not null default now(),
+  check (fecha_fin is null or fecha_inicio is null or fecha_fin >= fecha_inicio)
+);
+
+create trigger trg_competicion_updated_at
+  before update on public.competicion
+  for each row execute function public.set_updated_at();
+
+-- Organizaciones que participan (ligas entre escuelas, municipales, etc.)
+create table public.competicion_org (
+  competicion_id     uuid not null references public.competicion (id) on delete cascade,
+  organizacion_id    uuid not null references public.organizacion (id) on delete cascade,
+  estado_invitacion  invitacion_estado not null default 'PENDIENTE',
+  primary key (competicion_id, organizacion_id)
+);
+
+-- Asignación de roles con ámbito (organización y/o competición).
+create table public.asignacion_rol (
+  id               uuid primary key default gen_random_uuid(),
+  usuario_id       uuid not null references public.usuario (id) on delete cascade,
+  rol_id           smallint not null references public.rol (id) on delete restrict,
+  organizacion_id  uuid references public.organizacion (id) on delete cascade,
+  competicion_id   uuid references public.competicion (id) on delete cascade,
+  created_at       timestamptz not null default now()
+);
+
+create unique index uq_asignacion_rol
+  on public.asignacion_rol (
+    usuario_id,
+    rol_id,
+    coalesce(organizacion_id, '00000000-0000-0000-0000-000000000000'::uuid),
+    coalesce(competicion_id,  '00000000-0000-0000-0000-000000000000'::uuid)
+  );
+
+create table public.categoria (
+  id              uuid primary key default gen_random_uuid(),
+  competicion_id  uuid not null references public.competicion (id) on delete cascade,
+  nombre          text not null,
+  genero          genero_tipo,
+  edad_min        smallint,
+  edad_max        smallint,
+  nivel           text,
+  check (edad_max is null or edad_min is null or edad_max >= edad_min),
+  unique (competicion_id, nombre)
+);
+
+create table public.inscripcion (
+  id            uuid primary key default gen_random_uuid(),
+  categoria_id  uuid not null references public.categoria (id) on delete cascade,
+  equipo_id     uuid not null references public.equipo (id) on delete cascade,
+  estado        inscripcion_estado not null default 'PENDIENTE',
+  fecha         timestamptz not null default now(),
+  unique (categoria_id, equipo_id)
+);
+
+create table public.jornada (
+  id            uuid primary key default gen_random_uuid(),
+  categoria_id  uuid not null references public.categoria (id) on delete cascade,
+  numero        smallint not null,
+  fecha         date,
+  unique (categoria_id, numero)
+);
+
+-- ---------------------------------------------------------------------
+-- 7. Encuentros, partidos y resultados
+-- ---------------------------------------------------------------------
+-- puntos_local / puntos_visitante: partidos ganados por cada lado en el encuentro.
+create table public.encuentro (
+  id                          uuid primary key default gen_random_uuid(),
+  jornada_id                  uuid not null references public.jornada (id) on delete cascade,
+  local_inscripcion_id        uuid not null references public.inscripcion (id) on delete restrict,
+  visitante_inscripcion_id    uuid not null references public.inscripcion (id) on delete restrict,
+  pista_id                    uuid references public.pista (id) on delete set null,
+  fecha_hora                  timestamptz,
+  estado                      encuentro_estado not null default 'PROGRAMADO',
+  puntos_local                smallint not null default 0,
+  puntos_visitante            smallint not null default 0,
+  updated_at                  timestamptz not null default now(),
+  check (local_inscripcion_id <> visitante_inscripcion_id)
+);
+
+create trigger trg_encuentro_updated_at
+  before update on public.encuentro
+  for each row execute function public.set_updated_at();
+
+create table public.partido (
+  id            uuid primary key default gen_random_uuid(),
+  encuentro_id  uuid not null references public.encuentro (id) on delete cascade,
+  orden         smallint not null,
+  tipo          partido_tipo not null,
+  lado_ganador  lado_tipo,
+  unique (encuentro_id, orden)
+);
+
+create table public.partido_jugador (
+  partido_id  uuid not null references public.partido (id) on delete cascade,
+  jugador_id  uuid not null references public.jugador (id) on delete restrict,
+  lado        lado_tipo not null,
+  primary key (partido_id, jugador_id)
+);
+
+create table public.set_partido (
+  id                  uuid primary key default gen_random_uuid(),
+  partido_id          uuid not null references public.partido (id) on delete cascade,
+  numero              smallint not null,
+  juegos_local        smallint not null default 0,
+  juegos_visitante    smallint not null default 0,
+  tiebreak_local      smallint,
+  tiebreak_visitante  smallint,
+  unique (partido_id, numero)
+);
+
+-- ---------------------------------------------------------------------
+-- 8. Índices sobre claves foráneas
+-- ---------------------------------------------------------------------
+create index idx_asignacion_rol_usuario      on public.asignacion_rol (usuario_id);
+create index idx_asignacion_rol_organizacion on public.asignacion_rol (organizacion_id);
+create index idx_asignacion_rol_competicion  on public.asignacion_rol (competicion_id);
+create index idx_tutor_jugador_jugador       on public.tutor_jugador (jugador_id);
+create index idx_equipo_organizacion         on public.equipo (organizacion_id);
+create index idx_equipo_miembro_jugador      on public.equipo_miembro (jugador_id);
+create index idx_entrenador_equipo_usuario   on public.entrenador_equipo (usuario_id);
+create index idx_sede_organizacion           on public.sede (organizacion_id);
+create index idx_pista_sede                  on public.pista (sede_id);
+create index idx_competicion_organizacion    on public.competicion (organizacion_id);
+create index idx_competicion_organizador     on public.competicion (organizador_id);
+create index idx_competicion_org_org         on public.competicion_org (organizacion_id);
+create index idx_categoria_competicion       on public.categoria (competicion_id);
+create index idx_inscripcion_equipo          on public.inscripcion (equipo_id);
+create index idx_jornada_categoria           on public.jornada (categoria_id);
+create index idx_encuentro_jornada           on public.encuentro (jornada_id);
+create index idx_encuentro_local             on public.encuentro (local_inscripcion_id);
+create index idx_encuentro_visitante         on public.encuentro (visitante_inscripcion_id);
+create index idx_encuentro_pista             on public.encuentro (pista_id);
+create index idx_partido_jugador_jugador     on public.partido_jugador (jugador_id);
+
+-- ---------------------------------------------------------------------
+-- 9. Clasificación (vista calculada)
+-- Puntuación provisional: 3 por victoria, 1 por empate. Ajustar más adelante.
+-- ---------------------------------------------------------------------
+create view public.clasificacion
+with (security_invoker = true)
+as
+with resultados as (
+  select e.id as encuentro_id,
+         e.local_inscripcion_id as inscripcion_id,
+         e.puntos_local as pf,
+         e.puntos_visitante as pc
+  from public.encuentro e
+  where e.estado = 'FINALIZADO'
+  union all
+  select e.id,
+         e.visitante_inscripcion_id,
+         e.puntos_visitante,
+         e.puntos_local
+  from public.encuentro e
+  where e.estado = 'FINALIZADO'
+)
+select i.categoria_id,
+       i.id as inscripcion_id,
+       i.equipo_id,
+       count(r.encuentro_id)                         as pj,
+       count(*) filter (where r.pf > r.pc)           as pg,
+       count(*) filter (where r.pf = r.pc)           as pe,
+       count(*) filter (where r.pf < r.pc)           as pp,
+       coalesce(sum(r.pf), 0)                        as favor,
+       coalesce(sum(r.pc), 0)                        as contra,
+       count(*) filter (where r.pf > r.pc) * 3
+         + count(*) filter (where r.pf = r.pc)       as puntos
+from public.inscripcion i
+left join resultados r on r.inscripcion_id = i.id
+where i.estado = 'ACEPTADA'
+group by i.categoria_id, i.id, i.equipo_id;
+
+-- ---------------------------------------------------------------------
+-- 10. Datos iniciales: roles
+-- ---------------------------------------------------------------------
+insert into public.rol (codigo, nombre) values
+  ('ADMINISTRADOR',      'Administrador'),
+  ('ADMIN_ESCUELAS',     'Administrador de escuelas'),
+  ('ENTRENADOR',         'Entrenador'),
+  ('TUTOR',              'Padre/Madre o tutor'),
+  ('JUGADOR',            'Jugador'),
+  ('ORGANIZADOR_LIGAS',  'Organizador de ligas');
+
+-- ---------------------------------------------------------------------
+-- 11. Row Level Security
+-- Se activa en todas las tablas. Sin políticas, la API de Supabase
+-- (anon / authenticated) no puede leer ni escribir: es el valor seguro
+-- por defecto hasta definir los permisos de cada rol.
+-- ---------------------------------------------------------------------
+alter table public.usuario            enable row level security;
+alter table public.rol                enable row level security;
+alter table public.permiso            enable row level security;
+alter table public.rol_permiso        enable row level security;
+alter table public.organizacion       enable row level security;
+alter table public.sede               enable row level security;
+alter table public.pista              enable row level security;
+alter table public.jugador            enable row level security;
+alter table public.tutor_jugador      enable row level security;
+alter table public.equipo             enable row level security;
+alter table public.equipo_miembro     enable row level security;
+alter table public.entrenador_equipo  enable row level security;
+alter table public.competicion        enable row level security;
+alter table public.competicion_org    enable row level security;
+alter table public.asignacion_rol     enable row level security;
+alter table public.categoria          enable row level security;
+alter table public.inscripcion        enable row level security;
+alter table public.jornada            enable row level security;
+alter table public.encuentro          enable row level security;
+alter table public.partido            enable row level security;
+alter table public.partido_jugador    enable row level security;
+alter table public.set_partido        enable row level security;
+
+-- Políticas mínimas
+create policy "usuario_lee_su_perfil"
+  on public.usuario for select to authenticated
+  using (id = (select auth.uid()));
+
+create policy "usuario_edita_su_perfil"
+  on public.usuario for update to authenticated
+  using (id = (select auth.uid()))
+  with check (id = (select auth.uid()));
+
+create policy "roles_visibles_para_autenticados"
+  on public.rol for select to authenticated
+  using (true);
+
+create policy "ve_sus_asignaciones_de_rol"
+  on public.asignacion_rol for select to authenticated
+  using (usuario_id = (select auth.uid()));
+
+-- ============================================
+-- migrations/0002_acceso_app.sql
+-- ============================================
+-- Ligaria · 0002 · Capa de acceso de la app sobre el esquema 0001
+-- Añade: extensiones mínimas al esquema, funciones auxiliares, políticas RLS por rol,
+-- vistas de lectura para la app y RPC (alta, invitaciones, calendario, resultados).
+--
+-- Extensiones al esquema base (únicas modificaciones de tablas):
+--   · jugador.organizacion_id  → organización (escuela, club…) a la que pertenece el jugador.
+--   · tabla invitacion         → para dar acceso por email antes de que la persona se registre.
+--   · vista clasificacion      → cuenta también los encuentros NO_PRESENTADO (incomparecencias).
+--
+-- Mapeo de roles (asignacion_rol):
+--   ADMINISTRADOR      (sin organización)        → superadministrador de la plataforma
+--   ADMIN_ESCUELAS     (en una ESCUELA)          → administra su organización (personas, equipos, usuarios)
+--   ORGANIZADOR_LIGAS  (ESCUELA o AYUNTAMIENTO)  → crea y gestiona las competiciones de la organización
+--   ENTRENADOR / TUTOR / JUGADOR (en organización) → perfiles de uso; el detalle va en
+--                                                     entrenador_equipo, tutor_jugador y jugador.usuario_id
 
 create schema if not exists app;
 
-create type rol_t as enum
-  ('superadmin','organizador_liga','admin_escuela','entrenador','alumno','tutor');
-create type competicion_tipo_t as enum ('liga','torneo','ranking','escalera');
-create type competicion_estado_t as enum ('borrador','publicada','en_curso','finalizada');
-create type visibilidad_ficha_t as enum ('nombre_completo','iniciales','solo_escuela');
-create type encuentro_estado_t as enum ('programado','propuesto','confirmado');
-create type lado_t as enum ('local','visitante');
-create type partido_tipo_t as enum ('individual','dobles');
+-- ───────── Extensiones del esquema ─────────
+alter table public.jugador
+  add column organizacion_id uuid references public.organizacion (id) on delete set null;
+create index idx_jugador_organizacion on public.jugador (organizacion_id);
 
--- ───────── Núcleo ─────────
-create table escuela (
-  id uuid primary key default gen_random_uuid(),
-  nombre text not null,
-  slug text not null unique,
-  activa boolean not null default true,
-  created_at timestamptz not null default now()
+create table public.invitacion (
+  id               uuid primary key default gen_random_uuid(),
+  organizacion_id  uuid not null references public.organizacion (id) on delete cascade,
+  email            text not null,
+  rol_id           smallint not null references public.rol (id) on delete restrict,
+  jugador_id       uuid references public.jugador (id) on delete cascade, -- tutor→menor, jugador→su ficha
+  created_at       timestamptz not null default now(),
+  aplicada_en      timestamptz
 );
+create index idx_invitacion_email on public.invitacion (lower(email)) where aplicada_en is null;
+alter table public.invitacion enable row level security;
 
--- Módulos activables por escuela (feature flags). Ahora solo 'competiciones'.
-create table escuela_modulo (
-  escuela_id uuid not null references escuela(id) on delete cascade,
-  modulo text not null,
-  activo boolean not null default true,
-  primary key (escuela_id, modulo)
-);
+-- Las incomparecencias (NO_PRESENTADO) también puntúan en la clasificación.
+create or replace view public.clasificacion
+with (security_invoker = true)
+as
+with resultados as (
+  select e.id as encuentro_id,
+         e.local_inscripcion_id as inscripcion_id,
+         e.puntos_local as pf,
+         e.puntos_visitante as pc
+  from public.encuentro e
+  where e.estado in ('FINALIZADO', 'NO_PRESENTADO')
+  union all
+  select e.id,
+         e.visitante_inscripcion_id,
+         e.puntos_visitante,
+         e.puntos_local
+  from public.encuentro e
+  where e.estado in ('FINALIZADO', 'NO_PRESENTADO')
+)
+select i.categoria_id,
+       i.id as inscripcion_id,
+       i.equipo_id,
+       count(r.encuentro_id)                         as pj,
+       count(*) filter (where r.pf > r.pc)           as pg,
+       count(*) filter (where r.pf = r.pc)           as pe,
+       count(*) filter (where r.pf < r.pc)           as pp,
+       coalesce(sum(r.pf), 0)                        as favor,
+       coalesce(sum(r.pc), 0)                        as contra,
+       count(*) filter (where r.pf > r.pc) * 3
+         + count(*) filter (where r.pf = r.pc)       as puntos
+from public.inscripcion i
+left join resultados r on r.inscripcion_id = i.id
+where i.estado = 'ACEPTADA'
+group by i.categoria_id, i.id, i.equipo_id;
 
-create table usuario (
-  id uuid primary key,              -- = auth.users.id en Supabase
-  email text,
-  nombre text,
-  created_at timestamptz not null default now()
-);
-
--- Pertenencia (usuario, escuela, rol). superadmin => escuela_id nulo.
-create table pertenencia (
-  id uuid primary key default gen_random_uuid(),
-  usuario_id uuid not null references usuario(id) on delete cascade,
-  escuela_id uuid references escuela(id) on delete cascade,
-  rol rol_t not null,
-  created_at timestamptz not null default now(),
-  check ((rol = 'superadmin') = (escuela_id is null))
-);
-create unique index pertenencia_uq
-  on pertenencia (usuario_id, coalesce(escuela_id, '00000000-0000-0000-0000-000000000000'::uuid), rol);
-create index pertenencia_escuela_idx on pertenencia (escuela_id);
-
--- Persona: separada de Usuario (un menor puede no tener login).
-create table persona (
-  id uuid primary key default gen_random_uuid(),
-  escuela_id uuid not null references escuela(id) on delete cascade,
-  usuario_id uuid references usuario(id) on delete set null,
-  nombre text not null,
-  apellidos text not null default '',
-  fecha_nacimiento date not null,
-  visibilidad_ficha visibilidad_ficha_t not null default 'solo_escuela',
-  foto_url text,                    -- sin fotos por defecto
-  mostrar_foto boolean not null default false,
-  created_at timestamptz not null default now(),
-  unique (id, escuela_id)
-);
-create index persona_escuela_idx on persona (escuela_id);
-
--- Tutoría: menor (persona) ↔ tutor (usuario con login)
-create table tutoria (
-  persona_id uuid not null references persona(id) on delete cascade,
-  tutor_usuario_id uuid not null references usuario(id) on delete cascade,
-  parentesco text,
-  primary key (persona_id, tutor_usuario_id)
-);
-
-create table consentimiento (
-  id uuid primary key default gen_random_uuid(),
-  persona_id uuid not null references persona(id) on delete cascade,
-  tutor_usuario_id uuid references usuario(id),
-  tipo text not null default 'tratamiento_datos',
-  otorgado boolean not null,
-  fecha timestamptz not null default now()
-);
-create index consentimiento_persona_idx on consentimiento (persona_id, tipo, fecha desc);
-
--- ───────── Catálogos globales ─────────
-create table deporte (
-  id uuid primary key default gen_random_uuid(),
-  nombre text not null unique
-);
-create table categoria (
-  id uuid primary key default gen_random_uuid(),
-  deporte_id uuid not null references deporte(id),
-  nombre text not null,
-  edad_min int,
-  edad_max int,
-  unique (deporte_id, nombre)
-);
-create table temporada (
-  id uuid primary key default gen_random_uuid(),
-  nombre text not null unique,
-  inicio date not null,
-  fin date not null,
-  check (fin >= inicio)
-);
-
--- ───────── Competiciones ─────────
--- organization_id = escuela organizadora. Otras escuelas participan por inscripción.
-create table competicion (
-  id uuid primary key default gen_random_uuid(),
-  organization_id uuid not null references escuela(id),
-  temporada_id uuid not null references temporada(id),
-  deporte_id uuid not null references deporte(id),
-  categoria_id uuid references categoria(id),
-  nombre text not null,
-  tipo competicion_tipo_t not null default 'liga',
-  estado competicion_estado_t not null default 'borrador',
-  reglas jsonb not null default '{
-    "vueltas": 1,
-    "partidos_por_encuentro": {"individuales": 2, "dobles": 1},
-    "puntos": {"victoria": 3, "empate": 1, "derrota": 0},
-    "desempates": ["enfrentamiento_directo","diferencia_partidos","diferencia_sets","diferencia_juegos"],
-    "incomparecencia": {"partidos_local": 0, "partidos_visitante": 3}
-  }'::jsonb,
-  created_at timestamptz not null default now(),
-  unique (id, organization_id)
-);
-
-create table equipo (
-  id uuid primary key default gen_random_uuid(),
-  escuela_id uuid not null references escuela(id) on delete cascade,
-  deporte_id uuid not null references deporte(id),
-  categoria_id uuid references categoria(id),
-  nombre text not null,
-  created_at timestamptz not null default now(),
-  unique (id, escuela_id)
-);
-create table equipo_miembro (
-  equipo_id uuid not null,
-  escuela_id uuid not null,
-  persona_id uuid not null,
-  primary key (equipo_id, persona_id),
-  foreign key (equipo_id, escuela_id) references equipo(id, escuela_id) on delete cascade,
-  foreign key (persona_id, escuela_id) references persona(id, escuela_id) on delete cascade
-);
-create table equipo_entrenador (
-  equipo_id uuid not null,
-  escuela_id uuid not null,
-  usuario_id uuid not null references usuario(id) on delete cascade,
-  primary key (equipo_id, usuario_id),
-  foreign key (equipo_id, escuela_id) references equipo(id, escuela_id) on delete cascade
-);
-
-create table inscripcion_equipo (
-  competicion_id uuid not null references competicion(id) on delete cascade,
-  equipo_id uuid not null,
-  escuela_id uuid not null,
-  created_at timestamptz not null default now(),
-  primary key (competicion_id, equipo_id),
-  foreign key (equipo_id, escuela_id) references equipo(id, escuela_id) on delete cascade
-);
-
-create table jornada (
-  id uuid primary key default gen_random_uuid(),
-  competicion_id uuid not null,
-  organization_id uuid not null,
-  numero int not null,
-  fecha date,
-  unique (competicion_id, numero),
-  unique (id, competicion_id, organization_id),
-  foreign key (competicion_id, organization_id) references competicion(id, organization_id) on delete cascade
-);
-
-create table encuentro (
-  id uuid primary key default gen_random_uuid(),
-  competicion_id uuid not null,
-  organization_id uuid not null,
-  jornada_id uuid not null,
-  local_equipo_id uuid not null references equipo(id),
-  visitante_equipo_id uuid not null references equipo(id),
-  fecha timestamptz,
-  estado encuentro_estado_t not null default 'programado',
-  incomparecencia lado_t,             -- lado que NO se presentó
-  propuesto_por uuid references usuario(id),
-  propuesto_en timestamptz,
-  confirmado_por uuid references usuario(id),
-  confirmado_en timestamptz,
-  check (local_equipo_id <> visitante_equipo_id),
-  unique (id, competicion_id, organization_id),
-  foreign key (jornada_id, competicion_id, organization_id)
-    references jornada(id, competicion_id, organization_id) on delete cascade
-);
-create index encuentro_comp_idx on encuentro (competicion_id, estado);
-
-create table partido (
-  id uuid primary key default gen_random_uuid(),
-  encuentro_id uuid not null,
-  competicion_id uuid not null,
-  organization_id uuid not null,
-  orden int not null,
-  tipo partido_tipo_t not null,
-  unique (encuentro_id, orden),
-  unique (id, competicion_id, organization_id),
-  foreign key (encuentro_id, competicion_id, organization_id)
-    references encuentro(id, competicion_id, organization_id) on delete cascade
-);
-create table partido_participante (
-  partido_id uuid not null,
-  competicion_id uuid not null,
-  organization_id uuid not null,
-  lado lado_t not null,
-  persona_id uuid not null references persona(id),
-  primary key (partido_id, lado, persona_id),
-  foreign key (partido_id, competicion_id, organization_id)
-    references partido(id, competicion_id, organization_id) on delete cascade
-);
-create table resultado_set (
-  partido_id uuid not null,
-  competicion_id uuid not null,
-  organization_id uuid not null,
-  numero int not null,
-  juegos_local int not null check (juegos_local >= 0),
-  juegos_visitante int not null check (juegos_visitante >= 0),
-  primary key (partido_id, numero),
-  foreign key (partido_id, competicion_id, organization_id)
-    references partido(id, competicion_id, organization_id) on delete cascade
-);
-
--- ───────── Transversales ─────────
-create table notificacion (
-  id uuid primary key default gen_random_uuid(),
-  usuario_id uuid not null references usuario(id) on delete cascade,
-  escuela_id uuid references escuela(id) on delete cascade,
-  titulo text not null,
-  cuerpo text,
-  leida boolean not null default false,
-  created_at timestamptz not null default now()
-);
-create index notificacion_usuario_idx on notificacion (usuario_id, leida);
-
-create table registro_cambios (
-  id bigint generated always as identity primary key,
-  escuela_id uuid,
-  usuario_id uuid,
-  tabla text not null,
-  registro_id text,
-  accion text not null,
-  antes jsonb,
-  despues jsonb,
-  created_at timestamptz not null default now()
-);
-create index registro_cambios_escuela_idx on registro_cambios (escuela_id, created_at desc);
-
--- Registro de accesos a datos de menores
-create table registro_acceso_menores (
-  id bigint generated always as identity primary key,
-  persona_id uuid not null,
-  escuela_id uuid not null,
-  usuario_id uuid,
-  contexto text,
-  created_at timestamptz not null default now()
-);
-create index registro_acceso_persona_idx on registro_acceso_menores (persona_id, created_at desc);
-
-
--- ============================================
--- migrations/0002_helpers_rls.sql
--- ============================================
--- Ligaria · 0002 · Funciones auxiliares, auditoría, RLS y RPC de privacidad
--- Requiere auth.uid() (Supabase Auth).
-
--- ───────── Helpers (security definer: evitan recursión de RLS) ─────────
-create function app.es_superadmin() returns boolean
+-- ───────── Funciones auxiliares (security definer: evitan recursión de RLS) ─────────
+create function app.es_admin() returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
-  select exists (select 1 from pertenencia where usuario_id = auth.uid() and rol = 'superadmin')
+  select exists (select 1 from asignacion_rol ar join rol r on r.id = ar.rol_id
+                 where ar.usuario_id = auth.uid() and r.codigo = 'ADMINISTRADOR')
+$$;
+
+create function app.tiene_rol(org uuid, cods text[]) returns boolean
+language sql stable security definer set search_path = public, pg_temp as $$
+  select exists (select 1 from asignacion_rol ar join rol r on r.id = ar.rol_id
+                 where ar.usuario_id = auth.uid() and ar.organizacion_id = org and r.codigo = any (cods))
 $$;
 
 create function app.es_miembro(org uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
-  select exists (select 1 from pertenencia where usuario_id = auth.uid() and escuela_id = org)
+  select exists (select 1 from asignacion_rol where usuario_id = auth.uid() and organizacion_id = org)
 $$;
 
-create function app.tiene_rol(org uuid, r rol_t) returns boolean
+-- Administra la organización (personas, equipos, usuarios): ADMIN_ESCUELAS o ADMINISTRADOR
+create function app.admin_org(org uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
-  select exists (select 1 from pertenencia
-                 where usuario_id = auth.uid() and escuela_id = org and rol = r)
+  select app.es_admin() or app.tiene_rol(org, array['ADMIN_ESCUELAS'])
 $$;
 
--- Gestiona la liga/escuela: admin de escuela u organizador de liga de esa escuela, o superadmin
+-- Gestiona la organización y sus competiciones: administrador de escuelas u organizador de ligas
 create function app.gestiona(org uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
-  select app.es_superadmin() or exists (
-    select 1 from pertenencia where usuario_id = auth.uid() and escuela_id = org
-      and rol in ('admin_escuela','organizador_liga'))
+  select app.es_admin() or app.tiene_rol(org, array['ADMIN_ESCUELAS', 'ORGANIZADOR_LIGAS'])
 $$;
 
-create function app.es_yo(p uuid) returns boolean
+create function app.gestiona_comp(comp uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
-  select exists (select 1 from persona where id = p and usuario_id = auth.uid())
+  select app.es_admin() or exists (
+    select 1 from competicion c
+    where c.id = comp and (
+      c.organizador_id = auth.uid()
+      or app.gestiona(c.organizacion_id)
+      or exists (select 1 from asignacion_rol ar join rol r on r.id = ar.rol_id
+                 where ar.usuario_id = auth.uid() and ar.competicion_id = c.id and r.codigo = 'ORGANIZADOR_LIGAS')))
 $$;
 
-create function app.es_tutor_de(p uuid) returns boolean
+-- ¿Puede el usuario ver la competición? Quien la gestiona, su organización, las organizaciones
+-- participantes (por competicion_org o por tener equipos inscritos) y el administrador.
+create function app.ve_competicion(comp uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
-  select exists (select 1 from tutoria where persona_id = p and tutor_usuario_id = auth.uid())
+  select app.es_admin() or exists (
+    select 1 from competicion c
+    where c.id = comp and (
+      c.organizador_id = auth.uid()
+      or app.es_miembro(c.organizacion_id)
+      or exists (select 1 from competicion_org co
+                 where co.competicion_id = c.id and co.estado_invitacion = 'ACEPTADA' and app.es_miembro(co.organizacion_id))
+      or exists (select 1 from categoria ca
+                 join inscripcion i on i.categoria_id = ca.id
+                 join equipo e on e.id = i.equipo_id
+                 where ca.competicion_id = c.id and app.es_miembro(e.organizacion_id))))
+$$;
+
+create function app.es_yo(j uuid) returns boolean
+language sql stable security definer set search_path = public, pg_temp as $$
+  select exists (select 1 from jugador where id = j and usuario_id = auth.uid())
+$$;
+
+create function app.es_tutor_de(j uuid) returns boolean
+language sql stable security definer set search_path = public, pg_temp as $$
+  select exists (select 1 from tutor_jugador where jugador_id = j and tutor_usuario_id = auth.uid())
 $$;
 
 create function app.entrena_equipo(eq uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
-  select exists (select 1 from equipo_entrenador where equipo_id = eq and usuario_id = auth.uid())
+  select exists (select 1 from entrenador_equipo where equipo_id = eq and usuario_id = auth.uid())
 $$;
 
-create function app.entrena_a(p uuid) returns boolean
+create function app.entrena_a(j uuid) returns boolean
 language sql stable security definer set search_path = public, pg_temp as $$
   select exists (
     select 1 from equipo_miembro em
-    join equipo_entrenador ee on ee.equipo_id = em.equipo_id
-    where em.persona_id = p and ee.usuario_id = auth.uid())
+    join entrenador_equipo ee on ee.equipo_id = em.equipo_id
+    where em.jugador_id = j and ee.usuario_id = auth.uid())
 $$;
 
--- ¿Puede el usuario ver la competición? organizadora, inscrita o superadmin
-create function app.ve_competicion(comp uuid) returns boolean
+create function app.org_de_equipo(eq uuid) returns uuid
 language sql stable security definer set search_path = public, pg_temp as $$
-  select app.es_superadmin() or exists (
-    select 1 from competicion c
-    where c.id = comp and (
-      app.es_miembro(c.organization_id)
-      or exists (select 1 from inscripcion_equipo i
-                 where i.competicion_id = c.id and app.es_miembro(i.escuela_id))))
+  select organizacion_id from equipo where id = eq
 $$;
 
-create function app.edad(nac date) returns int
-language sql immutable as $$ select extract(year from age(current_date, nac))::int $$;
-
-create function app.consentimiento_vigente(p uuid) returns boolean
+create function app.org_de_jugador(j uuid) returns uuid
 language sql stable security definer set search_path = public, pg_temp as $$
-  select coalesce((select c.otorgado from consentimiento c
-                   where c.persona_id = p and c.tipo = 'tratamiento_datos'
-                   order by c.fecha desc limit 1), false)
+  select organizacion_id from jugador where id = j
 $$;
 
--- ───────── Auditoría genérica ─────────
-create function app.auditar() returns trigger
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare n jsonb; o jsonb; esc uuid;
-begin
-  n := case when tg_op <> 'DELETE' then to_jsonb(new) end;
-  o := case when tg_op <> 'INSERT' then to_jsonb(old) end;
-  esc := coalesce((coalesce(n, o)->>'organization_id'), (coalesce(n, o)->>'escuela_id'))::uuid;
-  insert into registro_cambios (escuela_id, usuario_id, tabla, registro_id, accion, antes, despues)
-  values (esc, auth.uid(), tg_table_name, coalesce(n, o)->>'id', tg_op, o, n);
-  return coalesce(new, old);
-end $$;
+create function app.comp_de_categoria(cat uuid) returns uuid
+language sql stable security definer set search_path = public, pg_temp as $$
+  select competicion_id from categoria where id = cat
+$$;
 
-create trigger aud_competicion after insert or update or delete on competicion
-  for each row execute function app.auditar();
-create trigger aud_encuentro after insert or update or delete on encuentro
-  for each row execute function app.auditar();
-create trigger aud_persona after insert or update or delete on persona
-  for each row execute function app.auditar();
-create trigger aud_pertenencia after insert or update or delete on pertenencia
-  for each row execute function app.auditar();
--- partido/resultado_set no tienen columna id: auditan con PK compuesta
-create function app.auditar_resultado() returns trigger
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare n jsonb; o jsonb;
-begin
-  n := case when tg_op <> 'DELETE' then to_jsonb(new) end;
-  o := case when tg_op <> 'INSERT' then to_jsonb(old) end;
-  insert into registro_cambios (escuela_id, usuario_id, tabla, registro_id, accion, antes, despues)
-  values ((coalesce(n, o)->>'organization_id')::uuid, auth.uid(), tg_table_name,
-          (coalesce(n, o)->>'partido_id'), tg_op, o, n);
-  return coalesce(new, old);
-end $$;
-create trigger aud_resultado_set after insert or update or delete on resultado_set
-  for each row execute function app.auditar_resultado();
+create function app.comp_de_jornada(jor uuid) returns uuid
+language sql stable security definer set search_path = public, pg_temp as $$
+  select ca.competicion_id from jornada j join categoria ca on ca.id = j.categoria_id where j.id = jor
+$$;
 
--- ───────── RLS ─────────
-alter table escuela enable row level security;
-alter table escuela_modulo enable row level security;
-alter table usuario enable row level security;
-alter table pertenencia enable row level security;
-alter table persona enable row level security;
-alter table tutoria enable row level security;
-alter table consentimiento enable row level security;
-alter table deporte enable row level security;
-alter table categoria enable row level security;
-alter table temporada enable row level security;
-alter table competicion enable row level security;
-alter table equipo enable row level security;
-alter table equipo_miembro enable row level security;
-alter table equipo_entrenador enable row level security;
-alter table inscripcion_equipo enable row level security;
-alter table jornada enable row level security;
-alter table encuentro enable row level security;
-alter table partido enable row level security;
-alter table partido_participante enable row level security;
-alter table resultado_set enable row level security;
-alter table notificacion enable row level security;
-alter table registro_cambios enable row level security;
-alter table registro_acceso_menores enable row level security;
+create function app.comp_de_encuentro(enc uuid) returns uuid
+language sql stable security definer set search_path = public, pg_temp as $$
+  select ca.competicion_id from encuentro e
+  join jornada j on j.id = e.jornada_id join categoria ca on ca.id = j.categoria_id where e.id = enc
+$$;
 
--- escuela
-create policy escuela_sel on escuela for select
-  using (app.es_superadmin() or app.es_miembro(id));
-create policy escuela_mod on escuela for all
-  using (app.es_superadmin()) with check (app.es_superadmin());
-create policy modulo_sel on escuela_modulo for select
-  using (app.es_superadmin() or app.es_miembro(escuela_id));
-create policy modulo_mod on escuela_modulo for all
-  using (app.es_superadmin()) with check (app.es_superadmin());
+create function app.comp_de_partido(par uuid) returns uuid
+language sql stable security definer set search_path = public, pg_temp as $$
+  select app.comp_de_encuentro(encuentro_id) from partido where id = par
+$$;
 
--- usuario: uno mismo, superadmin o admin de una escuela donde pertenece
-create policy usuario_sel on usuario for select using (
-  id = auth.uid() or app.es_superadmin() or exists (
-    select 1 from pertenencia p where p.usuario_id = usuario.id and app.tiene_rol(p.escuela_id, 'admin_escuela')));
-create policy usuario_upd on usuario for update
-  using (id = auth.uid()) with check (id = auth.uid());
+create function app.es_entrenador_de_org(usr uuid, org uuid) returns boolean
+language sql stable security definer set search_path = public, pg_temp as $$
+  select exists (select 1 from asignacion_rol ar join rol r on r.id = ar.rol_id
+                 where ar.usuario_id = usr and ar.organizacion_id = org and r.codigo = 'ENTRENADOR')
+$$;
 
--- pertenencia
-create policy pert_sel on pertenencia for select using (
-  usuario_id = auth.uid() or app.es_superadmin()
-  or (escuela_id is not null and app.tiene_rol(escuela_id, 'admin_escuela')));
-create policy pert_mod on pertenencia for all
-  using (app.es_superadmin() or (escuela_id is not null and app.tiene_rol(escuela_id, 'admin_escuela')))
-  with check (app.es_superadmin() or (escuela_id is not null and rol <> 'superadmin'
-              and app.tiene_rol(escuela_id, 'admin_escuela')));
+-- ───────── Políticas RLS ─────────
+-- (usuario, rol y asignacion_rol ya tienen sus políticas mínimas en 0001; aquí se amplían)
 
--- persona: fichas privadas solo para admin de su escuela, su entrenador, ella misma o su tutor
-create policy persona_sel on persona for select using (
-  app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela')
+create policy usuario_ve_su_org on public.usuario for select to authenticated using (
+  app.es_admin() or exists (
+    select 1 from asignacion_rol ar
+    where ar.usuario_id = usuario.id and ar.organizacion_id is not null and app.admin_org(ar.organizacion_id)));
+
+create policy permiso_sel on public.permiso for select to authenticated using (true);
+create policy rol_permiso_sel on public.rol_permiso for select to authenticated using (true);
+
+create policy asignacion_ve_su_org on public.asignacion_rol for select to authenticated using (
+  app.es_admin() or (organizacion_id is not null and app.admin_org(organizacion_id)));
+
+-- organizaciones: las ve su gente y el administrador; solo el administrador las crea o edita
+create policy org_sel on public.organizacion for select to authenticated
+  using (app.es_admin() or app.es_miembro(id));
+create policy org_mod on public.organizacion for all to authenticated
+  using (app.es_admin()) with check (app.es_admin());
+
+create policy sede_sel on public.sede for select to authenticated
+  using (app.es_admin() or app.es_miembro(organizacion_id));
+create policy sede_mod on public.sede for all to authenticated
+  using (app.admin_org(organizacion_id)) with check (app.admin_org(organizacion_id));
+create policy pista_sel on public.pista for select to authenticated using (
+  app.es_admin() or exists (select 1 from sede s where s.id = sede_id and app.es_miembro(s.organizacion_id)));
+create policy pista_mod on public.pista for all to authenticated
+  using (exists (select 1 from sede s where s.id = sede_id and app.admin_org(s.organizacion_id)))
+  with check (exists (select 1 from sede s where s.id = sede_id and app.admin_org(s.organizacion_id)));
+
+-- jugadores: fichas visibles para su organización (admin/organizador), el propio jugador, su tutor y su entrenador
+create policy jugador_sel on public.jugador for select to authenticated using (
+  app.es_admin() or (organizacion_id is not null and app.gestiona(organizacion_id))
   or app.es_yo(id) or app.es_tutor_de(id) or app.entrena_a(id));
-create policy persona_mod on persona for all
-  using (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'))
-  with check (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'));
+create policy jugador_mod on public.jugador for all to authenticated
+  using (app.es_admin() or (organizacion_id is not null and app.admin_org(organizacion_id)))
+  with check (app.es_admin() or (organizacion_id is not null and app.admin_org(organizacion_id)));
 
-create policy tutoria_sel on tutoria for select using (
-  tutor_usuario_id = auth.uid() or app.es_superadmin()
-  or exists (select 1 from persona p where p.id = persona_id and app.tiene_rol(p.escuela_id, 'admin_escuela')));
-create policy tutoria_mod on tutoria for all
-  using (app.es_superadmin()
-         or exists (select 1 from persona p where p.id = persona_id and app.tiene_rol(p.escuela_id, 'admin_escuela')))
-  with check (app.es_superadmin()
-         or exists (select 1 from persona p where p.id = persona_id and app.tiene_rol(p.escuela_id, 'admin_escuela')));
+create policy tutor_sel on public.tutor_jugador for select to authenticated using (
+  tutor_usuario_id = auth.uid() or app.es_admin()
+  or (app.org_de_jugador(jugador_id) is not null and app.admin_org(app.org_de_jugador(jugador_id))));
+create policy tutor_mod on public.tutor_jugador for all to authenticated
+  using (app.es_admin() or (app.org_de_jugador(jugador_id) is not null and app.admin_org(app.org_de_jugador(jugador_id))))
+  with check (app.es_admin() or (app.org_de_jugador(jugador_id) is not null and app.admin_org(app.org_de_jugador(jugador_id))));
 
--- consentimiento: lo ve y lo otorga el tutor (o la propia persona si es mayor de 14)
-create policy consent_sel on consentimiento for select using (
-  app.es_superadmin() or app.es_tutor_de(persona_id) or app.es_yo(persona_id)
-  or exists (select 1 from persona p where p.id = persona_id and app.tiene_rol(p.escuela_id, 'admin_escuela')));
-create policy consent_ins on consentimiento for insert with check (
-  (app.es_tutor_de(persona_id) and tutor_usuario_id = auth.uid())
-  or (app.es_yo(persona_id) and exists (select 1 from persona p where p.id = persona_id and app.edad(p.fecha_nacimiento) >= 14)));
+-- equipos
+create policy equipo_sel on public.equipo for select to authenticated
+  using (app.es_admin() or app.es_miembro(organizacion_id));
+create policy equipo_mod on public.equipo for all to authenticated
+  using (app.admin_org(organizacion_id)) with check (app.admin_org(organizacion_id));
 
--- catálogos globales
-create policy deporte_sel on deporte for select using (auth.uid() is not null);
-create policy deporte_mod on deporte for all using (app.es_superadmin()) with check (app.es_superadmin());
-create policy categoria_sel on categoria for select using (auth.uid() is not null);
-create policy categoria_mod on categoria for all using (app.es_superadmin()) with check (app.es_superadmin());
-create policy temporada_sel on temporada for select using (auth.uid() is not null);
-create policy temporada_mod on temporada for all using (app.es_superadmin()) with check (app.es_superadmin());
+create policy eqm_sel on public.equipo_miembro for select to authenticated using (
+  app.es_admin() or app.admin_org(app.org_de_equipo(equipo_id)) or app.entrena_equipo(equipo_id)
+  or app.es_yo(jugador_id) or app.es_tutor_de(jugador_id));
+create policy eqm_mod on public.equipo_miembro for all to authenticated
+  using (app.admin_org(app.org_de_equipo(equipo_id)))
+  with check (app.admin_org(app.org_de_equipo(equipo_id)));
 
--- competiciones
-create policy comp_sel on competicion for select using (app.ve_competicion(id));
-create policy comp_mod on competicion for all
-  using (app.gestiona(organization_id)) with check (app.gestiona(organization_id));
+create policy eqe_sel on public.entrenador_equipo for select to authenticated
+  using (usuario_id = auth.uid() or app.es_admin() or app.es_miembro(app.org_de_equipo(equipo_id)));
+create policy eqe_mod on public.entrenador_equipo for all to authenticated
+  using (app.admin_org(app.org_de_equipo(equipo_id)))
+  with check (app.admin_org(app.org_de_equipo(equipo_id))
+              and app.es_entrenador_de_org(usuario_id, app.org_de_equipo(equipo_id)));
 
--- equipos (datos internos de la escuela; otras escuelas usan las vistas públicas)
-create policy equipo_sel on equipo for select using (app.es_superadmin() or app.es_miembro(escuela_id));
-create policy equipo_mod on equipo for all
-  using (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'))
-  with check (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'));
-create policy eqm_sel on equipo_miembro for select using (
-  app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela') or app.entrena_equipo(equipo_id)
-  or app.es_yo(persona_id) or app.es_tutor_de(persona_id));
-create policy eqm_mod on equipo_miembro for all
-  using (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'))
-  with check (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'));
-create policy eqe_sel on equipo_entrenador for select using (
-  app.es_superadmin() or app.es_miembro(escuela_id));
-create policy eqe_mod on equipo_entrenador for all
-  using (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'))
-  with check (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'));
+-- competiciones y calendario: visibles para participantes; editables por quien las gestiona
+create policy comp_sel on public.competicion for select to authenticated using (app.ve_competicion(id));
+create policy comp_ins on public.competicion for insert to authenticated
+  with check (app.gestiona(organizacion_id) and organizador_id = auth.uid());
+create policy comp_upd on public.competicion for update to authenticated
+  using (app.gestiona_comp(id)) with check (app.gestiona_comp(id));
+create policy comp_del on public.competicion for delete to authenticated using (app.gestiona_comp(id));
 
-create policy insc_sel on inscripcion_equipo for select using (app.ve_competicion(competicion_id));
-create policy insc_mod on inscripcion_equipo for all
-  using (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela')
-         or exists (select 1 from competicion c where c.id = competicion_id and app.gestiona(c.organization_id)))
-  with check (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela')
-         or exists (select 1 from competicion c where c.id = competicion_id and app.gestiona(c.organization_id)));
+create policy compo_sel on public.competicion_org for select to authenticated using (app.ve_competicion(competicion_id));
+create policy compo_mod on public.competicion_org for all to authenticated
+  using (app.gestiona_comp(competicion_id)) with check (app.gestiona_comp(competicion_id));
 
--- calendario y resultados: visibles a participantes; editables solo por la organizadora
-create policy jornada_sel on jornada for select using (app.ve_competicion(competicion_id));
-create policy jornada_mod on jornada for all
-  using (app.gestiona(organization_id)) with check (app.gestiona(organization_id));
-create policy enc_sel on encuentro for select using (app.ve_competicion(competicion_id));
-create policy enc_mod on encuentro for all
-  using (app.gestiona(organization_id)) with check (app.gestiona(organization_id));
-create policy partido_sel on partido for select using (app.ve_competicion(competicion_id));
-create policy partido_mod on partido for all
-  using (app.gestiona(organization_id)) with check (app.gestiona(organization_id));
-create policy ppart_sel on partido_participante for select using (app.ve_competicion(competicion_id));
-create policy ppart_mod on partido_participante for all
-  using (app.gestiona(organization_id)) with check (app.gestiona(organization_id));
-create policy rset_sel on resultado_set for select using (app.ve_competicion(competicion_id));
-create policy rset_mod on resultado_set for all
-  using (app.gestiona(organization_id)) with check (app.gestiona(organization_id));
+create policy cat_sel on public.categoria for select to authenticated using (app.ve_competicion(competicion_id));
+create policy cat_mod on public.categoria for all to authenticated
+  using (app.gestiona_comp(competicion_id)) with check (app.gestiona_comp(competicion_id));
 
--- notificaciones propias
-create policy notif_sel on notificacion for select using (usuario_id = auth.uid());
-create policy notif_upd on notificacion for update
-  using (usuario_id = auth.uid()) with check (usuario_id = auth.uid());
+create policy insc_sel on public.inscripcion for select to authenticated
+  using (app.ve_competicion(app.comp_de_categoria(categoria_id)));
+create policy insc_ins on public.inscripcion for insert to authenticated
+  with check (app.gestiona_comp(app.comp_de_categoria(categoria_id)));
+create policy insc_upd on public.inscripcion for update to authenticated
+  using (app.gestiona_comp(app.comp_de_categoria(categoria_id)))
+  with check (app.gestiona_comp(app.comp_de_categoria(categoria_id)));
+-- la organización del equipo puede retirar su inscripción
+create policy insc_del on public.inscripcion for delete to authenticated using (
+  app.gestiona_comp(app.comp_de_categoria(categoria_id)) or app.admin_org(app.org_de_equipo(equipo_id)));
 
--- registros: solo lectura para quien corresponde
-create policy regcamb_sel on registro_cambios for select using (
-  app.es_superadmin() or (escuela_id is not null and app.tiene_rol(escuela_id, 'organizador_liga')
-                          ) or (escuela_id is not null and app.tiene_rol(escuela_id, 'admin_escuela')));
-create policy regacc_sel on registro_acceso_menores for select using (
-  app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela') or app.es_tutor_de(persona_id));
+create policy jor_sel on public.jornada for select to authenticated
+  using (app.ve_competicion(app.comp_de_categoria(categoria_id)));
+create policy jor_mod on public.jornada for all to authenticated
+  using (app.gestiona_comp(app.comp_de_categoria(categoria_id)))
+  with check (app.gestiona_comp(app.comp_de_categoria(categoria_id)));
 
--- ───────── Vistas públicas para ligas compartidas ─────────
--- Solo nombre y resultados. Corren con permisos del propietario y filtran por ve_competicion.
-create view v_equipos_competicion as
-  select i.competicion_id, e.id as equipo_id, e.nombre as equipo, s.id as escuela_id, s.nombre as escuela
-  from inscripcion_equipo i
-  join equipo e on e.id = i.equipo_id
-  join escuela s on s.id = e.escuela_id
-  where app.ve_competicion(i.competicion_id);
+create policy enc_sel on public.encuentro for select to authenticated
+  using (app.ve_competicion(app.comp_de_jornada(jornada_id)));
+create policy enc_mod on public.encuentro for all to authenticated
+  using (app.gestiona_comp(app.comp_de_jornada(jornada_id)))
+  with check (app.gestiona_comp(app.comp_de_jornada(jornada_id)));
 
--- Nombre mostrado según visibilidad de la ficha y consentimiento (menores de 14)
-create view v_jugadores_competicion as
-  select pp.partido_id, pp.competicion_id, pp.lado, p.id as persona_id,
-    case
-      when app.es_superadmin() or app.es_miembro(p.escuela_id) then trim(p.nombre || ' ' || p.apellidos)
-      when app.edad(p.fecha_nacimiento) < 14 and not app.consentimiento_vigente(p.id) then 'Jugador/a'
-      when p.visibilidad_ficha = 'nombre_completo' then trim(p.nombre || ' ' || p.apellidos)
-      when p.visibilidad_ficha = 'iniciales'
-        then upper(left(p.nombre,1)) || '.' || coalesce(upper(left(nullif(p.apellidos,''),1)) || '.', '')
-      else 'Jugador/a'
-    end as nombre_mostrado
-  from partido_participante pp
-  join persona p on p.id = pp.persona_id
-  where app.ve_competicion(pp.competicion_id);
+create policy par_sel on public.partido for select to authenticated
+  using (app.ve_competicion(app.comp_de_encuentro(encuentro_id)));
+create policy par_mod on public.partido for all to authenticated
+  using (app.gestiona_comp(app.comp_de_encuentro(encuentro_id)))
+  with check (app.gestiona_comp(app.comp_de_encuentro(encuentro_id)));
 
--- ───────── RPC de privacidad y acceso a fichas ─────────
--- El tutor (o la propia persona mayor de 14) gestiona la visibilidad de la ficha.
-create function public.actualizar_privacidad(
-  p_persona uuid, p_visibilidad visibilidad_ficha_t, p_mostrar_foto boolean default false)
-returns void language plpgsql security definer set search_path = public, pg_temp as $$
-declare p persona;
+create policy pj_sel on public.partido_jugador for select to authenticated
+  using (app.ve_competicion(app.comp_de_partido(partido_id)));
+create policy pj_mod on public.partido_jugador for all to authenticated
+  using (app.gestiona_comp(app.comp_de_partido(partido_id)))
+  with check (app.gestiona_comp(app.comp_de_partido(partido_id)));
+
+create policy set_sel on public.set_partido for select to authenticated
+  using (app.ve_competicion(app.comp_de_partido(partido_id)));
+create policy set_mod on public.set_partido for all to authenticated
+  using (app.gestiona_comp(app.comp_de_partido(partido_id)))
+  with check (app.gestiona_comp(app.comp_de_partido(partido_id)));
+
+create policy inv_sel on public.invitacion for select to authenticated using (app.admin_org(organizacion_id));
+create policy inv_del on public.invitacion for delete to authenticated using (app.admin_org(organizacion_id));
+
+-- ───────── Validaciones por trigger ─────────
+-- Un jugador solo entra en equipos de su propia organización.
+create function app.validar_miembro() returns trigger
+language plpgsql security definer set search_path = public, pg_temp as $$
 begin
-  select * into p from persona where id = p_persona;
-  if not found then raise exception 'persona no encontrada'; end if;
-  if not (app.es_tutor_de(p_persona)
-          or (app.es_yo(p_persona) and app.edad(p.fecha_nacimiento) >= 14)
-          or app.tiene_rol(p.escuela_id, 'admin_escuela') or app.es_superadmin()) then
-    raise exception 'sin permiso para gestionar la privacidad' using errcode = '42501';
+  if app.org_de_jugador(new.jugador_id) is distinct from app.org_de_equipo(new.equipo_id) then
+    raise exception 'el jugador no pertenece a la organización del equipo' using errcode = '23514';
   end if;
-  update persona set visibilidad_ficha = p_visibilidad,
-         mostrar_foto = p_mostrar_foto where id = p_persona;
+  return new;
+end $$;
+create trigger eqm_validar before insert on public.equipo_miembro
+  for each row execute function app.validar_miembro();
+
+-- Inscripción: mismo deporte, competición abierta y calendario aún sin generar.
+create function app.validar_inscripcion() returns trigger
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare c competicion; e equipo;
+begin
+  select co.* into c from competicion co join categoria ca on ca.competicion_id = co.id where ca.id = new.categoria_id;
+  select * into e from equipo where id = new.equipo_id;
+  if c.deporte <> e.deporte then
+    raise exception 'el deporte del equipo no coincide con la competición' using errcode = '23514';
+  end if;
+  if c.estado in ('FINALIZADA', 'CANCELADA') then
+    raise exception 'la competición ya no admite inscripciones' using errcode = '23514';
+  end if;
+  if exists (select 1 from jornada where categoria_id = new.categoria_id) then
+    raise exception 'el calendario ya está generado; no se admiten más inscripciones' using errcode = '23514';
+  end if;
+  return new;
+end $$;
+create trigger insc_validar before insert on public.inscripcion
+  for each row execute function app.validar_inscripcion();
+
+-- ───────── Alta de usuarios e invitaciones ─────────
+create function app.aplicar_invitacion(i invitacion, uid uuid) returns void
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare cod text;
+begin
+  select codigo into cod from rol where id = i.rol_id;
+  insert into asignacion_rol (usuario_id, rol_id, organizacion_id) values (uid, i.rol_id, i.organizacion_id)
+    on conflict do nothing;
+  if i.jugador_id is not null then
+    if cod = 'TUTOR' then
+      insert into tutor_jugador (tutor_usuario_id, jugador_id) values (uid, i.jugador_id) on conflict do nothing;
+    elsif cod = 'JUGADOR' then
+      update jugador set usuario_id = uid where id = i.jugador_id and usuario_id is null;
+    end if;
+  end if;
+  update invitacion set aplicada_en = now() where id = i.id;
 end $$;
 
--- Lectura de ficha con registro de acceso si es menor de edad (< 18).
-create function public.leer_ficha(p_persona uuid, p_contexto text default null)
-returns setof persona language plpgsql security definer set search_path = public, pg_temp as $$
-declare p persona;
+-- Sustituye el trigger de alta de 0001. Hay dos formas de registrarse en la web (Supabase Auth, signUp):
+--  1) AUTOSERVICIO, con raw_user_meta_data.perfil ∈ {escuela, ayuntamiento, organizador}:
+--       escuela      → organización ESCUELA        + rol ADMIN_ESCUELAS
+--       ayuntamiento → organización AYUNTAMIENTO   + rol ORGANIZADOR_LIGAS
+--       organizador  → organización GRUPO_AMIGOS   + rol ORGANIZADOR_LIGAS (organizador independiente)
+--     Nombre de la entidad: metadato `entidad` (o `escuela`); en `organizador` es opcional.
+--  2) POR INVITACIÓN (entrenador, jugador, tutor, y también más administradores/organizadores): sin `perfil`;
+--     el correo debe tener una invitación pendiente (tabla invitacion, creada con invitar_usuario) y al
+--     registrarse se le asignan los roles invitados. Sin invitación el alta se rechaza (REGISTRO_SOLO_INVITACION).
+-- Los metadatos nunca conceden ADMINISTRADOR ni acceso a organizaciones ya existentes.
+-- Herramientas internas (seed, tests, soporte) pueden saltarse la regla con: set app.alta_libre = 'on'.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public, pg_temp
+as $$
+declare
+  meta jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
+  mail text := lower(coalesce(new.email, ''));
+  perfil text := nullif(btrim(coalesce(meta ->> 'perfil', '')), '');
+  nombre_usr text := nullif(btrim(coalesce(meta ->> 'nombre', '')), '');
+  ent text := nullif(btrim(coalesce(meta ->> 'entidad', meta ->> 'escuela', '')), '');
+  inv invitacion; org uuid; tipo_org organizacion_tipo; cod_rol text;
 begin
-  select * into p from persona where id = p_persona;
-  if not found then return; end if;
-  if not (app.es_superadmin() or app.tiene_rol(p.escuela_id, 'admin_escuela')
-          or app.es_yo(p_persona) or app.es_tutor_de(p_persona) or app.entrena_a(p_persona)) then
-    raise exception 'sin acceso a la ficha' using errcode = '42501';
+  if perfil is not null and perfil not in ('escuela', 'ayuntamiento', 'organizador') then
+    raise exception 'PERFIL_INVALIDO: solo escuelas, ayuntamientos y organizadores se registran en la web; el resto, por invitación'
+      using errcode = '23514';
   end if;
-  if app.edad(p.fecha_nacimiento) < 18 then
-    insert into registro_acceso_menores (persona_id, escuela_id, usuario_id, contexto)
-    values (p.id, p.escuela_id, auth.uid(), p_contexto);
+
+  if perfil is null then
+    if coalesce(current_setting('app.alta_libre', true), '') <> 'on'
+       and not exists (select 1 from invitacion where lower(email) = mail and aplicada_en is null) then
+      raise exception 'REGISTRO_SOLO_INVITACION: no hay ninguna invitación para este correo' using errcode = '23514';
+    end if;
+  else
+    tipo_org := case perfil when 'escuela' then 'ESCUELA' when 'ayuntamiento' then 'AYUNTAMIENTO' else 'GRUPO_AMIGOS' end::organizacion_tipo;
+    if ent is null and perfil = 'organizador' then
+      ent := 'Ligas de ' || coalesce(nombre_usr, split_part(mail, '@', 1));
+    end if;
+    if ent is null then
+      raise exception 'ESCUELA_REQUERIDA: falta el nombre de la entidad' using errcode = '23514';
+    end if;
+    if exists (select 1 from organizacion where tipo = tipo_org and lower(btrim(nombre)) = lower(ent)) then
+      raise exception 'ESCUELA_EXISTE: la entidad ya existe' using errcode = '23505';
+    end if;
   end if;
-  return next p;
+
+  insert into usuario (id, email, nombre, apellidos)
+  values (new.id, mail, left(nombre_usr, 120), left(nullif(trim(meta ->> 'apellidos'), ''), 120));
+
+  for inv in select * from invitacion where lower(email) = mail and aplicada_en is null loop
+    perform app.aplicar_invitacion(inv, new.id);
+  end loop;
+
+  if perfil is not null then
+    insert into organizacion (tipo, nombre) values (tipo_org, left(ent, 160)) returning id into org;
+    cod_rol := case perfil when 'escuela' then 'ADMIN_ESCUELAS' else 'ORGANIZADOR_LIGAS' end;
+    insert into asignacion_rol (usuario_id, rol_id, organizacion_id)
+      select new.id, r.id, org from rol r where r.codigo = cod_rol;
+  end if;
+  return new;
+end;
+$$;
+
+-- ───────── Vistas de lectura para la app ─────────
+-- Corren con los permisos del propietario y filtran por usuario / ve_competicion.
+
+create view public.v_mis_pertenencias as
+  select ar.id, ar.organizacion_id, o.nombre as organizacion, o.tipo::text as org_tipo, r.codigo as rol
+  from asignacion_rol ar
+  join rol r on r.id = ar.rol_id
+  left join organizacion o on o.id = ar.organizacion_id
+  where ar.usuario_id = auth.uid() and (r.codigo = 'ADMINISTRADOR' or ar.organizacion_id is not null);
+
+create view public.v_ligas as
+  select c.id, c.nombre,
+         case c.estado when 'INSCRIPCION_ABIERTA' then 'publicada' else lower(c.estado::text) end as estado,
+         c.organizacion_id, c.deporte::text as deporte_id,
+         case c.deporte when 'TENIS' then 'Tenis' else 'Pádel' end as deporte,
+         c.tipo::text as tipo, c.fecha_inicio, c.fecha_fin, c.created_at
+  from competicion c
+  where app.ve_competicion(c.id);
+
+-- Competiciones a las que mi organización puede inscribir equipos
+create view public.v_ligas_abiertas as
+  select c.id as competicion_id, c.nombre, c.deporte::text as deporte_id,
+         case c.deporte when 'TENIS' then 'Tenis' else 'Pádel' end as deporte,
+         o.nombre as organizadora
+  from competicion c
+  join organizacion o on o.id = c.organizacion_id
+  where c.estado = 'INSCRIPCION_ABIERTA'
+    and (c.tipo in ('MUNICIPAL', 'ENTRE_ESCUELAS') or app.es_miembro(c.organizacion_id) or app.es_admin())
+    and (app.es_admin() or exists (select 1 from asignacion_rol ar join rol r on r.id = ar.rol_id
+                                   where ar.usuario_id = auth.uid() and r.codigo = 'ADMIN_ESCUELAS'));
+
+create view public.v_mis_equipos as
+  with mis as (
+    select ee.equipo_id, 'entrenador'::text as rol from entrenador_equipo ee where ee.usuario_id = auth.uid()
+    union
+    select em.equipo_id, 'alumno' from equipo_miembro em
+      join jugador j on j.id = em.jugador_id where j.usuario_id = auth.uid()
+    union
+    select em.equipo_id, 'tutor' from equipo_miembro em
+      join tutor_jugador tj on tj.jugador_id = em.jugador_id where tj.tutor_usuario_id = auth.uid()
+  )
+  select m.equipo_id, e.nombre as equipo, e.organizacion_id, o.nombre as organizacion, m.rol,
+         c.id as competicion_id, c.nombre as competicion
+  from mis m
+  join equipo e on e.id = m.equipo_id
+  join organizacion o on o.id = e.organizacion_id
+  left join inscripcion i on i.equipo_id = e.id and i.estado = 'ACEPTADA'
+  left join categoria ca on ca.id = i.categoria_id
+  left join competicion c on c.id = ca.competicion_id and c.estado <> 'CANCELADA';
+
+create view public.v_encuentros_competicion as
+  select en.id as encuentro_id, ca.competicion_id, ca.id as categoria_id,
+         j.numero::int as jornada, j.fecha as jornada_fecha, en.fecha_hora as fecha,
+         lower(en.estado::text) as estado,
+         el.id as local_equipo_id, el.nombre as local,
+         ev.id as visitante_equipo_id, ev.nombre as visitante,
+         case when en.estado in ('FINALIZADO', 'NO_PRESENTADO') then en.puntos_local::int end as partidos_local,
+         case when en.estado in ('FINALIZADO', 'NO_PRESENTADO') then en.puntos_visitante::int end as partidos_visitante,
+         case when en.estado = 'NO_PRESENTADO'
+              then case when en.puntos_local < en.puntos_visitante then 'local' else 'visitante' end end as incomparecencia
+  from encuentro en
+  join jornada j on j.id = en.jornada_id
+  join categoria ca on ca.id = j.categoria_id
+  join inscripcion il on il.id = en.local_inscripcion_id
+  join equipo el on el.id = il.equipo_id
+  join inscripcion iv on iv.id = en.visitante_inscripcion_id
+  join equipo ev on ev.id = iv.equipo_id
+  where app.ve_competicion(ca.competicion_id);
+
+-- Equipos que descansan en una jornada (número impar de equipos)
+create view public.v_descansos_competicion as
+  select ca.competicion_id, j.numero::int as jornada, e.id as equipo_id, e.nombre as equipo
+  from jornada j
+  join categoria ca on ca.id = j.categoria_id
+  join inscripcion i on i.categoria_id = ca.id and i.estado = 'ACEPTADA'
+  join equipo e on e.id = i.equipo_id
+  where app.ve_competicion(ca.competicion_id)
+    and not exists (select 1 from encuentro en
+                    where en.jornada_id = j.id and i.id in (en.local_inscripcion_id, en.visitante_inscripcion_id));
+
+-- Clasificación con nombres, posición y desempates (partidos, sets y juegos)
+create view public.v_clasificacion_competicion as
+  with lados as (
+    select e.local_inscripcion_id as inscripcion_id, s.juegos_local as jf, s.juegos_visitante as jc
+    from encuentro e
+    join partido p on p.encuentro_id = e.id
+    join set_partido s on s.partido_id = p.id
+    where e.estado = 'FINALIZADO'
+    union all
+    select e.visitante_inscripcion_id, s.juegos_visitante, s.juegos_local
+    from encuentro e
+    join partido p on p.encuentro_id = e.id
+    join set_partido s on s.partido_id = p.id
+    where e.estado = 'FINALIZADO'
+  ), sets as (
+    select inscripcion_id,
+           count(*) filter (where jf > jc) as sf, count(*) filter (where jf < jc) as sc,
+           sum(jf) as jf, sum(jc) as jc
+    from lados group by inscripcion_id
+  )
+  select ca.competicion_id, c.categoria_id,
+         (row_number() over (
+            partition by c.categoria_id
+            order by c.puntos desc, (c.favor - c.contra) desc,
+                     coalesce(s.sf, 0) - coalesce(s.sc, 0) desc, coalesce(s.jf, 0) - coalesce(s.jc, 0) desc, eq.nombre))::int as posicion,
+         c.equipo_id, eq.nombre as equipo, o.nombre as escuela,
+         c.pj::int as pj, c.pg::int as pg, c.pe::int as pe, c.pp::int as pp, c.puntos::int as puntos,
+         c.favor::int as partidos_f, c.contra::int as partidos_c,
+         coalesce(s.sf, 0)::int as sets_f, coalesce(s.sc, 0)::int as sets_c,
+         coalesce(s.jf, 0)::int as juegos_f, coalesce(s.jc, 0)::int as juegos_c
+  from public.clasificacion c
+  join categoria ca on ca.id = c.categoria_id
+  join equipo eq on eq.id = c.equipo_id
+  join organizacion o on o.id = eq.organizacion_id
+  left join sets s on s.inscripcion_id = c.inscripcion_id
+  where app.ve_competicion(ca.competicion_id);
+
+-- Plantilla de un equipo (visible para su organización y su entrenador)
+create view public.v_jugadores_equipo as
+  select em.equipo_id, j.id as jugador_id, j.nombre, coalesce(j.apellidos, '') as apellidos
+  from equipo_miembro em
+  join equipo e on e.id = em.equipo_id
+  join jugador j on j.id = em.jugador_id
+  where app.es_admin() or app.es_miembro(e.organizacion_id) or app.entrena_equipo(e.id);
+
+-- Jugadores de un partido. La organización del jugador ve el nombre completo; el resto de
+-- participantes de la competición solo ve nombre e inicial del apellido (protege a los menores).
+create view public.v_jugadores_competicion as
+  select pj.partido_id, ca.competicion_id, lower(pj.lado::text) as lado, j.id as jugador_id,
+         case when app.es_admin() or (j.organizacion_id is not null and app.es_miembro(j.organizacion_id))
+                   or app.es_yo(j.id) or app.es_tutor_de(j.id)
+              then trim(j.nombre || ' ' || coalesce(j.apellidos, ''))
+              else trim(j.nombre || ' ' || coalesce(upper(left(nullif(j.apellidos, ''), 1)) || '.', ''))
+         end as nombre_mostrado
+  from partido_jugador pj
+  join partido p on p.id = pj.partido_id
+  join encuentro en on en.id = p.encuentro_id
+  join jornada jo on jo.id = en.jornada_id
+  join categoria ca on ca.id = jo.categoria_id
+  join jugador j on j.id = pj.jugador_id
+  where app.ve_competicion(ca.competicion_id);
+
+-- Mis fichas: la mía (si soy jugador) y las de mis tutelados
+create view public.v_mis_fichas as
+  select j.id as jugador_id, j.organizacion_id, o.nombre as organizacion, j.nombre, coalesce(j.apellidos, '') as apellidos,
+         j.fecha_nacimiento, j.genero::text as genero, j.nivel, j.mano_dominante::text as mano_dominante,
+         case when j.usuario_id = auth.uid() then 'propia' else 'tutor' end as relacion
+  from jugador j
+  left join organizacion o on o.id = j.organizacion_id
+  where j.usuario_id = auth.uid()
+     or exists (select 1 from tutor_jugador tj where tj.jugador_id = j.id and tj.tutor_usuario_id = auth.uid());
+
+-- Usuarios con acceso a una organización (para su administrador)
+create view public.v_usuarios_org as
+  select ar.organizacion_id, u.id as usuario_id, u.email, trim(coalesce(u.nombre, '') || ' ' || coalesce(u.apellidos, '')) as nombre,
+         r.codigo as rol
+  from asignacion_rol ar
+  join rol r on r.id = ar.rol_id
+  join usuario u on u.id = ar.usuario_id
+  where ar.organizacion_id is not null and app.admin_org(ar.organizacion_id);
+
+-- Todas las organizaciones (solo ADMINISTRADOR)
+create view public.v_organizaciones_admin as
+  select o.id, o.nombre, o.tipo::text as tipo, o.ciudad, o.activa,
+         (select count(*)::int from asignacion_rol ar join rol r on r.id = ar.rol_id
+          where ar.organizacion_id = o.id and r.codigo in ('ADMIN_ESCUELAS', 'ORGANIZADOR_LIGAS')) as administradores
+  from organizacion o
+  where app.es_admin();
+
+-- ───────── RPC ─────────
+-- Crea una competición (liga) en borrador con su categoría única «General».
+create function public.crear_competicion(
+  p_organizacion uuid, p_nombre text, p_deporte deporte_tipo, p_tipo competicion_tipo,
+  p_fecha_inicio date default null, p_fecha_fin date default null)
+returns uuid language plpgsql security definer set search_path = public, pg_temp as $$
+declare cid uuid;
+begin
+  if not app.gestiona(p_organizacion) then
+    raise exception 'sin permiso para crear competiciones en esta organización' using errcode = '42501';
+  end if;
+  if nullif(btrim(p_nombre), '') is null then raise exception 'falta el nombre de la competición'; end if;
+  insert into competicion (organizacion_id, organizador_id, nombre, tipo, deporte, fecha_inicio, fecha_fin)
+    values (p_organizacion, auth.uid(), btrim(p_nombre), p_tipo, p_deporte, p_fecha_inicio, p_fecha_fin)
+    returning id into cid;
+  insert into categoria (competicion_id, nombre) values (cid, 'General');
+  insert into competicion_org (competicion_id, organizacion_id, estado_invitacion)
+    values (cid, p_organizacion, 'ACEPTADA');
+  return cid;
+end $$;
+
+-- La organización de un equipo lo inscribe en una competición abierta (queda ACEPTADA).
+create function public.inscribir_equipo(p_competicion uuid, p_equipo uuid)
+returns void language plpgsql security definer set search_path = public, pg_temp as $$
+declare c competicion; e equipo; cat uuid;
+begin
+  select * into c from competicion where id = p_competicion;
+  select * into e from equipo where id = p_equipo;
+  if c.id is null or e.id is null then raise exception 'competición o equipo no encontrado'; end if;
+  if not (app.admin_org(e.organizacion_id) or app.gestiona_comp(c.id)) then
+    raise exception 'sin permiso para inscribir este equipo' using errcode = '42501';
+  end if;
+  if c.estado <> 'INSCRIPCION_ABIERTA' then
+    raise exception 'la competición no está abierta a inscripción' using errcode = '23514';
+  end if;
+  if not (c.tipo in ('MUNICIPAL', 'ENTRE_ESCUELAS') or e.organizacion_id = c.organizacion_id) then
+    raise exception 'la competición es privada de su organización' using errcode = '42501';
+  end if;
+  select id into cat from categoria where competicion_id = c.id order by nombre limit 1;
+  insert into inscripcion (categoria_id, equipo_id, estado) values (cat, e.id, 'ACEPTADA');
+  insert into competicion_org (competicion_id, organizacion_id, estado_invitacion)
+    values (c.id, e.organizacion_id, 'ACEPTADA')
+    on conflict (competicion_id, organizacion_id) do update set estado_invitacion = 'ACEPTADA';
+end $$;
+
+-- Invita (o asigna directamente, si ya existe) a un usuario con un rol en una organización.
+-- p_rol: código de rol (p. ej. 'ENTRENADOR'); p_jugador: ficha a la que se vincula (tutor/jugador).
+create function public.invitar_usuario(
+  p_organizacion uuid, p_email text, p_rol text, p_jugador uuid default null)
+returns uuid language plpgsql security definer set search_path = public, pg_temp as $$
+declare inv invitacion; uid uuid; mail text := lower(btrim(p_email)); rid smallint;
+begin
+  if not app.admin_org(p_organizacion) then
+    raise exception 'sin permiso para invitar' using errcode = '42501';
+  end if;
+  if p_rol = 'ADMINISTRADOR' then raise exception 'rol no invitable'; end if;
+  select id into rid from rol where codigo = p_rol;
+  if rid is null then raise exception 'rol desconocido'; end if;
+  if p_jugador is not null and app.org_de_jugador(p_jugador) is distinct from p_organizacion then
+    raise exception 'el jugador no pertenece a la organización';
+  end if;
+  insert into invitacion (organizacion_id, email, rol_id, jugador_id)
+    values (p_organizacion, mail, rid, p_jugador) returning * into inv;
+  select id into uid from usuario where lower(email) = mail;
+  if uid is not null then perform app.aplicar_invitacion(inv, uid); end if;
+  return inv.id;
+end $$;
+
+-- Calendario todos contra todos por categoría (método del círculo; con número impar, descansa uno cada jornada).
+-- Devuelve el número de encuentros creados. Se puede regenerar mientras no haya resultados.
+create function public.generar_calendario(
+  p_competicion uuid, p_fecha_inicio date default null, p_dias_entre_jornadas int default 7,
+  p_vueltas int default 1, p_individuales int default 2, p_dobles int default 1)
+returns int language plpgsql security definer set search_path = public, pg_temp as $$
+declare
+  c competicion; cat categoria;
+  equipos uuid[]; t uuid[]; m int; n int;
+  r int; i int; k int; v int;
+  pos uuid[]; a uuid; b uuid; tmp uuid;
+  bal jsonb; orient jsonb;
+  clave text; ba int; bb int;
+  jid uuid; eid uuid;
+  num int; creados int := 0; orden int; alguna boolean := false;
+begin
+  select * into c from competicion where id = p_competicion;
+  if not found then raise exception 'competición no encontrada'; end if;
+  if not app.gestiona_comp(c.id) then
+    raise exception 'sin permiso para generar el calendario' using errcode = '42501';
+  end if;
+  if c.estado in ('FINALIZADA', 'CANCELADA') then
+    raise exception 'la competición ya no admite cambios' using errcode = '23514';
+  end if;
+  if p_vueltas not in (1, 2) then raise exception 'vueltas debe ser 1 o 2'; end if;
+  if p_individuales < 0 or p_dobles < 0 or p_individuales + p_dobles < 1 then
+    raise exception 'el encuentro necesita al menos un partido';
+  end if;
+  if exists (select 1 from encuentro e
+             join jornada j on j.id = e.jornada_id join categoria ca on ca.id = j.categoria_id
+             where ca.competicion_id = c.id and e.estado <> 'PROGRAMADO') then
+    raise exception 'ya hay resultados registrados; no se puede regenerar' using errcode = '23514';
+  end if;
+
+  for cat in select * from categoria where competicion_id = c.id order by nombre loop
+    select array_agg(id order by fecha, id) into equipos
+      from inscripcion where categoria_id = cat.id and estado = 'ACEPTADA';
+    n := coalesce(array_length(equipos, 1), 0);
+    if n < 2 then continue; end if;
+    alguna := true;
+
+    delete from jornada where categoria_id = cat.id;   -- cascada: encuentros y partidos
+    bal := '{}'::jsonb; orient := '{}'::jsonb; num := 0;
+    t := equipos;
+    if n % 2 = 1 then t := t || array[null::uuid]; end if;
+    m := array_length(t, 1);
+
+    for v in 1..p_vueltas loop
+      for r in 0..m - 2 loop
+        num := num + 1;
+        insert into jornada (categoria_id, numero, fecha)
+          values (cat.id, num, case when p_fecha_inicio is null then null
+                                    else p_fecha_inicio + (num - 1) * p_dias_entre_jornadas end)
+          returning id into jid;
+
+        pos := array[t[1]];
+        for k in 2..m loop
+          pos := pos || t[2 + ((k - 2 - r) % (m - 1) + (m - 1)) % (m - 1)];
+        end loop;
+
+        for i in 1..m / 2 loop
+          a := pos[i]; b := pos[m + 1 - i];
+          if a is null or b is null then continue; end if;   -- descanso: no hay encuentro
+          -- Localía: 1ª vuelta equilibrada de forma voraz; 2ª vuelta invierte la 1ª.
+          clave := least(a::text, b::text) || '|' || greatest(a::text, b::text);
+          if v = 1 then
+            ba := coalesce((bal ->> a::text)::int, 0);
+            bb := coalesce((bal ->> b::text)::int, 0);
+            if ba > bb or (ba = bb and (r + i) % 2 = 1) then tmp := a; a := b; b := tmp; end if;
+            bal := bal || jsonb_build_object(a::text, coalesce((bal ->> a::text)::int, 0) + 1,
+                                             b::text, coalesce((bal ->> b::text)::int, 0) - 1);
+            orient := orient || jsonb_build_object(clave, a::text);
+          else
+            if (orient ->> clave)::uuid = a then tmp := a; a := b; b := tmp; end if;
+          end if;
+
+          insert into encuentro (jornada_id, local_inscripcion_id, visitante_inscripcion_id)
+            values (jid, a, b) returning id into eid;
+          creados := creados + 1;
+
+          orden := 0;
+          for k in 1..p_individuales loop
+            orden := orden + 1;
+            insert into partido (encuentro_id, orden, tipo) values (eid, orden, 'INDIVIDUAL');
+          end loop;
+          for k in 1..p_dobles loop
+            orden := orden + 1;
+            insert into partido (encuentro_id, orden, tipo) values (eid, orden, 'DOBLES');
+          end loop;
+        end loop;
+      end loop;
+    end loop;
+  end loop;
+
+  if not alguna then raise exception 'se necesitan al menos 2 equipos inscritos'; end if;
+  update competicion set estado = 'EN_CURSO' where id = c.id and estado in ('BORRADOR', 'INSCRIPCION_ABIERTA');
+  return creados;
+end $$;
+
+-- Escribe el resultado de un encuentro (reemplaza lo anterior). Formato:
+-- {"incomparecencia": null|"local"|"visitante",
+--  "partidos":[{"orden":1,"local":[uuid],"visitante":[uuid],"sets":[[6,4],[3,6],[10,8]]}]}
+-- puntos_local / puntos_visitante = partidos ganados; un partido empatado a sets no puntúa.
+create function app.escribir_resultado(p_enc uuid, p_res jsonb) returns void
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare
+  e encuentro; part jsonb; pa partido; lado_x text; pid text; st record;
+  esperados int; total_sets int := 0; inc text; jl int; jv int; eq uuid; nj int;
+  npart int; sl int; sv int; wl int := 0; wv int := 0;
+begin
+  select * into e from encuentro where id = p_enc for update;
+  inc := nullif(p_res ->> 'incomparecencia', '');
+  if inc is not null and inc not in ('local', 'visitante') then raise exception 'incomparecencia no válida'; end if;
+
+  delete from set_partido where partido_id in (select id from partido where encuentro_id = p_enc);
+  delete from partido_jugador where partido_id in (select id from partido where encuentro_id = p_enc);
+  update partido set lado_ganador = null where encuentro_id = p_enc;
+  select count(*) into npart from partido where encuentro_id = p_enc;
+
+  if inc is not null then
+    update encuentro set estado = 'NO_PRESENTADO',
+           puntos_local = case when inc = 'local' then 0 else npart end,
+           puntos_visitante = case when inc = 'visitante' then 0 else npart end
+      where id = p_enc;
+    return;
+  end if;
+
+  for part in select value from jsonb_array_elements(coalesce(p_res -> 'partidos', '[]'::jsonb)) loop
+    select * into pa from partido where encuentro_id = p_enc and orden = (part ->> 'orden')::int;
+    if not found then raise exception 'el partido % no existe en el encuentro', part ->> 'orden'; end if;
+    esperados := case pa.tipo when 'DOBLES' then 2 else 1 end;
+
+    foreach lado_x in array array['local', 'visitante'] loop
+      select i.equipo_id into eq from inscripcion i
+        where i.id = case lado_x when 'local' then e.local_inscripcion_id else e.visitante_inscripcion_id end;
+      nj := 0;
+      for pid in select value from jsonb_array_elements_text(coalesce(part -> lado_x, '[]'::jsonb)) loop
+        nj := nj + 1;
+        if not exists (select 1 from equipo_miembro where equipo_id = eq and jugador_id = pid::uuid) then
+          raise exception 'el jugador % no pertenece al equipo %', pid, lado_x;
+        end if;
+        insert into partido_jugador (partido_id, jugador_id, lado) values (pa.id, pid::uuid, upper(lado_x)::lado_tipo);
+      end loop;
+      if nj > esperados then raise exception 'demasiados jugadores en el partido %', pa.orden; end if;
+    end loop;
+
+    sl := 0; sv := 0;
+    for st in select value, ordinality as n from jsonb_array_elements(coalesce(part -> 'sets', '[]'::jsonb)) with ordinality loop
+      if jsonb_typeof(st.value) <> 'array' or jsonb_array_length(st.value) <> 2 then
+        raise exception 'set con formato incorrecto';
+      end if;
+      jl := (st.value ->> 0)::int; jv := (st.value ->> 1)::int;
+      if jl < 0 or jv < 0 or jl = jv then raise exception 'marcador de set no válido: %-%', jl, jv; end if;
+      insert into set_partido (partido_id, numero, juegos_local, juegos_visitante) values (pa.id, st.n, jl, jv);
+      total_sets := total_sets + 1;
+      if jl > jv then sl := sl + 1; else sv := sv + 1; end if;
+    end loop;
+    if sl > sv then update partido set lado_ganador = 'LOCAL' where id = pa.id; wl := wl + 1;
+    elsif sv > sl then update partido set lado_ganador = 'VISITANTE' where id = pa.id; wv := wv + 1;
+    end if;
+  end loop;
+
+  if total_sets = 0 then raise exception 'el resultado no contiene ningún set'; end if;
+  update encuentro set estado = 'FINALIZADO', puntos_local = wl, puntos_visitante = wv where id = p_enc;
+end $$;
+
+-- El entrenador de uno de los dos equipos, o quien gestiona la competición, registra el resultado.
+-- Un resultado ya registrado solo puede corregirlo la organización de la competición.
+create function public.registrar_resultado(p_encuentro uuid, p_resultado jsonb) returns void
+language plpgsql security definer set search_path = public, pg_temp as $$
+declare e encuentro; comp uuid; eq_l uuid; eq_v uuid; est competicion_estado;
+begin
+  select * into e from encuentro where id = p_encuentro for update;
+  if not found then raise exception 'encuentro no encontrado'; end if;
+  comp := app.comp_de_encuentro(e.id);
+  select equipo_id into eq_l from inscripcion where id = e.local_inscripcion_id;
+  select equipo_id into eq_v from inscripcion where id = e.visitante_inscripcion_id;
+  if not (app.gestiona_comp(comp) or app.entrena_equipo(eq_l) or app.entrena_equipo(eq_v)) then
+    raise exception 'sin permiso para registrar el resultado' using errcode = '42501';
+  end if;
+  select estado into est from competicion where id = comp;
+  if est = 'CANCELADA' then raise exception 'la competición está cancelada' using errcode = '23514'; end if;
+  if e.estado in ('FINALIZADO', 'NO_PRESENTADO') and not app.gestiona_comp(comp) then
+    raise exception 'el resultado ya está registrado; solicita una corrección a la organización' using errcode = '23514';
+  end if;
+  perform app.escribir_resultado(p_encuentro, p_resultado);
+  update competicion set estado = 'EN_CURSO' where id = comp and estado in ('BORRADOR', 'INSCRIPCION_ABIERTA');
+  -- cierre automático: todos los encuentros jugados
+  if not exists (select 1 from encuentro x
+                 join jornada j on j.id = x.jornada_id join categoria ca on ca.id = j.categoria_id
+                 where ca.competicion_id = comp and x.estado not in ('FINALIZADO', 'NO_PRESENTADO')) then
+    update competicion set estado = 'FINALIZADA' where id = comp and estado = 'EN_CURSO';
+  end if;
 end $$;
 
 -- ───────── Permisos ─────────
 grant usage on schema public, app to authenticated;
 grant select, insert, update, delete on all tables in schema public to authenticated;
 grant usage on all sequences in schema public to authenticated;
+revoke execute on all functions in schema app from public;
 grant execute on all functions in schema app to authenticated;
-revoke execute on function public.actualizar_privacidad(uuid, visibilidad_ficha_t, boolean) from public;
-revoke execute on function public.leer_ficha(uuid, text) from public;
-grant execute on function public.actualizar_privacidad(uuid, visibilidad_ficha_t, boolean) to authenticated;
-grant execute on function public.leer_ficha(uuid, text) to authenticated;
--- registros: nadie escribe directamente
-revoke insert, update, delete on registro_cambios, registro_acceso_menores from authenticated;
+revoke execute on function app.aplicar_invitacion(invitacion, uuid) from authenticated;
+revoke execute on function app.escribir_resultado(uuid, jsonb) from authenticated;
 
-
--- ============================================
--- migrations/0003_auth_personas.sql
--- ============================================
--- Ligaria · 0003 · Alta de usuarios, invitaciones, consentimiento de menores y módulos
-
--- ───────── Invitaciones ─────────
--- El admin de escuela invita por email con un rol; se aplica al registrarse (o ya, si el usuario existe).
-create table invitacion (
-  id uuid primary key default gen_random_uuid(),
-  escuela_id uuid not null references escuela(id) on delete cascade,
-  email text not null,
-  rol rol_t not null check (rol <> 'superadmin'),
-  persona_id uuid references persona(id) on delete cascade,  -- tutor→menor, alumno→su ficha
-  created_at timestamptz not null default now(),
-  aplicada_en timestamptz
-);
-create index invitacion_email_idx on invitacion (lower(email)) where aplicada_en is null;
-alter table invitacion enable row level security;
-create policy inv_sel on invitacion for select
-  using (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'));
-create policy inv_del on invitacion for delete
-  using (app.es_superadmin() or app.tiene_rol(escuela_id, 'admin_escuela'));
-grant select, delete on invitacion to authenticated;
-
-create function app.aplicar_invitacion(i invitacion, uid uuid) returns void
-language plpgsql security definer set search_path = public, pg_temp as $$
-begin
-  insert into pertenencia (usuario_id, escuela_id, rol) values (uid, i.escuela_id, i.rol)
-    on conflict do nothing;
-  if i.persona_id is not null then
-    if i.rol = 'tutor' then
-      insert into tutoria (persona_id, tutor_usuario_id) values (i.persona_id, uid) on conflict do nothing;
-    elsif i.rol = 'alumno' then
-      update persona set usuario_id = uid where id = i.persona_id and usuario_id is null;
-    end if;
-  end if;
-  update invitacion set aplicada_en = now() where id = i.id;
-end $$;
-
--- Alta en auth.users → fila en usuario + invitaciones pendientes por email
-create function app.alta_usuario() returns trigger
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare i invitacion; mail text;
-begin
-  mail := lower(coalesce(to_jsonb(new)->>'email', ''));
-  insert into usuario (id, email, nombre)
-    values (new.id, mail, coalesce(to_jsonb(new)->'raw_user_meta_data'->>'nombre', split_part(mail, '@', 1)))
-    on conflict (id) do nothing;
-  for i in select * from invitacion where lower(email) = mail and aplicada_en is null loop
-    perform app.aplicar_invitacion(i, new.id);
-  end loop;
-  return new;
-end $$;
-create trigger on_auth_user_created after insert on auth.users
-  for each row execute function app.alta_usuario();
-
--- RPC: invitar (o asignar directamente si ya existe el usuario)
-create function public.invitar_usuario(
-  p_escuela uuid, p_email text, p_rol rol_t, p_persona uuid default null)
-returns uuid language plpgsql security definer set search_path = public, pg_temp as $$
-declare inv invitacion; uid uuid; mail text := lower(trim(p_email));
-begin
-  if not (app.es_superadmin() or app.tiene_rol(p_escuela, 'admin_escuela')) then
-    raise exception 'sin permiso para invitar' using errcode = '42501';
-  end if;
-  if p_rol = 'superadmin' then raise exception 'rol no invitable'; end if;
-  if p_persona is not null and not exists (select 1 from persona where id = p_persona and escuela_id = p_escuela) then
-    raise exception 'la persona no pertenece a la escuela';
-  end if;
-  insert into invitacion (escuela_id, email, rol, persona_id)
-    values (p_escuela, mail, p_rol, p_persona) returning * into inv;
-  select id into uid from usuario where lower(email) = mail;
-  if uid is not null then perform app.aplicar_invitacion(inv, uid); end if;
-  return inv.id;
-end $$;
-revoke execute on function public.invitar_usuario(uuid, text, rol_t, uuid) from public;
-grant execute on function public.invitar_usuario(uuid, text, rol_t, uuid) to authenticated;
-
--- ───────── Menores de 14: no entran en equipos sin consentimiento del tutor ─────────
-create function app.exigir_consentimiento() returns trigger
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare nac date;
-begin
-  select fecha_nacimiento into nac from persona where id = new.persona_id;
-  if app.edad(nac) < 14 and not app.consentimiento_vigente(new.persona_id) then
-    raise exception 'menor de 14 años sin consentimiento del tutor' using errcode = '23514';
-  end if;
-  return new;
-end $$;
-create trigger eqm_consentimiento before insert on equipo_miembro
-  for each row execute function app.exigir_consentimiento();
-
--- ───────── Módulos activables ─────────
-create function app.modulo_activo(org uuid, m text) returns boolean
-language sql stable security definer set search_path = public, pg_temp as $$
-  select coalesce((select activo from escuela_modulo where escuela_id = org and modulo = m), false)
-$$;
-grant execute on function app.modulo_activo(uuid, text) to authenticated;
-
--- Crear/gestionar competiciones exige el módulo 'competiciones' en la escuela organizadora
-drop policy comp_mod on competicion;
-create policy comp_mod on competicion for all
-  using (app.gestiona(organization_id))
-  with check (app.gestiona(organization_id) and app.modulo_activo(organization_id, 'competiciones'));
-
--- ───────── Mis pertenencias (para el cliente) ─────────
-create view v_mis_pertenencias as
-  select p.id, p.escuela_id, s.nombre as escuela, p.rol
-  from pertenencia p left join escuela s on s.id = p.escuela_id
-  where p.usuario_id = auth.uid();
-grant select on v_mis_pertenencias to authenticated;
-
-
--- ============================================
--- migrations/0004_calendario.sql
--- ============================================
--- Ligaria · 0004 · Inscripción validada, descansos y generador de calendario (algoritmo del círculo)
-
--- ───────── Descansos (jornada con número impar de equipos) ─────────
-create table descanso (
-  jornada_id uuid not null,
-  competicion_id uuid not null,
-  organization_id uuid not null,
-  equipo_id uuid not null references equipo(id),
-  primary key (jornada_id, equipo_id),
-  foreign key (jornada_id, competicion_id, organization_id)
-    references jornada(id, competicion_id, organization_id) on delete cascade
-);
-alter table descanso enable row level security;
-create policy descanso_sel on descanso for select using (app.ve_competicion(competicion_id));
-create policy descanso_mod on descanso for all
-  using (app.gestiona(organization_id)) with check (app.gestiona(organization_id));
-grant select, insert, update, delete on descanso to authenticated;
-
--- ───────── Inscripción: mismo deporte/categoría y solo antes de generar el calendario ─────────
-create function app.validar_inscripcion() returns trigger
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare c competicion; e equipo;
-begin
-  select * into c from competicion where id = new.competicion_id;
-  select * into e from equipo where id = new.equipo_id;
-  if c.tipo <> 'liga' then raise exception 'solo se implementan ligas'; end if;
-  if c.deporte_id <> e.deporte_id then
-    raise exception 'el deporte del equipo no coincide con la competición' using errcode = '23514';
-  end if;
-  if c.categoria_id is not null and e.categoria_id is distinct from c.categoria_id then
-    raise exception 'la categoría del equipo no coincide con la competición' using errcode = '23514';
-  end if;
-  if exists (select 1 from jornada where competicion_id = c.id) then
-    raise exception 'el calendario ya está generado; no se admiten más inscripciones' using errcode = '23514';
-  end if;
-  return new;
-end $$;
-create trigger insc_validar before insert on inscripcion_equipo
-  for each row execute function app.validar_inscripcion();
-
--- ───────── Generador de calendario todos contra todos ─────────
--- Método del círculo: un equipo fijo y los demás rotan. Con número impar se añade un
--- "descanso" (bye) y el equipo emparejado con él descansa esa jornada.
--- Reglas leídas de competicion.reglas: vueltas (1|2) y partidos_por_encuentro.
--- Devuelve el número de encuentros creados. Se puede regenerar mientras no haya resultados.
-create function public.generar_calendario(
-  p_competicion uuid, p_fecha_inicio date default null, p_dias_entre_jornadas int default 7)
-returns int language plpgsql set search_path = public, pg_temp as $$
-declare
-  c competicion;
-  equipos uuid[];
-  t uuid[];                 -- equipos (+ null si impar)
-  m int; n int;
-  vueltas int; ind int; dob int;
-  r int; i int; k int; v int;
-  pos uuid[];
-  a uuid; b uuid; tmp uuid;
-  bal jsonb := '{}'::jsonb; orient jsonb := '{}'::jsonb;
-  clave text; ba int; bb int;
-  jid uuid; eid uuid; pid uuid;
-  num int := 0; creados int := 0; orden int;
-begin
-  select * into c from competicion where id = p_competicion;
-  if not found then raise exception 'competición no encontrada'; end if;
-  if not app.gestiona(c.organization_id) then
-    raise exception 'sin permiso para generar el calendario' using errcode = '42501';
-  end if;
-  if c.tipo <> 'liga' then raise exception 'solo se implementan ligas'; end if;
-  if exists (select 1 from encuentro where competicion_id = c.id and estado <> 'programado') then
-    raise exception 'ya hay resultados propuestos o confirmados; no se puede regenerar' using errcode = '23514';
-  end if;
-
-  vueltas := coalesce((c.reglas->>'vueltas')::int, 1);
-  if vueltas not in (1, 2) then raise exception 'vueltas debe ser 1 o 2'; end if;
-  ind := coalesce((c.reglas#>>'{partidos_por_encuentro,individuales}')::int, 2);
-  dob := coalesce((c.reglas#>>'{partidos_por_encuentro,dobles}')::int, 1);
-
-  select array_agg(equipo_id order by created_at, equipo_id) into equipos
-    from inscripcion_equipo where competicion_id = c.id;
-  n := coalesce(array_length(equipos, 1), 0);
-  if n < 2 then raise exception 'se necesitan al menos 2 equipos inscritos'; end if;
-
-  delete from jornada where competicion_id = c.id;   -- cascada: encuentros, partidos, descansos
-
-  t := equipos;
-  if n % 2 = 1 then t := t || array[null::uuid]; end if;
-  m := array_length(t, 1);
-
-  for v in 1..vueltas loop
-    for r in 0..m - 2 loop
-      num := num + 1;
-      insert into jornada (competicion_id, organization_id, numero, fecha)
-        values (c.id, c.organization_id, num,
-                case when p_fecha_inicio is null then null
-                     else p_fecha_inicio + (num - 1) * p_dias_entre_jornadas end)
-        returning id into jid;
-
-      -- posiciones tras r rotaciones (t[1] fijo)
-      pos := array[t[1]];
-      for k in 2..m loop
-        pos := pos || t[2 + ((k - 2 - r) % (m - 1) + (m - 1)) % (m - 1)];
-      end loop;
-
-      for i in 1..m / 2 loop
-        a := pos[i]; b := pos[m + 1 - i];
-        if a is null or b is null then
-          insert into descanso (jornada_id, competicion_id, organization_id, equipo_id)
-            values (jid, c.id, c.organization_id, coalesce(a, b));
-          continue;
-        end if;
-        -- Localía: 1ª vuelta equilibrada de forma voraz (el equipo con más partidos de local
-        -- pasa a visitante; en empate se alterna por jornada). 2ª vuelta: invierte la 1ª.
-        clave := least(a::text, b::text) || '|' || greatest(a::text, b::text);
-        if v = 1 then
-          ba := coalesce((bal->>a::text)::int, 0);
-          bb := coalesce((bal->>b::text)::int, 0);
-          if ba > bb or (ba = bb and (r + i) % 2 = 1) then tmp := a; a := b; b := tmp; end if;
-          bal := bal || jsonb_build_object(a::text, coalesce((bal->>a::text)::int, 0) + 1,
-                                           b::text, coalesce((bal->>b::text)::int, 0) - 1);
-          orient := orient || jsonb_build_object(clave, a::text);
-        else
-          if (orient->>clave)::uuid = a then tmp := a; a := b; b := tmp; end if;
-        end if;
-
-        insert into encuentro (competicion_id, organization_id, jornada_id, local_equipo_id, visitante_equipo_id)
-          values (c.id, c.organization_id, jid, a, b) returning id into eid;
-        creados := creados + 1;
-
-        orden := 0;
-        for k in 1..ind loop
-          orden := orden + 1;
-          insert into partido (encuentro_id, competicion_id, organization_id, orden, tipo)
-            values (eid, c.id, c.organization_id, orden, 'individual');
-        end loop;
-        for k in 1..dob loop
-          orden := orden + 1;
-          insert into partido (encuentro_id, competicion_id, organization_id, orden, tipo)
-            values (eid, c.id, c.organization_id, orden, 'dobles');
-        end loop;
-      end loop;
-    end loop;
-  end loop;
-  return creados;
-end $$;
-revoke execute on function public.generar_calendario(uuid, date, int) from public;
-grant execute on function public.generar_calendario(uuid, date, int) to authenticated;
-
-
--- ============================================
--- migrations/0005_resultados_clasificacion.sql
--- ============================================
--- Ligaria · 0005 · Resultados (propuesto → confirmado, correcciones con historial) y clasificación
--- La clasificación NUNCA se almacena ni se edita: se calcula de los encuentros confirmados.
-
--- ───────── Historial de correcciones ─────────
-create table correccion_resultado (
-  id uuid primary key default gen_random_uuid(),
-  encuentro_id uuid not null references encuentro(id) on delete cascade,
-  competicion_id uuid not null,
-  organization_id uuid not null,
-  usuario_id uuid references usuario(id),
-  motivo text not null,
-  antes jsonb not null,
-  despues jsonb not null,
-  created_at timestamptz not null default now()
-);
-alter table correccion_resultado enable row level security;
-create policy corr_sel on correccion_resultado for select using (app.gestiona(organization_id));
-grant select on correccion_resultado to authenticated;
-
--- ───────── Utilidades ─────────
-create function app.snapshot_resultado(p_enc uuid) returns jsonb
-language sql stable security definer set search_path = public, pg_temp as $$
-  select jsonb_build_object(
-    'estado', e.estado,
-    'incomparecencia', e.incomparecencia,
-    'partidos', coalesce((
-      select jsonb_agg(jsonb_build_object(
-        'orden', p.orden, 'tipo', p.tipo,
-        'local', coalesce((select jsonb_agg(pp.persona_id order by pp.persona_id) from partido_participante pp
-                           where pp.partido_id = p.id and pp.lado = 'local'), '[]'),
-        'visitante', coalesce((select jsonb_agg(pp.persona_id order by pp.persona_id) from partido_participante pp
-                           where pp.partido_id = p.id and pp.lado = 'visitante'), '[]'),
-        'sets', coalesce((select jsonb_agg(jsonb_build_array(rs.juegos_local, rs.juegos_visitante) order by rs.numero)
-                          from resultado_set rs where rs.partido_id = p.id), '[]')
-      ) order by p.orden) from partido p where p.encuentro_id = e.id), '[]'))
-  from encuentro e where e.id = p_enc
-$$;
-
--- Escribe el resultado de un encuentro (reemplaza lo anterior). Formato:
--- {"incomparecencia": null|"local"|"visitante",
---  "partidos":[{"orden":1,"local":[uuid],"visitante":[uuid],"sets":[[6,4],[3,6],[10,8]]}]}
-create function app.escribir_resultado(p_enc uuid, p_res jsonb) returns void
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare
-  e encuentro; part jsonb; pa partido; lado lado_t; pid text; st record;
-  esperados int; total_sets int := 0; inc lado_t; jl int; jv int; eq uuid; nj int;
-begin
-  select * into e from encuentro where id = p_enc for update;
-  inc := nullif(p_res->>'incomparecencia', '')::lado_t;
-
-  delete from resultado_set where partido_id in (select id from partido where encuentro_id = p_enc);
-  delete from partido_participante where partido_id in (select id from partido where encuentro_id = p_enc);
-  update encuentro set incomparecencia = inc where id = p_enc;
-  if inc is not null then return; end if;
-
-  for part in select value from jsonb_array_elements(coalesce(p_res->'partidos', '[]'::jsonb)) loop
-    select * into pa from partido where encuentro_id = p_enc and orden = (part->>'orden')::int;
-    if not found then raise exception 'el partido % no existe en el encuentro', part->>'orden'; end if;
-    esperados := case pa.tipo when 'dobles' then 2 else 1 end;
-
-    foreach lado in array array['local', 'visitante']::lado_t[] loop
-      eq := case lado when 'local' then e.local_equipo_id else e.visitante_equipo_id end;
-      nj := 0;
-      for pid in select value from jsonb_array_elements_text(coalesce(part->(lado::text), '[]'::jsonb)) loop
-        nj := nj + 1;
-        if not exists (select 1 from equipo_miembro where equipo_id = eq and persona_id = pid::uuid) then
-          raise exception 'el jugador % no pertenece al equipo %', pid, lado;
-        end if;
-        insert into partido_participante (partido_id, competicion_id, organization_id, lado, persona_id)
-          values (pa.id, e.competicion_id, e.organization_id, lado, pid::uuid);
-      end loop;
-      if nj > esperados then raise exception 'demasiados jugadores en el partido %', pa.orden; end if;
-    end loop;
-
-    for st in select value, ordinality as n from jsonb_array_elements(coalesce(part->'sets', '[]'::jsonb)) with ordinality loop
-      if jsonb_typeof(st.value) <> 'array' or jsonb_array_length(st.value) <> 2 then
-        raise exception 'set con formato incorrecto';
-      end if;
-      jl := (st.value->>0)::int; jv := (st.value->>1)::int;
-      if jl < 0 or jv < 0 or jl = jv then raise exception 'marcador de set no válido: %-%', jl, jv; end if;
-      insert into resultado_set (partido_id, competicion_id, organization_id, numero, juegos_local, juegos_visitante)
-        values (pa.id, e.competicion_id, e.organization_id, st.n, jl, jv);
-      total_sets := total_sets + 1;
-    end loop;
-  end loop;
-
-  if total_sets = 0 then raise exception 'el resultado no contiene ningún set'; end if;
-end $$;
-
-create function app.notificar_organizacion(p_org uuid, p_titulo text, p_cuerpo text) returns void
-language sql security definer set search_path = public, pg_temp as $$
-  insert into notificacion (usuario_id, escuela_id, titulo, cuerpo)
-  select distinct usuario_id, p_org, p_titulo, p_cuerpo from pertenencia
-  where escuela_id = p_org and rol in ('organizador_liga', 'admin_escuela')
-$$;
-
-create function app.notificar_entrenadores(p_enc uuid, p_titulo text, p_cuerpo text) returns void
-language sql security definer set search_path = public, pg_temp as $$
-  insert into notificacion (usuario_id, escuela_id, titulo, cuerpo)
-  select distinct ee.usuario_id, ee.escuela_id, p_titulo, p_cuerpo
-  from encuentro e join equipo_entrenador ee on ee.equipo_id in (e.local_equipo_id, e.visitante_equipo_id)
-  where e.id = p_enc
-$$;
-
--- ───────── RPC ─────────
--- Entrenador de uno de los dos equipos (o la organización) propone el resultado.
-create function public.proponer_resultado(p_encuentro uuid, p_resultado jsonb) returns void
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare e encuentro;
-begin
-  select * into e from encuentro where id = p_encuentro for update;
-  if not found then raise exception 'encuentro no encontrado'; end if;
-  if not (app.entrena_equipo(e.local_equipo_id) or app.entrena_equipo(e.visitante_equipo_id)
-          or app.gestiona(e.organization_id)) then
-    raise exception 'sin permiso para proponer el resultado' using errcode = '42501';
-  end if;
-  if e.estado = 'confirmado' then
-    raise exception 'el resultado ya está confirmado; solicita una corrección' using errcode = '23514';
-  end if;
-  perform app.escribir_resultado(p_encuentro, p_resultado);
-  update encuentro set estado = 'propuesto', propuesto_por = auth.uid(), propuesto_en = now(),
-         confirmado_por = null, confirmado_en = null where id = p_encuentro;
-  perform app.notificar_organizacion(e.organization_id, 'Resultado pendiente de confirmar',
-                                     'Hay un resultado propuesto en tu liga.');
-end $$;
-
-create function public.confirmar_resultado(p_encuentro uuid) returns void
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare e encuentro;
-begin
-  select * into e from encuentro where id = p_encuentro for update;
-  if not found then raise exception 'encuentro no encontrado'; end if;
-  if not app.gestiona(e.organization_id) then
-    raise exception 'solo la organización puede confirmar resultados' using errcode = '42501';
-  end if;
-  if e.estado <> 'propuesto' then raise exception 'no hay un resultado propuesto que confirmar' using errcode = '23514'; end if;
-  update encuentro set estado = 'confirmado', confirmado_por = auth.uid(), confirmado_en = now()
-    where id = p_encuentro;
-  update competicion set estado = 'en_curso'
-    where id = e.competicion_id and estado in ('borrador', 'publicada');
-  perform app.notificar_entrenadores(p_encuentro, 'Resultado confirmado', 'La organización ha confirmado un resultado.');
-end $$;
-
--- La organización devuelve una propuesta al entrenador (vuelve a «programado»).
-create function public.rechazar_resultado(p_encuentro uuid, p_motivo text) returns void
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare e encuentro;
-begin
-  select * into e from encuentro where id = p_encuentro for update;
-  if not found then raise exception 'encuentro no encontrado'; end if;
-  if not app.gestiona(e.organization_id) then
-    raise exception 'solo la organización puede rechazar resultados' using errcode = '42501';
-  end if;
-  if e.estado <> 'propuesto' then raise exception 'no hay un resultado propuesto' using errcode = '23514'; end if;
-  delete from resultado_set where partido_id in (select id from partido where encuentro_id = p_encuentro);
-  delete from partido_participante where partido_id in (select id from partido where encuentro_id = p_encuentro);
-  update encuentro set estado = 'programado', incomparecencia = null, propuesto_por = null, propuesto_en = null
-    where id = p_encuentro;
-  perform app.notificar_entrenadores(p_encuentro, 'Resultado rechazado', coalesce(p_motivo, 'Revisa el resultado y vuelve a proponerlo.'));
-end $$;
-
--- Corrección por la organización (también sobre resultados confirmados). Guarda historial.
-create function public.corregir_resultado(p_encuentro uuid, p_resultado jsonb, p_motivo text) returns void
-language plpgsql security definer set search_path = public, pg_temp as $$
-declare e encuentro; antes jsonb;
-begin
-  select * into e from encuentro where id = p_encuentro for update;
-  if not found then raise exception 'encuentro no encontrado'; end if;
-  if not app.gestiona(e.organization_id) then
-    raise exception 'solo la organización puede corregir resultados' using errcode = '42501';
-  end if;
-  if coalesce(trim(p_motivo), '') = '' then raise exception 'indica el motivo de la corrección'; end if;
-  if e.estado = 'programado' then raise exception 'el encuentro no tiene resultado que corregir' using errcode = '23514'; end if;
-  antes := app.snapshot_resultado(p_encuentro);
-  perform app.escribir_resultado(p_encuentro, p_resultado);
-  update encuentro set estado = 'confirmado', confirmado_por = auth.uid(), confirmado_en = now()
-    where id = p_encuentro;
-  insert into correccion_resultado (encuentro_id, competicion_id, organization_id, usuario_id, motivo, antes, despues)
-    values (p_encuentro, e.competicion_id, e.organization_id, auth.uid(), p_motivo, antes, app.snapshot_resultado(p_encuentro));
-  perform app.notificar_entrenadores(p_encuentro, 'Resultado corregido', p_motivo);
-end $$;
-
-revoke execute on function public.proponer_resultado(uuid, jsonb) from public;
-revoke execute on function public.confirmar_resultado(uuid) from public;
-revoke execute on function public.rechazar_resultado(uuid, text) from public;
-revoke execute on function public.corregir_resultado(uuid, jsonb, text) from public;
-grant execute on function public.proponer_resultado(uuid, jsonb) to authenticated;
-grant execute on function public.confirmar_resultado(uuid) to authenticated;
-grant execute on function public.rechazar_resultado(uuid, text) to authenticated;
-grant execute on function public.corregir_resultado(uuid, jsonb, text) to authenticated;
-
--- ───────── Clasificación (calculada) ─────────
-create function app.metrica(crit text, h2h int, dp int, ds int, dj int) returns int
-language sql immutable as $$
-  select case crit
-    when 'enfrentamiento_directo' then h2h
-    when 'diferencia_partidos' then dp
-    when 'diferencia_sets' then ds
-    when 'diferencia_juegos' then dj
-    else 0 end
-$$;
-
--- Solo encuentros confirmados. Puntos y orden de desempates salen de competicion.reglas.
--- Incomparecencia: el equipo que comparece gana todos los partidos del encuentro (p. ej. 3-0);
--- sets y juegos no puntúan.
--- Enfrentamiento directo: puntos obtenidos entre los equipos empatados a puntos.
-create function public.clasificacion(p_competicion uuid)
-returns table (posicion int, equipo_id uuid, equipo text, escuela text,
-               pj int, pg int, pe int, pp int, puntos int,
-               partidos_f int, partidos_c int, sets_f int, sets_c int, juegos_f int, juegos_c int)
-language plpgsql stable security definer set search_path = public, pg_temp as $$
-#variable_conflict use_column
-declare c competicion; v_gana int; v_empata int; v_pierde int; d1 text; d2 text; d3 text; d4 text;
-begin
-  if not app.ve_competicion(p_competicion) then
-    raise exception 'sin acceso a la competición' using errcode = '42501';
-  end if;
-  select * into c from competicion where id = p_competicion;
-  v_gana := coalesce((c.reglas#>>'{puntos,victoria}')::int, 3);
-  v_empata := coalesce((c.reglas#>>'{puntos,empate}')::int, 1);
-  v_pierde := coalesce((c.reglas#>>'{puntos,derrota}')::int, 0);
-  d1 := c.reglas#>>'{desempates,0}'; d2 := c.reglas#>>'{desempates,1}';
-  d3 := c.reglas#>>'{desempates,2}'; d4 := c.reglas#>>'{desempates,3}';
-
-  return query
-  with pst as (
-    select p.encuentro_id, p.id as partido_id,
-           count(*) filter (where rs.juegos_local > rs.juegos_visitante) as sl,
-           count(*) filter (where rs.juegos_local < rs.juegos_visitante) as sv,
-           coalesce(sum(rs.juegos_local), 0) as jl, coalesce(sum(rs.juegos_visitante), 0) as jv
-    from partido p
-    join encuentro e on e.id = p.encuentro_id and e.competicion_id = p_competicion and e.estado = 'confirmado'
-    left join resultado_set rs on rs.partido_id = p.id
-    group by p.encuentro_id, p.id
-  ),
-  enc0 as (
-    select e.id, e.local_equipo_id as l, e.visitante_equipo_id as v, e.incomparecencia as inc,
-           (select count(*) from partido where encuentro_id = e.id)::int as np,
-           (count(*) filter (where ps.sl > ps.sv))::int as pl, (count(*) filter (where ps.sv > ps.sl))::int as pv,
-           coalesce(sum(ps.sl), 0)::int as sl, coalesce(sum(ps.sv), 0)::int as sv,
-           coalesce(sum(ps.jl), 0)::int as jl, coalesce(sum(ps.jv), 0)::int as jv
-    from encuentro e left join pst ps on ps.encuentro_id = e.id
-    where e.competicion_id = p_competicion and e.estado = 'confirmado'
-    group by e.id
-  ),
-  enc as (
-    select id, l, v,
-      case inc when 'local' then 0 when 'visitante' then np else pl end as pl,
-      case inc when 'visitante' then 0 when 'local' then np else pv end as pv,
-      case when inc is null then sl else 0 end as sl, case when inc is null then sv else 0 end as sv,
-      case when inc is null then jl else 0 end as jl, case when inc is null then jv else 0 end as jv
-    from enc0
-  ),
-  filas as (
-    select l as eq, v as rival, pl as pf, pv as pc, sl as sf, sv as sc, jl as jf, jv as jc,
-           case when pl > pv then v_gana when pl = pv then v_empata else v_pierde end as pts
-      from enc
-    union all
-    select v, l, pv, pl, sv, sl, jv, jl,
-           case when pv > pl then v_gana when pv = pl then v_empata else v_pierde end
-      from enc
-  ),
-  tot as (
-    select i.equipo_id as eq,
-           count(f.eq)::int as pj,
-           (count(*) filter (where f.pf > f.pc))::int as pg,
-           (count(*) filter (where f.eq is not null and f.pf = f.pc))::int as pe,
-           (count(*) filter (where f.pf < f.pc))::int as pp,
-           coalesce(sum(f.pts), 0)::int as puntos,
-           coalesce(sum(f.pf), 0)::int as pf, coalesce(sum(f.pc), 0)::int as pc,
-           coalesce(sum(f.sf), 0)::int as sf, coalesce(sum(f.sc), 0)::int as sc,
-           coalesce(sum(f.jf), 0)::int as jf, coalesce(sum(f.jc), 0)::int as jc
-    from inscripcion_equipo i left join filas f on f.eq = i.equipo_id
-    where i.competicion_id = p_competicion
-    group by i.equipo_id
-  ),
-  h2h as (
-    select f.eq, sum(f.pts)::int as h
-    from filas f join tot a on a.eq = f.eq join tot b on b.eq = f.rival
-    where a.puntos = b.puntos group by f.eq
-  )
-  select (row_number() over (
-            order by t.puntos desc,
-                     app.metrica(d1, coalesce(h.h, 0), t.pf - t.pc, t.sf - t.sc, t.jf - t.jc) desc,
-                     app.metrica(d2, coalesce(h.h, 0), t.pf - t.pc, t.sf - t.sc, t.jf - t.jc) desc,
-                     app.metrica(d3, coalesce(h.h, 0), t.pf - t.pc, t.sf - t.sc, t.jf - t.jc) desc,
-                     app.metrica(d4, coalesce(h.h, 0), t.pf - t.pc, t.sf - t.sc, t.jf - t.jc) desc,
-                     q.nombre, t.eq))::int,
-         t.eq, q.nombre, s.nombre,
-         t.pj, t.pg, t.pe, t.pp, t.puntos, t.pf, t.pc, t.sf, t.sc, t.jf, t.jc
-  from tot t
-  left join h2h h on h.eq = t.eq
-  join equipo q on q.id = t.eq
-  join escuela s on s.id = q.escuela_id
-  order by 1;
-end $$;
-revoke execute on function public.clasificacion(uuid) from public;
-grant execute on function public.clasificacion(uuid) to authenticated;
-
-
--- ============================================
--- migrations/0006_vistas_app.sql
--- ============================================
--- Ligaria · 0006 · Vistas de lectura para la app y preferencias de notificación
-
-alter table usuario add column notif_prefs jsonb not null default '{"resultados": true, "calendario": true}'::jsonb;
-
--- Encuentros con nombres de equipo y marcador (en partidos). El marcador de un resultado solo
--- «propuesto» lo ven la organización y los entrenadores implicados.
-create view v_encuentros_competicion as
-select e.id as encuentro_id, e.competicion_id, j.numero as jornada, j.fecha as jornada_fecha, e.fecha,
-       e.estado, e.incomparecencia,
-       e.local_equipo_id, ql.nombre as local, sl.nombre as escuela_local,
-       e.visitante_equipo_id, qv.nombre as visitante, sv.nombre as escuela_visitante,
-       case when e.estado = 'confirmado'
-              or (e.estado = 'propuesto' and (app.gestiona(e.organization_id)
-                   or app.entrena_equipo(e.local_equipo_id) or app.entrena_equipo(e.visitante_equipo_id)))
-            then case e.incomparecencia when 'local' then 0 when 'visitante' then r.np else r.pl end end as partidos_local,
-       case when e.estado = 'confirmado'
-              or (e.estado = 'propuesto' and (app.gestiona(e.organization_id)
-                   or app.entrena_equipo(e.local_equipo_id) or app.entrena_equipo(e.visitante_equipo_id)))
-            then case e.incomparecencia when 'visitante' then 0 when 'local' then r.np else r.pv end end as partidos_visitante
-from encuentro e
-join jornada j on j.id = e.jornada_id
-join equipo ql on ql.id = e.local_equipo_id join escuela sl on sl.id = ql.escuela_id
-join equipo qv on qv.id = e.visitante_equipo_id join escuela sv on sv.id = qv.escuela_id
-left join lateral (
-  select count(*) filter (where s.sl > s.sv)::int as pl, count(*) filter (where s.sv > s.sl)::int as pv, count(*)::int as np
-  from (select p.id,
-               count(*) filter (where rs.juegos_local > rs.juegos_visitante) as sl,
-               count(*) filter (where rs.juegos_local < rs.juegos_visitante) as sv
-        from partido p left join resultado_set rs on rs.partido_id = p.id
-        where p.encuentro_id = e.id group by p.id) s) r on true
-where app.ve_competicion(e.competicion_id);
-
-create view v_descansos_competicion as
-select d.competicion_id, j.numero as jornada, d.equipo_id, q.nombre as equipo
-from descanso d join jornada j on j.id = d.jornada_id join equipo q on q.id = d.equipo_id
-where app.ve_competicion(d.competicion_id);
-
--- Mis equipos (entrenador, jugador o tutor de un jugador) y las ligas en que participan
-create view v_mis_equipos as
-select x.equipo_id, q.nombre as equipo, q.escuela_id, s.nombre as escuela, x.rol,
-       i.competicion_id, c.nombre as competicion
-from (
-  select equipo_id, 'entrenador'::text as rol from equipo_entrenador where usuario_id = auth.uid()
-  union
-  select em.equipo_id, 'alumno' from equipo_miembro em join persona p on p.id = em.persona_id where p.usuario_id = auth.uid()
-  union
-  select em.equipo_id, 'tutor' from equipo_miembro em join tutoria t on t.persona_id = em.persona_id where t.tutor_usuario_id = auth.uid()
-) x
-join equipo q on q.id = x.equipo_id join escuela s on s.id = q.escuela_id
-left join inscripcion_equipo i on i.equipo_id = x.equipo_id
-left join competicion c on c.id = i.competicion_id;
-
--- Mis fichas: la mía y las de mis tutelados
-create view v_mis_fichas as
-select p.id as persona_id, p.escuela_id, s.nombre as escuela, p.nombre, p.apellidos, p.fecha_nacimiento,
-       p.visibilidad_ficha, p.mostrar_foto,
-       app.edad(p.fecha_nacimiento) < 14 as menor_14,
-       app.consentimiento_vigente(p.id) as consentimiento,
-       case when p.usuario_id = auth.uid() then 'propia' else 'tutor' end as relacion
-from persona p join escuela s on s.id = p.escuela_id
-where p.usuario_id = auth.uid()
-   or exists (select 1 from tutoria t where t.persona_id = p.id and t.tutor_usuario_id = auth.uid());
-
--- Jugadores de un equipo (respeta RLS: solo los ve quien puede ver esas fichas)
-create view v_jugadores_equipo with (security_invoker = true) as
-select em.equipo_id, p.id as persona_id, p.nombre, p.apellidos
-from equipo_miembro em join persona p on p.id = em.persona_id;
-
--- Ligas publicadas a las que otras escuelas pueden inscribir equipos (solo datos públicos)
-create view v_ligas_abiertas as
-select c.id as competicion_id, c.nombre, c.deporte_id, d.nombre as deporte, c.categoria_id,
-       c.organization_id, s.nombre as organizadora
-from competicion c join deporte d on d.id = c.deporte_id join escuela s on s.id = c.organization_id
-where auth.uid() is not null and c.tipo = 'liga' and c.estado = 'publicada'
-  and not exists (select 1 from jornada j where j.competicion_id = c.id);
-
-grant select on v_encuentros_competicion, v_descansos_competicion, v_mis_equipos, v_mis_fichas,
-                v_jugadores_equipo, v_ligas_abiertas to authenticated;
+revoke execute on function public.crear_competicion(uuid, text, deporte_tipo, competicion_tipo, date, date) from public;
+revoke execute on function public.inscribir_equipo(uuid, uuid) from public;
+revoke execute on function public.invitar_usuario(uuid, text, text, uuid) from public;
+revoke execute on function public.generar_calendario(uuid, date, int, int, int, int) from public;
+revoke execute on function public.registrar_resultado(uuid, jsonb) from public;
+grant execute on function public.crear_competicion(uuid, text, deporte_tipo, competicion_tipo, date, date) to authenticated;
+grant execute on function public.inscribir_equipo(uuid, uuid) to authenticated;
+grant execute on function public.invitar_usuario(uuid, text, text, uuid) to authenticated;
+grant execute on function public.generar_calendario(uuid, date, int, int, int, int) to authenticated;
+grant execute on function public.registrar_resultado(uuid, jsonb) to authenticated;
 

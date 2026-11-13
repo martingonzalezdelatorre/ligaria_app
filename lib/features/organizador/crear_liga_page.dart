@@ -1,61 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/formulario.dart';
 import '../../core/widgets.dart';
 import '../../data/liga_repository.dart';
 import '../../data/models.dart';
 import 'organizador_providers.dart';
 
-const _etiquetasDesempate = {
-  'enfrentamiento_directo': 'Enfrentamiento directo',
-  'diferencia_partidos': 'Diferencia de partidos',
-  'diferencia_sets': 'Diferencia de sets',
-  'diferencia_juegos': 'Diferencia de juegos',
-};
-
-class CrearLigaPage extends ConsumerWidget {
-  const CrearLigaPage({super.key, required this.escuelaId});
+/// Alta y edición (solo en borrador) de una liga: nombre, deporte, tipo y fechas.
+/// El calendario se genera después, cuando ya están inscritos los equipos.
+class CrearLigaPage extends ConsumerStatefulWidget {
+  const CrearLigaPage({super.key, required this.escuelaId, this.orgTipo, this.liga});
   final String escuelaId;
+  final String? orgTipo; // tipo de la organización organizadora (decide los tipos de competición posibles)
+  final Liga? liga; // si viene, se edita
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final temporadas = ref.watch(orgTemporadasProvider);
-    final deportes = ref.watch(orgDeportesProvider);
-    return Scaffold(
-      appBar: AppBar(title: const Text('Nueva liga')),
-      body: AsyncView<List<Temporada>>(
-        value: temporadas,
-        onRetry: () => ref.invalidate(orgTemporadasProvider),
-        builder: (ts) => AsyncView<List<Deporte>>(
-          value: deportes,
-          onRetry: () => ref.invalidate(orgDeportesProvider),
-          builder: (ds) => (ts.isEmpty || ds.isEmpty)
-              ? const EstadoVacio(
-                  icono: Icons.info_outline,
-                  texto: 'Hace falta al menos una temporada y un deporte.\nPídeselo al superadministrador.')
-              : _FormLiga(escuelaId: escuelaId, temporadas: ts, deportes: ds),
-        ),
-      ),
-    );
-  }
+  ConsumerState<CrearLigaPage> createState() => _CrearLigaPageState();
 }
 
-class _FormLiga extends ConsumerStatefulWidget {
-  const _FormLiga({required this.escuelaId, required this.temporadas, required this.deportes});
-  final String escuelaId;
-  final List<Temporada> temporadas;
-  final List<Deporte> deportes;
-  @override
-  ConsumerState<_FormLiga> createState() => _FormLigaState();
-}
-
-class _FormLigaState extends ConsumerState<_FormLiga> {
+class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
   final _form = GlobalKey<FormState>();
-  final _nombre = TextEditingController();
-  late String _temporada = widget.temporadas.first.id;
-  late String _deporte = widget.deportes.first.id;
-  int _vueltas = 1, _individuales = 2, _dobles = 1, _victoria = 3, _empate = 1, _derrota = 0;
-  List<String> _desempates = const ReglasLiga().desempates;
+  late final _nombre = TextEditingController(text: widget.liga?.nombre ?? '');
+  late String _deporteId = widget.liga?.deporteId ?? deportesDisponibles.first.id;
+  late String _tipo = widget.liga?.tipo ?? tiposCompeticionDe(widget.orgTipo).first.codigo;
+  late DateTime? _inicio = widget.liga?.fechaInicio;
+  late DateTime? _fin = widget.liga?.fechaFin;
+  String? _errorFechas;
   bool _enviando = false;
+
+  bool get _edita => widget.liga != null;
 
   @override
   void dispose() {
@@ -63,131 +36,115 @@ class _FormLigaState extends ConsumerState<_FormLiga> {
     super.dispose();
   }
 
-  void _mover(int i, int delta) {
-    final l = [..._desempates];
-    final j = i + delta;
-    if (j < 0 || j >= l.length) return;
-    final t = l[i];
-    l[i] = l[j];
-    l[j] = t;
-    setState(() => _desempates = l);
+  Future<void> _elegir(bool inicio) async {
+    final base = (inicio ? _inicio : _fin) ?? _inicio ?? DateTime.now();
+    final f = await showDatePicker(
+        context: context, initialDate: base, firstDate: DateTime(2020), lastDate: DateTime(2100));
+    if (f != null) {
+      setState(() {
+        if (inicio) {
+          _inicio = f;
+        } else {
+          _fin = f;
+        }
+        _errorFechas = null;
+      });
+    }
   }
 
-  Future<void> _crear() async {
+  Future<void> _guardar() async {
     if (!_form.currentState!.validate()) return;
-    if (_individuales + _dobles < 1) {
-      avisar(context, 'Cada encuentro necesita al menos un partido.');
+    if (_inicio != null && _fin != null && _fin!.isBefore(_inicio!)) {
+      setState(() => _errorFechas = 'La fecha de fin no puede ser anterior a la de inicio.');
       return;
     }
     setState(() => _enviando = true);
+    final repo = ref.read(ligaRepositoryProvider);
     try {
-      await ref.read(ligaRepositoryProvider).crearLiga(
-            escuelaId: widget.escuelaId,
-            temporadaId: _temporada,
-            deporteId: _deporte,
-            nombre: _nombre.text.trim(),
-            reglas: ReglasLiga(
-              vueltas: _vueltas, individuales: _individuales, dobles: _dobles,
-              puntosVictoria: _victoria, puntosEmpate: _empate, puntosDerrota: _derrota,
-              desempates: _desempates,
-            ),
-          );
+      if (_edita) {
+        await repo.editarLiga(widget.liga!.id, nombre: _nombre.text.trim(), fechaInicio: _inicio, fechaFin: _fin);
+      } else {
+        await repo.crearLiga(
+          orgId: widget.escuelaId, deporteId: _deporteId, nombre: _nombre.text.trim(), tipo: _tipo,
+          fechaInicio: _inicio, fechaFin: _fin,
+        );
+      }
       ref.invalidate(orgLigasProvider(widget.escuelaId));
       if (!mounted) return;
-      avisar(context, 'Liga creada. Publícala para abrir las inscripciones.');
+      avisar(context, _edita ? 'Liga actualizada.' : 'Liga creada. Publícala para abrir la inscripción.');
       Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
         setState(() => _enviando = false);
-        avisar(context, mensajeError(e, defecto: 'No se pudo crear la liga.'));
+        avisar(context, mensajeError(e, defecto: 'No se pudo guardar la liga.'));
       }
     }
   }
 
+  Widget _campoFecha(String etiqueta, DateTime? valor, bool inicio) => InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _elegir(inicio),
+        child: InputDecorator(
+          decoration: decoracionCampo(etiqueta, Icons.event, sufijo: const Icon(Icons.expand_more)),
+          child: Text(valor == null ? 'Sin fecha' : fechaLarga(valor)),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
-    final tema = Theme.of(context);
-    return Form(
-      key: _form,
-      child: ListView(padding: const EdgeInsets.all(16), children: [
-        TextFormField(
-          controller: _nombre,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(labelText: 'Nombre de la liga', border: OutlineInputBorder()),
-          validator: (v) => (v == null || v.trim().isEmpty) ? 'Escribe un nombre' : null,
-        ),
-        const SizedBox(height: 16),
-        DropdownButtonFormField<String>(
-          initialValue: _temporada,
-          decoration: const InputDecoration(labelText: 'Temporada', border: OutlineInputBorder()),
-          items: [for (final t in widget.temporadas) DropdownMenuItem(value: t.id, child: Text(t.nombre))],
-          onChanged: (v) => setState(() => _temporada = v ?? _temporada),
-        ),
-        const SizedBox(height: 16),
-        DropdownButtonFormField<String>(
-          initialValue: _deporte,
-          decoration: const InputDecoration(labelText: 'Deporte', border: OutlineInputBorder()),
-          items: [for (final d in widget.deportes) DropdownMenuItem(value: d.id, child: Text(d.nombre))],
-          onChanged: (v) => setState(() => _deporte = v ?? _deporte),
-        ),
-        const SizedBox(height: 24),
-        Text('Reglas', style: tema.textTheme.titleMedium),
-        const SizedBox(height: 8),
-        SegmentedButton<int>(
-          segments: const [
-            ButtonSegment(value: 1, label: Text('1 vuelta')),
-            ButtonSegment(value: 2, label: Text('2 vueltas')),
-          ],
-          selected: {_vueltas},
-          onSelectionChanged: (s) => setState(() => _vueltas = s.first),
-        ),
-        _Contador(etiqueta: 'Partidos individuales', valor: _individuales, max: 6, onCambio: (v) => setState(() => _individuales = v)),
-        _Contador(etiqueta: 'Partidos de dobles', valor: _dobles, max: 4, onCambio: (v) => setState(() => _dobles = v)),
-        const Divider(),
-        _Contador(etiqueta: 'Puntos por victoria', valor: _victoria, max: 10, onCambio: (v) => setState(() => _victoria = v)),
-        _Contador(etiqueta: 'Puntos por empate', valor: _empate, max: 10, onCambio: (v) => setState(() => _empate = v)),
-        _Contador(etiqueta: 'Puntos por derrota', valor: _derrota, max: 10, onCambio: (v) => setState(() => _derrota = v)),
-        const Divider(),
-        Text('Orden de desempates', style: tema.textTheme.titleSmall),
-        for (var i = 0; i < _desempates.length; i++)
-          ListTile(
-            dense: true,
-            contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(radius: 12, child: Text('${i + 1}', style: const TextStyle(fontSize: 12))),
-            title: Text(_etiquetasDesempate[_desempates[i]] ?? _desempates[i]),
-            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
-              IconButton(
-                  tooltip: 'Subir', icon: const Icon(Icons.arrow_upward), onPressed: i == 0 ? null : () => _mover(i, -1)),
-              IconButton(
-                  tooltip: 'Bajar',
-                  icon: const Icon(Icons.arrow_downward),
-                  onPressed: i == _desempates.length - 1 ? null : () => _mover(i, 1)),
-            ]),
+    final tipos = tiposCompeticionDe(widget.orgTipo);
+    return Scaffold(
+      appBar: AppBar(title: Text(_edita ? 'Editar liga' : 'Nueva liga')),
+      body: Form(
+        key: _form,
+        child: ListView(padding: const EdgeInsets.all(16), children: [
+          TextFormField(
+            controller: _nombre,
+            autofocus: !_edita,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: decoracionCampo('Nombre de la liga', Icons.emoji_events_outlined),
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Introduce el nombre' : null,
           ),
-        const SizedBox(height: 16),
-        FilledButton(
-          onPressed: _enviando ? null : _crear,
-          child: _enviando
-              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-              : const Text('Crear liga'),
-        ),
-      ]),
+          espacioCampo,
+          DropdownButtonFormField<String>(
+            key: const Key('liga-deporte'),
+            initialValue: _deporteId,
+            decoration: decoracionCampo('Deporte', Icons.sports_tennis),
+            items: [for (final d in deportesDisponibles) DropdownMenuItem(value: d.id, child: Text(d.nombre))],
+            onChanged: _edita ? null : (v) => setState(() => _deporteId = v ?? _deporteId),
+          ),
+          if (tipos.length > 1) ...[
+            espacioCampo,
+            DropdownButtonFormField<String>(
+              key: const Key('liga-tipo'),
+              initialValue: tipos.any((t) => t.codigo == _tipo) ? _tipo : tipos.first.codigo,
+              isExpanded: true,
+              decoration: decoracionCampo('Tipo de liga', Icons.category_outlined),
+              items: [for (final t in tipos) DropdownMenuItem(value: t.codigo, child: Text(t.etiqueta))],
+              onChanged: _edita ? null : (v) => setState(() => _tipo = v ?? _tipo),
+            ),
+          ],
+          espacioCampo,
+          _campoFecha('Fecha de inicio', _inicio, true),
+          espacioCampo,
+          _campoFecha('Fecha de fin', _fin, false),
+          if (_errorFechas != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(_errorFechas!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            ),
+          const SizedBox(height: 24),
+          SizedBox(
+            height: 52,
+            child: FilledButton(
+              onPressed: _enviando ? null : _guardar,
+              child: _enviando
+                  ? const SizedBox(height: 22, width: 22, child: CircularProgressIndicator(strokeWidth: 2))
+                  : Text(_edita ? 'Guardar cambios' : 'Crear liga'),
+            ),
+          ),
+        ]),
+      ),
     );
   }
-}
-
-class _Contador extends StatelessWidget {
-  const _Contador({required this.etiqueta, required this.valor, required this.max, required this.onCambio});
-  final String etiqueta;
-  final int valor, max;
-  final ValueChanged<int> onCambio;
-  @override
-  Widget build(BuildContext context) => Row(children: [
-        Expanded(child: Text(etiqueta)),
-        IconButton(
-            tooltip: 'Menos $etiqueta', icon: const Icon(Icons.remove_circle_outline), onPressed: valor > 0 ? () => onCambio(valor - 1) : null),
-        SizedBox(width: 24, child: Text('$valor', textAlign: TextAlign.center)),
-        IconButton(
-            tooltip: 'Más $etiqueta', icon: const Icon(Icons.add_circle_outline), onPressed: valor < max ? () => onCambio(valor + 1) : null),
-      ]);
 }

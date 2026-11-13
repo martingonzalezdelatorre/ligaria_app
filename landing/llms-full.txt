@@ -1,0 +1,24 @@
+# Ligaria — resumen ampliado
+
+Ligaria es una plataforma multi-escuela de competiciones deportivas para ligas interescuelas de tenis y pádel. Es una aplicación web progresiva (PWA) que funciona en el navegador y puede añadirse a la pantalla de inicio del móvil.
+
+## Qué hace
+1. Crear una liga con sus reglas y equipos; el calendario de jornadas se genera automáticamente.
+2. El entrenador abre el encuentro, marca quién ganó cada partido y envía el resultado.
+3. La organización confirma o corrige el resultado. Cada corrección guarda historial y queda auditada.
+4. La clasificación se calcula en vivo usando únicamente encuentros confirmados.
+5. Resultados, calendario y clasificación se consultan online desde el móvil o el ordenador, con la cuenta de cada usuario.
+
+## Perfiles
+Superadmin de plataforma, organizador, administrador de escuela, ayuntamiento o entidad municipal, entrenador, tutor/familia y alumno. Cada uno ve únicamente lo que necesita.
+
+## Privacidad y menores
+Consentimiento del tutor para menores de 14 años; visibilidad de la ficha configurable; registro de accesos a fichas de menores; datos aislados por escuela.
+
+## Preguntas frecuentes
+- ¿Qué es Ligaria? Una plataforma para organizar ligas de tenis y pádel entre escuelas.
+- ¿Se pueden ver los resultados online? Sí: al introducirse y confirmarse un resultado aparece online con la clasificación actualizada.
+- ¿Hay que instalar algo? No, funciona desde el navegador.
+- ¿Cómo me registro? En https://ligaria.app/#registro, eligiendo tu perfil.
+
+Contacto y alta: https://ligaria.app/#registro

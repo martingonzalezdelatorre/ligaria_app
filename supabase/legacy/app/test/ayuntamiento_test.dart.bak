@@ -1,0 +1,70 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:ligaria_app/core/auth.dart';
+import 'package:ligaria_app/core/config.dart';
+import 'package:ligaria_app/data/liga_repository.dart';
+import 'package:ligaria_app/features/ayuntamiento/ayuntamiento_home.dart';
+import 'package:ligaria_app/features/ayuntamiento/ayuntamiento_providers.dart';
+import 'package:ligaria_app/features/home/home_page.dart';
+
+class MockRepo extends Mock implements LigaRepository {}
+
+void main() {
+  test('slugDeHost: subdominios en http/https, local y casos que no cuentan', () {
+    expect(slugDeHost('boadilladelmonte.ligaria.es', 'ligaria.es'), 'boadilladelmonte');
+    expect(slugDeHost('BoadillaDelMonte.Ligaria.es', 'ligaria.es'), 'boadilladelmonte');
+    expect(slugDeHost('boadilladelmonte.localhost', 'ligaria.es'), 'boadilladelmonte');
+    expect(slugDeHost('ligaria.es', 'ligaria.es'), isNull);
+    expect(slugDeHost('www.ligaria.es', 'ligaria.es'), isNull);
+    expect(slugDeHost('app.ligaria.es', 'ligaria.es'), isNull);
+    expect(slugDeHost('a.b.ligaria.es', 'ligaria.es'), isNull);
+    expect(slugDeHost('localhost', 'ligaria.es'), isNull);
+    expect(slugDeHost('otro.com', 'ligaria.es'), isNull);
+  });
+
+  test('validarSubdominio coincide con las reglas de la base de datos', () {
+    expect(validarSubdominio('boadilladelmonte'), isNull);
+    expect(validarSubdominio('las-rozas'), isNull);
+    for (final malo in ['ab', '-malo', 'malo-', 'a--b', 'www', 'app', 'Con Espacios']) {
+      expect(validarSubdominio(malo), isNotNull, reason: malo);
+    }
+  });
+
+  test('un administrador municipal obtiene su área; la plataforma no se mezcla', () {
+    final areas = areasDe(const [
+      Pertenencia(escuelaId: 'o1', escuela: 'Boadilla', rol: Rol.ayuntamiento, ayuntamientoId: 'y1', slug: 'boadilla'),
+    ]);
+    expect(areas.map((a) => a.id), ['ayto-y1']);
+    expect(areas.single.titulo, 'Ayuntamiento');
+  });
+
+  testWidgets('Mi web: valida el subdominio y guarda nombre y subdominio', (tester) async {
+    tester.view.physicalSize = const Size(1600, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final repo = MockRepo();
+    when(() => repo.configurarAyuntamiento(any(), any(), any())).thenAnswer((_) async {});
+    when(() => repo.ligasOrganizadas(any())).thenAnswer((_) async => const []);
+    await tester.pumpWidget(ProviderScope(
+      overrides: [ligaRepositoryProvider.overrideWithValue(repo)],
+      child: const MaterialApp(
+          home: Scaffold(body: AyuntamientoHome(ayuntamientoId: 'y1', organizadoraId: 'o1', nombre: 'Boadilla', slug: 'boadilla'))),
+    ));
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.tap(find.text('Mi web'));
+    await tester.pump(const Duration(milliseconds: 400));
+
+    await tester.enterText(find.byType(TextField).at(1), 'www');
+    await tester.tap(find.text('Guardar'));
+    await tester.pump();
+    expect(find.text('Ese subdominio está reservado'), findsOneWidget);
+    verifyNever(() => repo.configurarAyuntamiento(any(), any(), any()));
+
+    await tester.enterText(find.byType(TextField).at(1), 'boadilladelmonte');
+    await tester.tap(find.text('Guardar'));
+    await tester.pump();
+    verify(() => repo.configurarAyuntamiento('y1', 'Boadilla', 'boadilladelmonte')).called(1);
+  });
+}

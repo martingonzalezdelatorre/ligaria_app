@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'theme.dart';
 
 /// Ilustraciones propias dibujadas con código (sin imágenes externas): escalan a móvil, tablet y escritorio.
 
@@ -266,24 +267,63 @@ class _PulsableState extends State<Pulsable> {
       );
 }
 
-/// Fondo con manchas de color difuminadas (verde y amarillo) para dar profundidad.
-class FondoBlobs extends StatelessWidget {
+/// Fondo oscuro con auroras de color en movimiento y rejilla sutil (como Socio+).
+class FondoBlobs extends StatefulWidget {
   const FondoBlobs({super.key, required this.child});
   final Widget child;
   @override
-  Widget build(BuildContext context) {
-    final oscuro = Theme.of(context).brightness == Brightness.dark;
-    if (oscuro) return child;
-    Widget mancha(Color c, double d) => Container(
-          width: d,
-          height: d,
-          decoration: BoxDecoration(shape: BoxShape.circle, gradient: RadialGradient(colors: [c, c.withValues(alpha: 0)])),
-        );
-    return Stack(children: [
-      Positioned(top: -120, right: -100, child: mancha(const Color(0x552DB36B), 380)),
-      Positioned(bottom: -140, left: -120, child: mancha(const Color(0x55DCEB3B), 420)),
-      Positioned(top: 260, left: -160, child: mancha(const Color(0x335BD18F), 320)),
-      Positioned.fill(child: child),
-    ]);
+  State<FondoBlobs> createState() => _FondoBlobsState();
+}
+
+class _FondoBlobsState extends State<FondoBlobs> with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 18))..repeat();
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
   }
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+        color: tinta,
+        child: Stack(fit: StackFit.expand, children: [
+          RepaintBoundary(
+            child: AnimatedBuilder(animation: _c, builder: (_, _) => CustomPaint(painter: _AuroraPainter(_c.value))),
+          ),
+          widget.child,
+        ]),
+      );
+}
+
+class _AuroraPainter extends CustomPainter {
+  _AuroraPainter(this.t);
+  final double t;
+  @override
+  void paint(Canvas canvas, Size s) {
+    final a = t * 2 * math.pi;
+    final lado = math.max(s.width, s.height);
+    void aurora(double fx, double fy, double r, Color c, double fase) {
+      final centro = Offset(s.width * fx + math.sin(a + fase) * s.width * .12, s.height * fy + math.cos(a + fase) * s.height * .1);
+      final radio = r * lado;
+      canvas.drawCircle(centro, radio,
+          Paint()..shader = RadialGradient(colors: [c, c.withValues(alpha: 0)]).createShader(Rect.fromCircle(center: centro, radius: radio)));
+    }
+
+    aurora(.1, .15, .55, menta.withValues(alpha: .55), 0);
+    aurora(.95, .25, .45, const Color(0xFFFF8A3D).withValues(alpha: .4), 2.1);
+    aurora(.6, 1.0, .6, lima.withValues(alpha: .28), 4.2);
+    aurora(0, .95, .4, verdeMarca.withValues(alpha: .6), 5.5);
+    final linea = Paint()
+      ..color = Colors.white.withValues(alpha: .035)
+      ..strokeWidth = 1;
+    for (var x = 0.0; x < s.width; x += 48) {
+      canvas.drawLine(Offset(x, 0), Offset(x, s.height), linea);
+    }
+    for (var y = 0.0; y < s.height; y += 48) {
+      canvas.drawLine(Offset(0, y), Offset(s.width, y), linea);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_AuroraPainter old) => old.t != t;
 }

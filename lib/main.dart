@@ -1,7 +1,9 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/auth.dart';
 import 'core/config.dart';
 import 'core/router.dart';
 import 'core/theme.dart';
@@ -9,7 +11,13 @@ import 'core/theme.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (AppConfig.configurada) {
-    await Supabase.initialize(url: AppConfig.supabaseUrl, publishableKey: AppConfig.supabaseAnonKey);
+    // Si venimos del enlace de «recuperar contraseña», lo recordamos antes de que Supabase consuma la URL.
+    recuperacionInicial = kIsWeb && Uri.base.fragment.contains('type=recovery');
+    await Supabase.initialize(
+      url: AppConfig.supabaseUrl,
+      publishableKey: AppConfig.supabaseAnonKey,
+      authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.implicit),
+    );
   }
   runApp(const ProviderScope(child: LigariaApp()));
 }
@@ -29,6 +37,7 @@ class LigariaApp extends ConsumerWidget {
     if (!AppConfig.configurada) {
       return MaterialApp(
         title: 'Ligaria',
+        debugShowCheckedModeBanner: false,
         theme: temaClaro(),
         locale: _locales.first,
         supportedLocales: _locales,
@@ -49,6 +58,7 @@ class LigariaApp extends ConsumerWidget {
     }
     return MaterialApp.router(
       title: 'Ligaria',
+      debugShowCheckedModeBanner: false,
       theme: temaClaro(),
       darkTheme: temaOscuro(),
       themeMode: ref.watch(themeModeProvider),

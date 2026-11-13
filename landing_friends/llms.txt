@@ -1,0 +1,23 @@
+# Ligaria Friends
+
+> Ligaria Friends es una app (en desarrollo, lista de espera abierta) para que un grupo de amigos monte su propia liga de tenis o pádel. Genera el calendario de jornadas, recoge los resultados desde el móvil y calcula la clasificación automáticamente.
+
+Idioma: español. Estado: próximamente. Funcionará desde el navegador, sin instalación. Es la versión para grupos de amigos de Ligaria (https://ligaria.app/), la plataforma para ligas interescuelas.
+
+## Qué ofrecerá
+- Crear una liga de tenis o pádel (individual o por parejas) en un minuto.
+- Invitar a los amigos con un enlace.
+- Calendario de jornadas generado automáticamente.
+- Resultados registrados desde el móvil.
+- Clasificación en vivo, calculada solo a partir de resultados; nunca se edita a mano.
+
+## Para quién
+- Grupos de amigos que juegan juntos al tenis o al pádel.
+- Compañeros de trabajo y pequeños clubes que quieren su propia liga.
+- No es para escuelas ni ayuntamientos: para eso existe Ligaria.
+
+## Enlaces
+- [Web principal](https://ligariafriends.app/)
+- [Lista de espera](https://ligariafriends.app/#registro)
+- [Preguntas frecuentes](https://ligariafriends.app/#faq)
+- [Resumen ampliado](https://ligariafriends.app/llms-full.txt)

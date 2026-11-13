@@ -18,11 +18,9 @@ FilaClasificacion fila(int pos, String id, String nombre, int pts) => FilaClasif
     posicion: pos, equipoId: id, equipo: nombre, escuela: 'Escuela $nombre', pj: 1, pg: 1, pe: 0, pp: 0, puntos: pts,
     partidosF: 3, partidosC: 0, setsF: 6, setsC: 0, juegosF: 36, juegosC: 20);
 
-Ficha ficha({required String id, required String relacion, required DateTime nac, bool menor14 = false,
-        bool consentimiento = false, Visibilidad vis = Visibilidad.soloEscuela}) =>
-    Ficha(personaId: id, escuelaId: 'e1', escuela: 'Escuela A', nombre: 'Lucía', apellidos: 'García',
-        fechaNacimiento: nac, visibilidad: vis, mostrarFoto: false, menor14: menor14, consentimiento: consentimiento,
-        relacion: relacion);
+Ficha ficha({required String id, required String relacion, DateTime? nac, String? nivel, String? mano}) =>
+    Ficha(jugadorId: id, escuelaId: 'e1', escuela: 'Escuela A', nombre: 'Lucía', apellidos: 'García',
+        fechaNacimiento: nac, nivel: nivel, manoDominante: mano, relacion: relacion);
 
 late MockRepo repo;
 
@@ -40,14 +38,11 @@ void baseStubs({List<Liga>? ligas}) {
   when(() => repo.descansos(any())).thenAnswer((_) async => const []);
   when(() => repo.clasificacion(any())).thenAnswer((_) async => const []);
   when(() => repo.misFichas()).thenAnswer((_) async => const []);
-  when(() => repo.accesosFicha(any())).thenAnswer((_) async => const []);
-  when(() => repo.registrarAccesoFicha(any(), contexto: any(named: 'contexto'))).thenAnswer((_) async {});
 }
 
 void main() {
   setUp(() {
     repo = MockRepo();
-    registerFallbackValue(Visibilidad.soloEscuela);
   });
 
   testWidgets('el selector de ligas solo filtra la vista', (tester) async {
@@ -71,9 +66,7 @@ void main() {
     expect(find.text('Cobras'), findsOneWidget);
     expect(find.text('Aguilas'), findsNothing);
     // solo filtra: no se ha escrito nada
-    verifyNever(() => repo.crearLiga(
-        escuelaId: any(named: 'escuelaId'), temporadaId: any(named: 'temporadaId'),
-        deporteId: any(named: 'deporteId'), nombre: any(named: 'nombre')));
+    verifyNever(() => repo.registrarResultado(any(), any()));
   });
 
   testWidgets('con una sola liga no hay selector', (tester) async {
@@ -100,7 +93,7 @@ void main() {
   testWidgets('resultados muestra solo confirmados con marcador', (tester) async {
     baseStubs();
     when(() => repo.encuentros('l1')).thenAnswer((_) async => [
-          enc('a', 'l1', 'Aguilas', 'Bravos', estado: 'confirmado', pl: 2, pv: 1),
+          enc('a', 'l1', 'Aguilas', 'Bravos', estado: 'finalizado', pl: 2, pv: 1),
           enc('b', 'l1', 'Cobras', 'Delfines', jornada: 2),
         ]);
     await tester.pumpWidget(app());
@@ -111,68 +104,36 @@ void main() {
     expect(find.text('Cobras'), findsNothing);
   });
 
-  testWidgets('privacidad: al elegir «Iniciales» se llama al repositorio con los argumentos correctos', (tester) async {
+  testWidgets('la ficha propia muestra nivel, mano dominante y edad', (tester) async {
     baseStubs();
-    when(() => repo.misFichas()).thenAnswer((_) async => [ficha(id: 'p1', relacion: 'propia', nac: DateTime(2000, 1, 1))]);
-    when(() => repo.actualizarPrivacidad(any(), any(), any())).thenAnswer((_) async {});
+    when(() => repo.misFichas()).thenAnswer((_) async =>
+        [ficha(id: 'p1', relacion: 'propia', nac: DateTime(2000, 1, 1), nivel: 'Intermedio', mano: 'ZURDO')]);
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Mi ficha'));
     await tester.pumpAndSettle();
+    expect(find.text('Escuela A · Mi ficha'), findsOneWidget);
     await tester.tap(find.text('Lucía García'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Iniciales'));
-    await tester.pumpAndSettle();
-    verify(() => repo.actualizarPrivacidad('p1', Visibilidad.iniciales, false)).called(1);
-    verifyNever(() => repo.registrarAccesoFicha(any(), contexto: any(named: 'contexto'))); // adulto: sin registro de acceso
-  });
-
-  testWidgets('tutor de un menor de 14: consentimiento, registro de acceso y accesos', (tester) async {
-    baseStubs();
-    final nac = DateTime.now().subtract(const Duration(days: 365 * 10));
-    when(() => repo.misFichas()).thenAnswer((_) async => [ficha(id: 'p2', relacion: 'tutor', nac: nac, menor14: true)]);
-    when(() => repo.registrarConsentimiento(any(), any())).thenAnswer((_) async {});
-    when(() => repo.accesosFicha('p2')).thenAnswer((_) async => [AccesoMenor(fecha: DateTime(2026, 10, 3), contexto: 'ficha')]);
-    await tester.pumpWidget(app());
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Mi ficha'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Lucía García'));
-    await tester.pumpAndSettle();
-    verify(() => repo.registrarAccesoFicha('p2', contexto: 'ficha')).called(1);
-    expect(find.text('Accesos a la ficha'), findsOneWidget);
-    expect(find.text('Falta el consentimiento: sin él no puede participar en equipos.'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('switch_consentimiento')));
-    await tester.pumpAndSettle();
-    verify(() => repo.registrarConsentimiento('p2', true)).called(1);
-  });
-
-  testWidgets('alumno de 16 años no ve el interruptor de consentimiento y puede editar su privacidad', (tester) async {
-    baseStubs();
-    final nac = DateTime.now().subtract(const Duration(days: 365 * 16));
-    when(() => repo.misFichas()).thenAnswer((_) async => [ficha(id: 'p3', relacion: 'propia', nac: nac)]);
-    await tester.pumpWidget(app());
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Mi ficha'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Lucía García'));
-    await tester.pumpAndSettle();
+    expect(find.text('Intermedio'), findsOneWidget);
+    expect(find.text('Zurdo/a'), findsOneWidget);
+    expect(find.textContaining('1 ene 2000'), findsOneWidget);
+    // ya no hay ajustes de privacidad ni consentimiento en la ficha
+    expect(find.byKey(const Key('switch_foto')), findsNothing);
     expect(find.byKey(const Key('switch_consentimiento')), findsNothing);
-    expect(find.text('Consentimiento del tutor'), findsNothing);
-    expect(tester.widget<SwitchListTile>(find.byKey(const Key('switch_foto'))).onChanged, isNotNull);
   });
 
-  testWidgets('menor de 14 viendo su propia ficha: controles deshabilitados y sin interruptor de consentimiento', (tester) async {
+  testWidgets('el tutor ve la ficha de su tutelado y los datos vacíos se muestran con guion', (tester) async {
     baseStubs();
-    final nac = DateTime.now().subtract(const Duration(days: 365 * 10));
-    when(() => repo.misFichas()).thenAnswer((_) async => [ficha(id: 'p4', relacion: 'propia', nac: nac, menor14: true)]);
+    when(() => repo.misFichas()).thenAnswer((_) async => [ficha(id: 'p2', relacion: 'tutor')]);
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Mi ficha'));
     await tester.pumpAndSettle();
+    expect(find.text('Escuela A · Tutelado/a'), findsOneWidget);
     await tester.tap(find.text('Lucía García'));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('switch_consentimiento')), findsNothing);
-    expect(tester.widget<SwitchListTile>(find.byKey(const Key('switch_foto'))).onChanged, isNull);
+    expect(find.text('—'), findsWidgets);
+    expect(find.text('Edad'), findsNothing);
   });
 }

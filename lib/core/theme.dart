@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-const _semilla = Color(0xFF1B8A4B); // verde pista
-const _acento = Color(0xFFF2B705); // amarillo pelota
+const _acento = Color(0xFFFF8A3D); // naranja
 
 /// Anchos de referencia para el diseño adaptable.
 class Pantalla {
@@ -13,118 +12,172 @@ class Pantalla {
   static bool esAncha(BuildContext c) => MediaQuery.sizeOf(c).width >= media;
 }
 
-ThemeData _construir(Brightness brillo) {
-  final oscuro = brillo == Brightness.dark;
-  final cs = ColorScheme.fromSeed(seedColor: _semilla, brightness: brillo).copyWith(
-      primary: oscuro ? null : const Color(0xFF1B9A55), onPrimary: oscuro ? null : Colors.white);
-  final fondo = oscuro ? const Color(0xFF0F1512) : const Color(0xFFF5FBF7);
-  final superficie = oscuro ? const Color(0xFF18201C) : Colors.white;
-  final borde = oscuro ? const Color(0xFF2A3630) : const Color(0xFFE2E8E4);
+/// Paleta "punch" (compartida con Socio+).
+const tinta = Color(0xFF06110E);
+const lima = Color(0xFFC6FF3D);
+const menta = Color(0xFF14C79A);
+const verdeMarca = Color(0xFF0E7C66);
+const cristal = Color(0x0FFFFFFF); // blanco 6 %
+const bordeCristal = Color(0x1FFFFFFF); // blanco 12 %
+const superficieOscura = Color(0xFF101D19);
 
-  final base = Typography.material2021(platform: TargetPlatform.android);
-  final texto = (oscuro ? base.white : base.black).apply(bodyColor: cs.onSurface, displayColor: cs.onSurface);
-  final tt = texto.copyWith(
-    headlineMedium: texto.headlineMedium?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -.5),
-    titleLarge: texto.titleLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -.2),
-    titleMedium: texto.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-    labelLarge: texto.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+/// Tema único, oscuro, con lima eléctrico como color principal.
+ThemeData _construir(Brightness _) {
+  final cs = ColorScheme.fromSeed(seedColor: lima, brightness: Brightness.dark).copyWith(
+    primary: lima,
+    onPrimary: tinta,
+    primaryContainer: const Color(0xFF2B3F10),
+    onPrimaryContainer: lima,
+    secondary: menta,
+    onSecondary: tinta,
+    tertiary: _acento,
+    onTertiary: tinta,
+    surface: tinta,
+    onSurface: Colors.white,
+    onSurfaceVariant: const Color(0xFFD3E0DA),
+    outline: const Color(0xFF3F524A),
+    outlineVariant: const Color(0xFF26372F),
+    surfaceContainerLowest: tinta,
+    surfaceContainerLow: const Color(0xFF0C1814),
+    surfaceContainer: superficieOscura,
+    surfaceContainerHigh: const Color(0xFF16261F),
+    surfaceContainerHighest: const Color(0xFF1C2F27),
   );
 
+  final base = ThemeData(useMaterial3: true, colorScheme: cs);
+  final t = base.textTheme.apply(bodyColor: Colors.white, displayColor: Colors.white);
+  final tt = t.copyWith(
+    displaySmall: t.displaySmall?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -1.5),
+    headlineMedium: t.headlineMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -1),
+    headlineSmall: t.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -.8),
+    titleLarge: t.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+    titleMedium: t.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+    labelLarge: t.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+  );
+  const borde = bordeCristal;
+  RoundedRectangleBorder redondo(double r) => RoundedRectangleBorder(borderRadius: BorderRadius.circular(r));
   OutlineInputBorder campo(Color c, [double w = 1]) =>
       OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: c, width: w));
-  RoundedRectangleBorder redondo(double r) => RoundedRectangleBorder(borderRadius: BorderRadius.circular(r));
 
-  return ThemeData(
-    useMaterial3: true,
-    colorScheme: cs,
-    scaffoldBackgroundColor: fondo,
+  return base.copyWith(
+    scaffoldBackgroundColor: tinta,
     textTheme: tt,
     visualDensity: VisualDensity.adaptivePlatformDensity,
     appBarTheme: AppBarTheme(
-      backgroundColor: fondo,
+      backgroundColor: Colors.transparent,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       scrolledUnderElevation: 0,
       centerTitle: false,
-      titleTextStyle: tt.titleLarge?.copyWith(color: cs.onSurface),
+      titleTextStyle: tt.titleLarge?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -.5, color: Colors.white),
     ),
     cardTheme: CardThemeData(
-      color: superficie,
+      color: cristal,
       surfaceTintColor: Colors.transparent,
-      elevation: oscuro ? 0 : 2,
-      shadowColor: const Color(0xFF0B3D22).withValues(alpha: .12),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20), side: BorderSide(color: borde.withValues(alpha: oscuro ? 1 : .6))),
+      elevation: 0,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20), side: const BorderSide(color: borde)),
       clipBehavior: Clip.antiAlias,
     ),
+    iconTheme: const IconThemeData(color: Colors.white),
     tabBarTheme: TabBarThemeData(
       dividerColor: Colors.transparent,
       indicatorSize: TabBarIndicatorSize.tab,
       indicator: BoxDecoration(
-        gradient: LinearGradient(colors: [cs.primary, oscuro ? cs.primary : const Color(0xFF2DB36B)]),
+        color: lima,
         borderRadius: BorderRadius.circular(999),
-        boxShadow: [BoxShadow(color: cs.primary.withValues(alpha: .35), blurRadius: 10, offset: const Offset(0, 3))],
+        boxShadow: [BoxShadow(color: lima.withValues(alpha: .35), blurRadius: 12)],
       ),
-      labelColor: cs.onPrimary,
-      unselectedLabelColor: cs.onSurfaceVariant,
+      labelColor: tinta,
+      unselectedLabelColor: Colors.white70,
       labelStyle: tt.labelLarge,
       splashBorderRadius: BorderRadius.circular(999),
       labelPadding: const EdgeInsets.symmetric(horizontal: 18),
-      overlayColor: WidgetStatePropertyAll(cs.primary.withValues(alpha: .08)),
+      overlayColor: WidgetStatePropertyAll(lima.withValues(alpha: .08)),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: superficie,
+      fillColor: cristal,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: campo(borde),
       enabledBorder: campo(borde),
-      focusedBorder: campo(cs.primary, 2),
+      focusedBorder: campo(lima, 1.5),
       errorBorder: campo(cs.error),
       focusedErrorBorder: campo(cs.error, 2),
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        minimumSize: const Size(64, 50),
+        backgroundColor: lima,
+        foregroundColor: tinta,
+        minimumSize: const Size(64, 48),
         padding: const EdgeInsets.symmetric(horizontal: 24),
-        shape: redondo(14),
-        textStyle: tt.labelLarge,
+        shape: redondo(16),
+        textStyle: const TextStyle(fontWeight: FontWeight.w800),
       ),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
-      style: ElevatedButton.styleFrom(minimumSize: const Size(64, 50), shape: redondo(14)),
+      style: ElevatedButton.styleFrom(backgroundColor: lima, foregroundColor: tinta, minimumSize: const Size(64, 48), shape: redondo(16)),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
-      style: OutlinedButton.styleFrom(minimumSize: const Size(64, 50), side: BorderSide(color: borde), shape: redondo(14)),
+      style: OutlinedButton.styleFrom(
+          foregroundColor: lima, side: BorderSide(color: lima.withValues(alpha: .6)), minimumSize: const Size(64, 48), shape: redondo(16)),
     ),
-    textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(shape: redondo(12))),
-    floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: cs.primary,
-      foregroundColor: cs.onPrimary,
-      shape: redondo(18),
+    textButtonTheme: TextButtonThemeData(style: TextButton.styleFrom(foregroundColor: lima, shape: redondo(12))),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(backgroundColor: lima, foregroundColor: tinta, shape: redondo(16)),
+    chipTheme: base.chipTheme.copyWith(
+      shape: const StadiumBorder(),
+      side: BorderSide(color: lima.withValues(alpha: .4)),
+      backgroundColor: lima.withValues(alpha: .12),
+      labelStyle: const TextStyle(color: lima, fontWeight: FontWeight.w700, fontSize: 12),
     ),
-    chipTheme: ChipThemeData(side: BorderSide(color: borde), shape: redondo(999), backgroundColor: superficie),
-    listTileTheme: ListTileThemeData(shape: redondo(12)),
-    dialogTheme: DialogThemeData(backgroundColor: superficie, surfaceTintColor: Colors.transparent, shape: redondo(24)),
-    bottomSheetTheme: BottomSheetThemeData(
-      backgroundColor: superficie,
+    listTileTheme: ListTileThemeData(shape: redondo(16), iconColor: lima),
+    dialogTheme: DialogThemeData(
+      backgroundColor: superficieOscura,
       surfaceTintColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28), side: const BorderSide(color: borde)),
+      constraints: const BoxConstraints(minWidth: 400, maxWidth: 560),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      titleTextStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
     ),
-    snackBarTheme: SnackBarThemeData(behavior: SnackBarBehavior.floating, shape: redondo(14), insetPadding: const EdgeInsets.all(12)),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: superficieOscura,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: lima,
+      contentTextStyle: const TextStyle(color: tinta, fontWeight: FontWeight.w700),
+      shape: redondo(16),
+      insetPadding: const EdgeInsets.all(12),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: tinta.withValues(alpha: .85),
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: lima,
+      height: 68,
+      iconTheme: WidgetStateProperty.resolveWith(
+          (s) => IconThemeData(color: s.contains(WidgetState.selected) ? tinta : Colors.white70)),
+      labelTextStyle: WidgetStateProperty.resolveWith((s) =>
+          TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: s.contains(WidgetState.selected) ? lima : Colors.white70)),
+    ),
     navigationRailTheme: NavigationRailThemeData(
-      backgroundColor: superficie,
-      indicatorColor: cs.primaryContainer,
-      indicatorShape: redondo(14),
-      selectedLabelTextStyle: tt.labelMedium?.copyWith(color: cs.primary, fontWeight: FontWeight.w700),
+      backgroundColor: tinta.withValues(alpha: .6),
+      indicatorColor: lima,
+      selectedIconTheme: const IconThemeData(color: tinta),
+      unselectedIconTheme: const IconThemeData(color: Colors.white70),
+      selectedLabelTextStyle: const TextStyle(fontWeight: FontWeight.w800, color: lima),
+      unselectedLabelTextStyle: const TextStyle(color: Colors.white70),
     ),
-    drawerTheme: DrawerThemeData(
-      backgroundColor: superficie,
+    drawerTheme: const DrawerThemeData(
+      backgroundColor: superficieOscura,
       surfaceTintColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(right: Radius.circular(24))),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.horizontal(right: Radius.circular(24))),
     ),
-    dividerTheme: DividerThemeData(color: borde, space: 1, thickness: 1),
-    extensions: [Marca(acento: _acento, borde: borde, superficie: superficie)],
+    progressIndicatorTheme: const ProgressIndicatorThemeData(color: lima),
+    dividerTheme: const DividerThemeData(color: borde, space: 1, thickness: 1),
+    extensions: const [Marca(acento: _acento, borde: borde, superficie: cristal)],
   );
 }
 
@@ -133,7 +186,7 @@ class Marca extends ThemeExtension<Marca> {
   const Marca({required this.acento, required this.borde, required this.superficie});
   final Color acento, borde, superficie;
   static Marca de(BuildContext c) =>
-      Theme.of(c).extension<Marca>() ?? const Marca(acento: _acento, borde: Color(0xFFE2E8E4), superficie: Colors.white);
+      Theme.of(c).extension<Marca>() ?? const Marca(acento: _acento, borde: bordeCristal, superficie: cristal);
   @override
   Marca copyWith({Color? acento, Color? borde, Color? superficie}) =>
       Marca(acento: acento ?? this.acento, borde: borde ?? this.borde, superficie: superficie ?? this.superficie);
@@ -156,16 +209,10 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
     _cargar();
-    return ThemeMode.light;
+    return ThemeMode.dark;
   }
 
-  Future<void> _cargar() async {
-    try {
-      final v = (await SharedPreferences.getInstance()).getString(_clave);
-      final m = ThemeMode.values.where((e) => e.name == v);
-      if (m.isNotEmpty) state = m.first;
-    } catch (_) {}
-  }
+  Future<void> _cargar() async {}
 
   Future<void> set(ThemeMode modo) async {
     state = modo;

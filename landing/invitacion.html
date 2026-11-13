@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Únete a un grupo | Ligaria</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#06110e">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="stylesheet" href="styles.css">
+<style>.inv{min-height:100vh;display:grid;place-items:center;padding:32px 16px;background:radial-gradient(60% 50% at 50% 0,rgba(198,255,61,.14),transparent)}
+.inv .card{width:100%;max-width:520px;padding:36px 28px}.inv h1{font-size:1.9rem;margin:0 0 8px}.inv .mut{color:var(--mut);margin:0 0 8px}
+.inv .grupo{display:flex;gap:12px;align-items:center;margin:18px 0;padding:14px 16px;border:1px solid var(--bor);border-radius:14px;background:rgba(198,255,61,.06)}
+.inv .grupo b{display:block}.inv .grupo small{color:var(--mut)}
+.inv form{margin-top:8px}.inv .codigo{letter-spacing:.2em;text-transform:uppercase;font-weight:800;text-align:center}
+.inv .msg.err{color:#ff6b6b}.inv .alt{text-align:center;font-size:.9rem;color:var(--mut);margin:14px 0 0}.inv .alt a{color:var(--lima)}
+.inv .hp{position:absolute;left:-9999px;height:0;overflow:hidden}[hidden]{display:none!important}</style>
+</head>
+<body>
+<main class="inv">
+ <div class="card" aria-live="polite">
+  <p id="cargando" class="mut">Comprobando tu invitación…</p>
+
+  <section id="invalida" hidden>
+   <h1>Invitación no válida</h1>
+   <p class="mut">El enlace no es correcto, ha caducado o ya se usó. Pide a quien te invitó que te envíe uno nuevo.</p>
+   <p class="alt"><a href="/">Ir a la web de Ligaria</a></p>
+  </section>
+
+  <section id="valida" hidden>
+   <h1>Te han invitado a jugar</h1>
+   <p class="mut">Crea tu cuenta para unirte. Solo tarda un minuto.</p>
+   <div class="grupo"><span aria-hidden="true" style="font-size:1.6rem">🎾</span>
+    <div><b id="grupo">—</b><small id="detalle"></small></div></div>
+
+   <form id="form" novalidate>
+    <label>Nombre<input name="nombre" autocomplete="name" required maxlength="120"></label>
+    <label>Email<input name="email" type="email" autocomplete="email" required></label>
+    <label>Contraseña (mín. 8 caracteres)<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+    <label id="lcodigo">Código del grupo
+     <input name="codigo" class="codigo" autocomplete="one-time-code" inputmode="text" maxlength="12" placeholder="ABC-123" required></label>
+    <label class="hp" aria-hidden="true">No rellenar<input name="web" tabindex="-1" autocomplete="off"></label>
+    <label class="check"><input type="checkbox" name="ok" required><span>Acepto la política de privacidad. Si el jugador es menor, confirmo que soy su tutor o cuento con su autorización.</span></label>
+    <button class="btn" type="submit">Unirme al grupo</button>
+    <p class="msg" role="status"></p>
+   </form>
+   <p class="alt">¿Ya tienes cuenta? <a id="login" href="#">Inicia sesión para unirte</a></p>
+  </section>
+
+  <section id="hecho" hidden>
+   <h1>¡Casi listo!</h1>
+   <p class="mut" id="hechoTxt">Te hemos enviado un email para confirmar tu cuenta. Al confirmarlo entrarás directamente en el grupo.</p>
+   <p style="margin-top:20px"><a class="btn" id="app" href="#">Ir a la app</a></p>
+  </section>
+ </div>
+</main>
+<script src="config.js"></script>
+<script src="invitacion.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 -- Ligaria · seed de DESARROLLO (no usar en producción: contraseña conocida)
--- 3 escuelas, 1 liga infantil de tenis, 6 equipos, jugadores, usuarios de prueba,
--- 6 encuentros confirmados (jornadas 1-2) y 1 resultado propuesto pendiente de confirmar.
+-- 1 ayuntamiento, 3 escuelas, 1 liga infantil de tenis entre escuelas con 6 equipos, jugadores,
+-- usuarios de prueba, calendario generado y 6 encuentros con resultado (jornadas 1-2).
 -- Contraseña de todos los usuarios de prueba: Ligaria2026!
 -- Se ejecuta con `supabase db reset` (supabase/config.toml: [db.seed]) o pegándolo en el editor SQL.
 
@@ -10,14 +10,10 @@ declare
   esc_n uuid := 'e0000000-0000-0000-0000-000000000001';
   esc_s uuid := 'e0000000-0000-0000-0000-000000000002';
   esc_e uuid := 'e0000000-0000-0000-0000-000000000003';
-  dep_tenis uuid := 'd0000000-0000-0000-0000-000000000001';
-  dep_padel uuid := 'd0000000-0000-0000-0000-000000000002';
-  cat_tenis uuid := 'c0000000-0000-0000-0000-000000000001';
-  cat_padel uuid := 'c0000000-0000-0000-0000-000000000002';
-  temporada uuid := 'a0000000-0000-0000-0000-000000000001';
-  liga uuid := 'b0000000-0000-0000-0000-000000000001';
+  ayto  uuid := 'e0000000-0000-0000-0000-000000000004';
+  liga  uuid;
   u_super uuid := '10000000-0000-0000-0000-000000000001';
-  u_org uuid := '10000000-0000-0000-0000-000000000002';
+  u_org   uuid := '10000000-0000-0000-0000-000000000002';
   u_adm_n uuid := '10000000-0000-0000-0000-000000000003';
   u_adm_s uuid := '10000000-0000-0000-0000-000000000004';
   u_adm_e uuid := '10000000-0000-0000-0000-000000000005';
@@ -26,6 +22,7 @@ declare
   u_ent_e uuid := '10000000-0000-0000-0000-000000000008';
   u_tutor uuid := '10000000-0000-0000-0000-000000000009';
   u_alumno uuid := '10000000-0000-0000-0000-000000000010';
+  u_ayto  uuid := '10000000-0000-0000-0000-000000000011';
   usuarios text[][] := array[
     [u_super::text, 'superadmin@ligaria.test', 'Sara Superadmin'],
     [u_org::text,   'organizador@ligaria.test', 'Oscar Organizador'],
@@ -36,11 +33,11 @@ declare
     [u_ent_s::text, 'entrenador.sur@ligaria.test', 'Silvia Entrenadora Sur'],
     [u_ent_e::text, 'entrenador.este@ligaria.test', 'Enrique Entrenador Este'],
     [u_tutor::text, 'tutor@ligaria.test', 'Tomás Tutor'],
-    [u_alumno::text, 'alumno@ligaria.test', 'Alma Alumna']
+    [u_alumno::text, 'alumno@ligaria.test', 'Alma Alumna'],
+    [u_ayto::text,  'ayuntamiento@ligaria.test', 'Alba Ayuntamiento']
   ];
-  -- equipos: nombre, escuela, entrenador
   eq_nombres text[] := array['Norte Rojo','Norte Azul','Sur Águilas','Sur Halcones','Este Pioneros','Este Cometas'];
-  eq_escuelas uuid[] := array[esc_n, esc_n, esc_s, esc_s, esc_e, esc_e];
+  eq_orgs uuid[] := array[esc_n, esc_n, esc_s, esc_s, esc_e, esc_e];
   eq_entren uuid[] := array[u_ent_n, u_ent_n, u_ent_s, u_ent_s, u_ent_e, u_ent_e];
   nombres text[] := array['Lucía','Mateo','Sofía','Hugo','Martina','Leo','Valeria','Daniel','Julia','Álvaro','Emma','Pablo',
                           'Carla','Adrián','Noa','Iker','Alba','Marco','Irene','Diego','Paula','Bruno','Vega','Nico'];
@@ -49,17 +46,20 @@ declare
   roster uuid[];
   rosters jsonb := '{}'::jsonb;
   u text[]; i int; j int; k int; eqid uuid; pid uuid; n int := 0;
-  p_pend uuid; p_tutor1 uuid; p_alumno uuid;
-  e record; rn int := 0; ganan boolean[]; pat int; res jsonb; partidos jsonb; sets jsonb; l_ro uuid[]; v_ro uuid[];
+  p_tutor1 uuid; p_alumno uuid; cat uuid;
+  e record; rn int := 0; pat int; res jsonb; partidos jsonb; sets jsonb; l_ro uuid[]; v_ro uuid[];
   ent_local uuid;
   patrones boolean[][] := array[[true,true,false],[false,false,true],[true,false,true],[true,true,true],[false,true,false],[false,false,false]];
 begin
-  if exists (select 1 from escuela where id = esc_n) then
+  if exists (select 1 from organizacion where id = esc_n) then
     raise notice 'Seed ya aplicado; no se repite.';
     return;
   end if;
 
-  -- Usuarios de prueba (en Supabase real incluye identidad para poder iniciar sesión)
+  perform set_config('app.alta_libre', 'on', true); -- el seed crea usuarios sin invitación
+
+  -- Usuarios de prueba (en Supabase real incluye identidad para poder iniciar sesión).
+  -- El trigger on_auth_user_created crea su fila en public.usuario.
   foreach u slice 1 in array usuarios loop
     if exists (select 1 from information_schema.columns
                where table_schema = 'auth' and table_name = 'users' and column_name = 'encrypted_password') then
@@ -76,83 +76,71 @@ begin
     end if;
   end loop;
 
-  -- Catálogos
-  insert into deporte (id, nombre) values (dep_tenis, 'Tenis'), (dep_padel, 'Pádel');
-  insert into categoria (id, deporte_id, nombre, edad_min, edad_max) values
-    (cat_tenis, dep_tenis, 'Infantil', 9, 12), (cat_padel, dep_padel, 'Infantil', 9, 12);
-  insert into temporada (id, nombre, inicio, fin) values (temporada, '2026-27', '2026-09-01', '2027-06-30');
+  insert into organizacion (id, tipo, nombre, ciudad) values
+    (esc_n, 'ESCUELA', 'Club de Tenis Norte', 'Madrid'),
+    (esc_s, 'ESCUELA', 'Academia Sur', 'Madrid'),
+    (esc_e, 'ESCUELA', 'Escuela Municipal Este', 'Madrid'),
+    (ayto,  'AYUNTAMIENTO', 'Ayuntamiento de Ejemplo', 'Madrid');
 
-  -- Escuelas y módulo de competiciones
-  insert into escuela (id, nombre, slug) values
-    (esc_n, 'Club de Tenis Norte', 'tenis-norte'),
-    (esc_s, 'Academia Sur', 'academia-sur'),
-    (esc_e, 'Escuela Municipal Este', 'escuela-este');
-  insert into escuela_modulo (escuela_id, modulo, activo) values
-    (esc_n, 'competiciones', true), (esc_s, 'competiciones', true), (esc_e, 'competiciones', true);
-
-  -- Pertenencias
-  insert into pertenencia (usuario_id, escuela_id, rol) values
-    (u_super, null, 'superadmin'),
-    (u_org, esc_n, 'organizador_liga'),
-    (u_adm_n, esc_n, 'admin_escuela'), (u_adm_s, esc_s, 'admin_escuela'), (u_adm_e, esc_e, 'admin_escuela'),
-    (u_ent_n, esc_n, 'entrenador'), (u_ent_s, esc_s, 'entrenador'), (u_ent_e, esc_e, 'entrenador'),
-    (u_tutor, esc_n, 'tutor'), (u_alumno, esc_s, 'alumno');
+  insert into asignacion_rol (usuario_id, rol_id, organizacion_id)
+  select v.u, r.id, v.o from (values
+    (u_super, 'ADMINISTRADOR', null::uuid),
+    (u_org,   'ORGANIZADOR_LIGAS', esc_n),
+    (u_adm_n, 'ADMIN_ESCUELAS', esc_n), (u_adm_s, 'ADMIN_ESCUELAS', esc_s), (u_adm_e, 'ADMIN_ESCUELAS', esc_e),
+    (u_ent_n, 'ENTRENADOR', esc_n), (u_ent_s, 'ENTRENADOR', esc_s), (u_ent_e, 'ENTRENADOR', esc_e),
+    (u_tutor, 'TUTOR', esc_n), (u_alumno, 'JUGADOR', esc_s),
+    (u_ayto,  'ORGANIZADOR_LIGAS', ayto)
+  ) v(u, c, o) join rol r on r.codigo = v.c;
 
   -- Equipos, jugadores (4 por equipo, 9-12 años) y entrenadores
   for i in 1..6 loop
     eqid := gen_random_uuid();
     eq_ids := eq_ids || eqid;
-    insert into equipo (id, escuela_id, deporte_id, categoria_id, nombre)
-      values (eqid, eq_escuelas[i], dep_tenis, cat_tenis, eq_nombres[i]);
-    insert into equipo_entrenador (equipo_id, escuela_id, usuario_id) values (eqid, eq_escuelas[i], eq_entren[i]);
+    insert into equipo (id, organizacion_id, nombre, tipo, deporte) values (eqid, eq_orgs[i], eq_nombres[i], 'EQUIPO', 'TENIS');
+    insert into entrenador_equipo (equipo_id, usuario_id) values (eqid, eq_entren[i]);
     roster := array[]::uuid[];
     for j in 1..4 loop
       n := n + 1;
       pid := gen_random_uuid();
-      insert into persona (id, escuela_id, nombre, apellidos, fecha_nacimiento, visibilidad_ficha)
-        values (pid, eq_escuelas[i], nombres[n], apellidos[(n - 1) % 12 + 1] || ' ' || apellidos[(n * 5) % 12 + 1],
-                current_date - ((9 + (n % 4)) * 365 + n * 11), case n % 3 when 0 then 'nombre_completo' when 1 then 'iniciales' else 'solo_escuela' end::visibilidad_ficha_t);
-      insert into consentimiento (persona_id, tutor_usuario_id, otorgado) values (pid, null, true);
-      insert into equipo_miembro (equipo_id, escuela_id, persona_id) values (eqid, eq_escuelas[i], pid);
+      insert into jugador (id, organizacion_id, nombre, apellidos, fecha_nacimiento, nivel)
+        values (pid, eq_orgs[i], nombres[n], apellidos[(n - 1) % 12 + 1] || ' ' || apellidos[(n * 5) % 12 + 1],
+                current_date - ((9 + (n % 4)) * 365 + n * 11), 'Iniciación');
+      insert into equipo_miembro (equipo_id, jugador_id, capitan) values (eqid, pid, j = 1);
       roster := roster || pid;
       if i = 1 and j = 1 then p_tutor1 := pid; end if;
     end loop;
     rosters := rosters || jsonb_build_object(eqid::text, to_jsonb(roster));
   end loop;
 
-  -- Casos de privacidad: un menor sin consentimiento aún (de la familia con tutor) y un alumno de 14 con cuenta
-  p_pend := gen_random_uuid();
-  insert into persona (id, escuela_id, nombre, apellidos, fecha_nacimiento)
-    values (p_pend, esc_n, 'Pendiente', 'Consentimiento', current_date - (10 * 365));
-  insert into tutoria (persona_id, tutor_usuario_id, parentesco) values (p_tutor1, u_tutor, 'padre'), (p_pend, u_tutor, 'padre');
+  insert into tutor_jugador (tutor_usuario_id, jugador_id, parentesco) values (u_tutor, p_tutor1, 'padre');
   p_alumno := gen_random_uuid();
-  insert into persona (id, escuela_id, usuario_id, nombre, apellidos, fecha_nacimiento)
-    values (p_alumno, esc_s, u_alumno, 'Alma', 'Alumna', current_date - (14 * 365 + 30));
-  insert into consentimiento (persona_id, tutor_usuario_id, otorgado) values (p_alumno, null, true);
-  insert into equipo_miembro (equipo_id, escuela_id, persona_id) values (eq_ids[3], esc_s, p_alumno);
+  insert into jugador (id, organizacion_id, usuario_id, nombre, apellidos, fecha_nacimiento, mano_dominante)
+    values (p_alumno, esc_s, u_alumno, 'Alma', 'Alumna', current_date - (14 * 365 + 30), 'ZURDO');
+  insert into equipo_miembro (equipo_id, jugador_id) values (eq_ids[3], p_alumno);
 
-  -- Liga infantil de tenis (organiza la escuela Norte) con los 6 equipos
-  insert into competicion (id, organization_id, temporada_id, deporte_id, categoria_id, nombre, estado, reglas)
-    values (liga, esc_n, temporada, dep_tenis, cat_tenis, 'Liga Infantil de Tenis 2026-27', 'publicada',
-      '{"vueltas":1,"partidos_por_encuentro":{"individuales":2,"dobles":1},"puntos":{"victoria":3,"empate":1,"derrota":0},
-        "desempates":["enfrentamiento_directo","diferencia_partidos","diferencia_sets","diferencia_juegos"],
-        "incomparecencia":{"partidos_local":0,"partidos_visitante":3}}'::jsonb);
+  -- Liga infantil de tenis (organiza el club Norte), abierta a inscripción, con los 6 equipos
+  perform set_config('request.jwt.claim.sub', u_org::text, false);
+  liga := crear_competicion(esc_n, 'Liga Infantil de Tenis 2026-27', 'TENIS', 'ENTRE_ESCUELAS', date '2026-10-03', date '2027-03-01');
+  update competicion set estado = 'INSCRIPCION_ABIERTA' where id = liga;
+  select id into cat from categoria where competicion_id = liga;
   for i in 1..6 loop
-    insert into inscripcion_equipo (competicion_id, equipo_id, escuela_id) values (liga, eq_ids[i], eq_escuelas[i]);
+    insert into inscripcion (categoria_id, equipo_id, estado) values (cat, eq_ids[i], 'ACEPTADA');
+    insert into competicion_org (competicion_id, organizacion_id, estado_invitacion)
+      values (liga, eq_orgs[i], 'ACEPTADA') on conflict do nothing;
   end loop;
 
-  -- Calendario generado como organizador
-  perform set_config('request.jwt.claim.sub', u_org::text, false);
-  perform generar_calendario(liga, date '2026-10-03', 7);
+  perform generar_calendario(liga, date '2026-10-03', 7, 1, 2, 1);
 
-  -- Resultados: jornadas 1-2 confirmadas; 1 propuesto en la jornada 3
+  -- Resultados: jornadas 1-2 registradas por el entrenador del equipo local
   for e in
-    select en.id, en.local_equipo_id l, en.visitante_equipo_id v, j.numero jor
-    from encuentro en join jornada j on j.id = en.jornada_id
-    where j.numero <= 3 order by j.numero, en.id
+    select en.id, il.equipo_id l, iv.equipo_id v, j.numero jor
+    from encuentro en
+    join jornada j on j.id = en.jornada_id
+    join inscripcion il on il.id = en.local_inscripcion_id
+    join inscripcion iv on iv.id = en.visitante_inscripcion_id
+    where j.numero <= 2 order by j.numero, en.id
   loop
     rn := rn + 1;
-    if e.jor = 3 and rn <> 7 then continue; end if;   -- solo el primero de la jornada 3
     pat := (rn - 1) % 6 + 1;
     select array_agg(x::uuid order by o) into l_ro from jsonb_array_elements_text(rosters -> e.l::text) with ordinality t(x, o);
     select array_agg(x::uuid order by o) into v_ro from jsonb_array_elements_text(rosters -> e.v::text) with ordinality t(x, o);
@@ -170,13 +158,9 @@ begin
         'sets', sets));
     end loop;
     res := jsonb_build_object('partidos', partidos);
-    select eq_entren[array_position(eq_ids, e.l)] into ent_local;
+    ent_local := eq_entren[array_position(eq_ids, e.l)];
     perform set_config('request.jwt.claim.sub', ent_local::text, false);
-    perform proponer_resultado(e.id, res);
-    if e.jor <= 2 then
-      perform set_config('request.jwt.claim.sub', u_org::text, false);
-      perform confirmar_resultado(e.id);
-    end if;
+    perform registrar_resultado(e.id, res);
   end loop;
   perform set_config('request.jwt.claim.sub', '', false);
 end

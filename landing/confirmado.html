@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cuenta confirmada | Ligaria</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#06110e">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="stylesheet" href="styles.css">
+<style>.ok{min-height:100vh;display:grid;place-items:center;text-align:center;padding:32px 16px;background:radial-gradient(60% 50% at 50% 0,rgba(198,255,61,.14),transparent)}
+.ok .card{max-width:480px;padding:40px 32px}.big{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;margin:0 auto 20px;font-size:2rem;background:rgba(198,255,61,.15);color:var(--lima)}
+.big.err{background:rgba(255,107,107,.15);color:#ff6b6b}.ok p{color:var(--mut);margin:12px 0 28px}</style>
+</head>
+<body>
+<main class="ok">
+ <div class="card" role="status" aria-live="polite">
+  <div class="big" id="ico" aria-hidden="true">✓</div>
+  <h1 id="tit" style="font-size:2rem">¡Cuenta confirmada!</h1>
+  <p id="txt">Tu email se ha verificado correctamente. Ya puedes entrar en Ligaria.</p>
+  <a class="btn" id="btn" href="#">Iniciar sesión</a>
+ </div>
+</main>
+<script src="config.js"></script>
+<script>
+(function () {
+  var C = window.LIGARIA || {};
+  var h = new URLSearchParams(location.hash.replace(/^#/, ''));
+  var q = new URLSearchParams(location.search);
+  var err = h.get('error_code') || q.get('error_code') || h.get('error') || q.get('error');
+  document.getElementById('btn').href = C.appUrl || '/';
+  if (err) {
+    document.getElementById('ico').textContent = '!';
+    document.getElementById('ico').className = 'big err';
+    var caducado = /expired|denied/i.test(err);
+    document.getElementById('tit').textContent = caducado ? 'El enlace ha caducado' : 'No se pudo confirmar';
+    document.getElementById('txt').textContent = caducado
+      ? 'El enlace de confirmación ya no es válido. Si ya confirmaste tu cuenta, inicia sesión; si no, vuelve a registrarte.'
+      : 'Algo salió mal al confirmar tu cuenta. Inténtalo de nuevo o vuelve a registrarte.';
+    document.getElementById('btn').textContent = caducado ? 'Ir a la app' : 'Volver al registro';
+    if (!caducado) document.getElementById('btn').href = '/#registro';
+  }
+  // No dejamos tokens en la URL ni en el historial.
+  if (location.hash || location.search) history.replaceState(null, '', location.pathname);
+})();
+</script>
+</body>
+</html>

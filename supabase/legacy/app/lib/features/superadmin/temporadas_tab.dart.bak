@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/formulario.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets.dart';
 import '../../data/liga_repository.dart';
@@ -9,7 +10,7 @@ class TemporadasTab extends ConsumerWidget {
   const TemporadasTab({super.key});
 
   Future<void> _crear(BuildContext context, WidgetRef ref) async {
-    final r = await showDialog<(String, DateTime, DateTime)>(context: context, builder: (_) => const _NuevaTemporadaDialog());
+    final r = await mostrarFormulario<(String, DateTime, DateTime)>(context, (_) => const _NuevaTemporadaDialog());
     if (r == null) return;
     try {
       await ref.read(ligaRepositoryProvider).crearTemporada(r.$1, r.$2, r.$3);
@@ -73,32 +74,49 @@ class _NuevaTemporadaDialogState extends State<_NuevaTemporadaDialog> {
     if (f != null) setState(() => inicio ? _inicio = f : _fin = f);
   }
 
+  void _crear() {
+    if (_nombre.text.trim().isEmpty) {
+      setState(() => _error = 'Escribe un nombre');
+    } else if (_fin.isBefore(_inicio)) {
+      setState(() => _error = 'El fin debe ser posterior al inicio');
+    } else {
+      Navigator.of(context).pop((_nombre.text.trim(), _inicio, _fin));
+    }
+  }
+
+  Widget _fecha(String etiqueta, DateTime f, bool inicio) => InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => _elegir(inicio),
+        child: InputDecorator(
+          decoration: decoracionCampo(etiqueta, Icons.event, sufijo: const Icon(Icons.expand_more)),
+          child: Text(fechaLarga(f)),
+        ),
+      );
+
   @override
-  Widget build(BuildContext context) => AlertDialog(
-        title: const Text('Nueva temporada'),
-        content: Column(mainAxisSize: MainAxisSize.min, children: [
+  Widget build(BuildContext context) => HojaFormulario(
+        icono: Icons.calendar_month_rounded,
+        titulo: 'Nueva temporada',
+        subtitulo: 'Define el nombre y el periodo en que se disputa.',
+        etiquetaAccion: 'Crear',
+        iconoAccion: Icons.check_rounded,
+        onAccion: _crear,
+        children: [
           TextField(
             controller: _nombre,
             autofocus: true,
-            decoration: InputDecoration(labelText: 'Nombre (p. ej. 2026-27)', errorText: _error, border: const OutlineInputBorder()),
+            textInputAction: TextInputAction.done,
+            decoration: decoracionCampo('Nombre', Icons.label_outline, ayuda: 'p. ej. 2026-27').copyWith(errorText: _error),
           ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(onPressed: () => _elegir(true), icon: const Icon(Icons.event), label: Text('Inicio: ${fechaLarga(_inicio)}')),
-          OutlinedButton.icon(onPressed: () => _elegir(false), icon: const Icon(Icons.event), label: Text('Fin: ${fechaLarga(_fin)}')),
-        ]),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
-          FilledButton(
-            onPressed: () {
-              if (_nombre.text.trim().isEmpty) {
-                setState(() => _error = 'Escribe un nombre');
-              } else if (_fin.isBefore(_inicio)) {
-                setState(() => _error = 'El fin debe ser posterior al inicio');
-              } else {
-                Navigator.of(context).pop((_nombre.text.trim(), _inicio, _fin));
-              }
-            },
-            child: const Text('Crear'),
+          espacioCampo,
+          LayoutBuilder(
+            builder: (context, c) => c.maxWidth >= 440
+                ? Row(children: [
+                    Expanded(child: _fecha('Inicio', _inicio, true)),
+                    const SizedBox(width: 12),
+                    Expanded(child: _fecha('Fin', _fin, false)),
+                  ])
+                : Column(children: [_fecha('Inicio', _inicio, true), espacioCampo, _fecha('Fin', _fin, false)]),
           ),
         ],
       );

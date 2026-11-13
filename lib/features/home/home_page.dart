@@ -32,12 +32,13 @@ List<AreaApp> areasDe(List<Pertenencia> perts) {
   for (final p in perts.where((p) => p.rol == Rol.adminEscuela && p.escuelaId != null)) {
     areas.add(AreaApp(
         id: 'escuela-${p.escuelaId}', titulo: 'Escuela', subtitulo: p.escuela, icono: Icons.school_outlined,
-        builder: () => EscuelaHome(escuelaId: p.escuelaId!, escuelaNombre: p.escuela ?? '')));
+        builder: () => EscuelaHome(escuelaId: p.escuelaId!, escuelaNombre: p.escuela ?? '', orgTipo: p.orgTipo)));
   }
   for (final p in perts.where((p) => p.rol == Rol.organizadorLiga && p.escuelaId != null)) {
     areas.add(AreaApp(
-        id: 'org-${p.escuelaId}', titulo: 'Organización', subtitulo: p.escuela, icono: Icons.emoji_events_outlined,
-        builder: () => OrganizadorHome(escuelaId: p.escuelaId!, escuelaNombre: p.escuela ?? '')));
+        id: 'org-${p.escuelaId}', titulo: p.esAyuntamiento ? 'Ayuntamiento' : 'Organización', subtitulo: p.escuela,
+        icono: p.esAyuntamiento ? Icons.account_balance_outlined : Icons.emoji_events_outlined,
+        builder: () => OrganizadorHome(escuelaId: p.escuelaId!, escuelaNombre: p.escuela ?? '', orgTipo: p.orgTipo)));
   }
   if (perts.any((p) => p.rol == Rol.superadmin)) {
     areas.add(AreaApp(id: 'plataforma', titulo: 'Plataforma', icono: Icons.admin_panel_settings_outlined, builder: () => const SuperadminHome()));
@@ -72,7 +73,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             appBar: _barra(context, 'Ligaria'),
             body: const EstadoVacio(
                 icono: Icons.school_outlined,
-                texto: 'Tu cuenta aún no está asociada a ninguna escuela.\nPide a tu administrador que te invite.'),
+                texto: 'Tu cuenta aún no está asociada a ninguna organización.\nPide a tu administrador que te invite.'),
           );
         }
         final actual = areas.firstWhere((a) => a.id == _areaId, orElse: () => areas.first);
@@ -207,15 +208,15 @@ class LogoLigaria extends StatelessWidget {
   final double tam;
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Container(
       width: tam,
       height: tam,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(tam * .3),
-        gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [cs.primary, const Color(0xFF0E5C31)]),
+        gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [lima, Color(0xFF7BE36B)]),
+        boxShadow: [BoxShadow(color: lima.withValues(alpha: .45), blurRadius: tam * .6)],
       ),
-      child: Icon(Icons.sports_tennis, color: Colors.white, size: tam * .55),
+      child: Icon(Icons.sports_tennis, color: tinta, size: tam * .55),
     );
   }
 }

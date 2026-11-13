@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth.dart';
+import '../../core/formulario.dart';
 import '../../core/widgets.dart';
 import '../../data/liga_repository.dart';
 import '../../data/models.dart';
@@ -43,7 +44,7 @@ class EquiposTab extends ConsumerWidget {
   }
 
   Future<void> _crear(BuildContext context, WidgetRef ref) async {
-    final ok = await showDialog<bool>(context: context, builder: (_) => _NuevoEquipoDialog(escuelaId: escuelaId));
+    final ok = await mostrarFormulario<bool>(context, (_) => _NuevoEquipoDialog(escuelaId: escuelaId));
     if (ok == true) {
       ref.invalidate(equiposEscuelaProvider(escuelaId));
       if (context.mounted) avisar(context, 'Equipo creado.');
@@ -84,36 +85,60 @@ class _NuevoEquipoDialogState extends ConsumerState<_NuevoEquipoDialog> {
     }
   }
 
+  static IconData _icono(String nombre) {
+    final n = nombre.toLowerCase();
+    if (n.contains('tenis') || n.contains('pádel') || n.contains('padel')) return Icons.sports_tennis;
+    if (n.contains('baloncesto')) return Icons.sports_basketball;
+    if (n.contains('fútbol') || n.contains('futbol')) return Icons.sports_soccer;
+    if (n.contains('balonmano')) return Icons.sports_handball;
+    if (n.contains('voley')) return Icons.sports_volleyball;
+    return Icons.sports;
+  }
+
   @override
   Widget build(BuildContext context) {
     final deportes = ref.watch(deportesProvider).value ?? const <Deporte>[];
-    return AlertDialog(
-      title: const Text('Nuevo equipo'),
-      content: Form(
-        key: _form,
-        child: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextFormField(
-              key: const Key('equipo-nombre'),
-              controller: _nombre,
-              decoration: const InputDecoration(labelText: 'Nombre del equipo'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Introduce un nombre' : null,
+    return HojaFormulario(
+      formKey: _form,
+      icono: Icons.groups_rounded,
+      titulo: 'Nuevo equipo',
+      subtitulo: 'Elige el nombre y el deporte en el que competirá.',
+      etiquetaAccion: 'Crear equipo',
+      iconoAccion: Icons.check_rounded,
+      enviando: _enviando,
+      onAccion: _guardar,
+      children: [
+        TextFormField(
+          key: const Key('equipo-nombre'),
+          controller: _nombre,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          textInputAction: TextInputAction.done,
+          decoration: decoracionCampo('Nombre del equipo', Icons.shield_outlined, ayuda: 'Ej. Infantil A'),
+          validator: (v) => (v == null || v.trim().isEmpty) ? 'Introduce un nombre' : null,
+        ),
+        espacioCampo,
+        FormField<String>(
+          key: const Key('equipo-deporte'),
+          initialValue: _deporteId,
+          validator: (v) => v == null ? 'Elige un deporte' : null,
+          builder: (f) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            SelectorTarjetas<String>(
+              etiqueta: 'Deporte',
+              valor: _deporteId,
+              opciones: [for (final d in deportes) OpcionTarjeta(d.id, d.nombre, _icono(d.nombre))],
+              onCambio: (v) {
+                setState(() => _deporteId = v);
+                f.didChange(v);
+              },
             ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              key: const Key('equipo-deporte'),
-              initialValue: _deporteId,
-              decoration: const InputDecoration(labelText: 'Deporte'),
-              items: [for (final d in deportes) DropdownMenuItem(value: d.id, child: Text(d.nombre))],
-              validator: (v) => v == null ? 'Elige un deporte' : null,
-              onChanged: (v) => setState(() => _deporteId = v),
-            ),
+            if (f.hasError)
+              Padding(
+                padding: const EdgeInsets.only(top: 8, left: 4),
+                child: Text(f.errorText!, style: TextStyle(color: Theme.of(context).colorScheme.error, fontSize: 12)),
+              ),
           ]),
         ),
-      ),
-      actions: [
-        TextButton(onPressed: _enviando ? null : () => Navigator.of(context).pop(false), child: const Text('Cancelar')),
-        FilledButton(onPressed: _enviando ? null : _guardar, child: const Text('Crear')),
       ],
     );
   }
@@ -166,29 +191,25 @@ class EquipoPage extends ConsumerWidget {
     );
   }
 
-  Future<String?> _elegir<T>(BuildContext context, String titulo, List<(String, String)> opciones, String vacio) {
-    return showDialog<String>(
-      context: context,
-      builder: (_) => SimpleDialog(
-        title: Text(titulo),
-        children: opciones.isEmpty
-            ? [Padding(padding: const EdgeInsets.all(24), child: Text(vacio))]
-            : [for (final o in opciones) SimpleDialogOption(onPressed: () => Navigator.of(context).pop(o.$1), child: Text(o.$2))],
-      ),
-    );
-  }
+  Future<String?> _elegir(BuildContext context, String titulo, IconData icono, List<(String, String)> opciones, String vacio) =>
+      elegirDeLista<String>(context,
+          icono: icono,
+          titulo: titulo,
+          subtitulo: equipo.nombre,
+          opciones: [for (final o in opciones) (o.$1, o.$2, null)],
+          vacio: vacio);
 
   Future<void> _anadirJugador(BuildContext context, WidgetRef ref) async {
     final repo = ref.read(ligaRepositoryProvider);
     try {
-      final personas = await ref.read(personasEscuelaProvider(escuelaId).future);
-      final actuales = (await ref.read(jugadoresEquipoEscuelaProvider(equipo.id).future)).map((j) => j.personaId).toSet();
+      final personas = await ref.read(jugadoresOrgProvider(escuelaId).future);
+      final actuales = (await ref.read(jugadoresEquipoEscuelaProvider(equipo.id).future)).map((j) => j.jugadorId).toSet();
       final libres = personas.where((p) => !actuales.contains(p.id)).toList();
       if (!context.mounted) return;
-      final id = await _elegir(context, 'Añadir jugador', [for (final p in libres) (p.id, p.nombreCompleto)],
+      final id = await _elegir(context, 'Añadir jugador', Icons.person_add_alt_1_rounded, [for (final p in libres) (p.id, p.nombreCompleto)],
           'No quedan personas por añadir.');
       if (id == null) return;
-      await repo.anadirJugador(equipo.id, escuelaId, id);
+      await repo.anadirJugador(equipo.id, id);
       ref.invalidate(jugadoresEquipoEscuelaProvider(equipo.id));
       if (context.mounted) avisar(context, 'Jugador añadido.');
     } catch (e) {
@@ -203,11 +224,11 @@ class EquipoPage extends ConsumerWidget {
       final entrenadores = usuarios.where((u) => u.rol == rolADb(Rol.entrenador)).toList();
       if (!context.mounted) return;
       final id = await _elegir(
-          context, 'Asignar entrenador',
+          context, 'Asignar entrenador', Icons.sports,
           [for (final u in entrenadores) (u.usuarioId, u.nombre?.isNotEmpty == true ? u.nombre! : u.email)],
           'No hay usuarios con rol entrenador. Invítalos desde «Usuarios».');
       if (id == null) return;
-      await repo.asignarEntrenador(equipo.id, escuelaId, id);
+      await repo.asignarEntrenador(equipo.id, id);
       if (context.mounted) avisar(context, 'Entrenador asignado.');
     } catch (e) {
       if (context.mounted) avisar(context, mensajeErrorEscuela(e));

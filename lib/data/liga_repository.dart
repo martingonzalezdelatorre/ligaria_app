@@ -5,65 +5,53 @@ import 'models.dart';
 
 /// Acceso a datos de competiciones. Las pantallas dependen solo de esta interfaz;
 /// en los tests se sustituye con un mock (mocktail).
+///
+/// Se apoya en el esquema de `supabase/migrations`: tablas base (0001) y vistas/RPC de la app (0002).
 abstract class LigaRepository {
-  // ── Común / alumno / familia ──
+  // ── Común / jugador / familia ──
   Future<List<Liga>> misLigas();
   Future<List<MiEquipo>> misEquipos();
   Future<List<EncuentroVista>> encuentros(String ligaId);
   Future<List<Descanso>> descansos(String ligaId);
   Future<List<FilaClasificacion>> clasificacion(String ligaId);
   Future<List<Ficha>> misFichas();
-  Future<void> actualizarPrivacidad(String personaId, Visibilidad visibilidad, bool mostrarFoto);
-  Future<void> registrarConsentimiento(String personaId, bool otorgado);
-  /// Registra el acceso a la ficha de un menor (RPC leer_ficha).
-  Future<void> registrarAccesoFicha(String personaId, {String? contexto});
-  Future<List<AccesoMenor>> accesosFicha(String personaId);
-  Future<Map<String, bool>> prefsNotificacion();
-  Future<void> guardarPrefsNotificacion(Map<String, bool> prefs);
-  Future<List<NotificacionApp>> notificaciones();
-  Future<void> marcarNotificacionLeida(String id);
 
   // ── Entrenador ──
   Future<List<Jugador>> jugadores(String equipoId);
   Future<DetalleEncuentro> detalleEncuentro(String encuentroId);
   /// resultado: {"incomparecencia": null|"local"|"visitante",
-  ///   "partidos":[{"orden":1,"local":[personaId],"visitante":[personaId],"sets":[[6,4],[3,6]]}]}
-  Future<void> proponerResultado(String encuentroId, Map<String, dynamic> resultado);
+  ///   "partidos":[{"orden":1,"local":[jugadorId],"visitante":[jugadorId],"sets":[[6,4],[3,6]]}]}
+  /// El entrenador de uno de los equipos lo registra una vez; la organización puede corregirlo.
+  Future<void> registrarResultado(String encuentroId, Map<String, dynamic> resultado);
 
-  // ── Admin de escuela ──
-  Future<List<PersonaLite>> personas(String escuelaId);
-  Future<void> crearPersona(String escuelaId, String nombre, String apellidos, DateTime fechaNacimiento);
-  Future<List<EquipoLite>> equipos(String escuelaId);
-  Future<void> crearEquipo(String escuelaId, String nombre, String deporteId, {String? categoriaId});
-  Future<void> anadirJugador(String equipoId, String escuelaId, String personaId);
-  Future<void> asignarEntrenador(String equipoId, String escuelaId, String usuarioId);
-  Future<List<UsuarioEscuela>> usuarios(String escuelaId);
-  Future<void> invitar(String escuelaId, String email, Rol rol, {String? personaId});
+  // ── Administrador de escuela ──
+  Future<List<JugadorLite>> jugadoresOrg(String orgId);
+  Future<void> crearJugador(String orgId, String nombre, String apellidos, DateTime fechaNacimiento);
+  Future<List<EquipoLite>> equipos(String orgId);
+  Future<void> crearEquipo(String orgId, String nombre, String deporteId);
+  Future<void> anadirJugador(String equipoId, String jugadorId);
+  Future<void> asignarEntrenador(String equipoId, String usuarioId);
+  Future<List<UsuarioEscuela>> usuarios(String orgId);
+  Future<void> invitar(String orgId, String email, Rol rol, {String? jugadorId});
   Future<List<LigaAbierta>> ligasAbiertas();
-  Future<void> inscribirEquipo(String ligaId, String equipoId, String escuelaId);
+  Future<void> inscribirEquipo(String ligaId, String equipoId);
   Future<List<Deporte>> deportes();
 
   // ── Organizador ──
-  Future<List<Temporada>> temporadas();
-  Future<List<Liga>> ligasOrganizadas(String escuelaId);
+  Future<List<Liga>> ligasOrganizadas(String orgId);
+  /// [tipo]: código de competicion_tipo (MUNICIPAL | ENTRE_ESCUELAS | ESCUELA | AMIGOS).
   Future<void> crearLiga({
-    required String escuelaId, required String temporadaId, required String deporteId,
-    required String nombre, ReglasLiga reglas = const ReglasLiga(),
+    required String orgId, required String deporteId, required String nombre, required String tipo,
+    DateTime? fechaInicio, DateTime? fechaFin,
   });
+  Future<void> editarLiga(String ligaId, {required String nombre, DateTime? fechaInicio, DateTime? fechaFin});
+  /// Abre la liga a la inscripción de equipos.
   Future<void> publicarLiga(String ligaId);
-  Future<int> generarCalendario(String ligaId, {DateTime? inicio, int diasEntreJornadas = 7});
-  Future<List<EncuentroVista>> pendientes(String escuelaId);
-  Future<void> confirmarResultado(String encuentroId);
-  Future<void> rechazarResultado(String encuentroId, String motivo);
-  Future<void> corregirResultado(String encuentroId, Map<String, dynamic> resultado, String motivo);
-  Future<List<Correccion>> correcciones(String encuentroId);
+  Future<int> generarCalendario(String ligaId, {DateTime? inicio, int diasEntreJornadas = 7, int vueltas = 1});
 
-  // ── Superadmin ──
-  Future<List<EscuelaAdmin>> escuelas();
-  Future<void> crearEscuela(String nombre, String slug);
-  Future<void> setModulo(String escuelaId, String modulo, bool activo);
-  Future<void> crearTemporada(String nombre, DateTime inicio, DateTime fin);
-  Future<List<RegistroCambio>> registroCambios({int limite = 100});
+  // ── Administrador de la plataforma ──
+  Future<List<OrganizacionAdmin>> organizaciones();
+  Future<void> crearOrganizacion(String nombre, String tipo, {String? ciudad});
 }
 
 final ligaRepositoryProvider = Provider<LigaRepository>((ref) => SupabaseLigaRepository());
@@ -72,16 +60,11 @@ String _iso(DateTime d) => d.toIso8601String().substring(0, 10);
 
 class SupabaseLigaRepository implements LigaRepository {
   SupabaseClient get _c => Supabase.instance.client;
-  String get _uid => _c.auth.currentUser!.id;
   List<Map<String, dynamic>> _rows(Object l) => (l as List).cast<Map<String, dynamic>>();
 
   @override
-  Future<List<Liga>> misLigas() async => _rows(await _c
-          .from('competicion')
-          .select('id, nombre, estado, organization_id, deporte(nombre)')
-          .order('created_at'))
-      .map(Liga.fromRow)
-      .toList();
+  Future<List<Liga>> misLigas() async =>
+      _rows(await _c.from('v_ligas').select().order('created_at')).map(Liga.fromRow).toList();
 
   @override
   Future<List<MiEquipo>> misEquipos() async =>
@@ -104,66 +87,18 @@ class SupabaseLigaRepository implements LigaRepository {
       .toList();
 
   @override
-  Future<List<FilaClasificacion>> clasificacion(String ligaId) async =>
-      _rows(await _c.rpc('clasificacion', params: {'p_competicion': ligaId}))
-          .map(FilaClasificacion.fromRow)
-          .toList();
+  Future<List<FilaClasificacion>> clasificacion(String ligaId) async => _rows(await _c
+          .from('v_clasificacion_competicion')
+          .select()
+          .eq('competicion_id', ligaId)
+          .order('categoria_id')
+          .order('posicion'))
+      .map(FilaClasificacion.fromRow)
+      .toList();
 
   @override
   Future<List<Ficha>> misFichas() async =>
       _rows(await _c.from('v_mis_fichas').select().order('nombre')).map(Ficha.fromRow).toList();
-
-  @override
-  Future<void> actualizarPrivacidad(String personaId, Visibilidad visibilidad, bool mostrarFoto) =>
-      _c.rpc('actualizar_privacidad', params: {
-        'p_persona': personaId,
-        'p_visibilidad': visibilidadADb(visibilidad),
-        'p_mostrar_foto': mostrarFoto,
-      });
-
-  @override
-  Future<void> registrarConsentimiento(String personaId, bool otorgado) => _c.from('consentimiento').insert({
-        'persona_id': personaId,
-        'tutor_usuario_id': _uid,
-        'otorgado': otorgado,
-      });
-
-  @override
-  Future<void> registrarAccesoFicha(String personaId, {String? contexto}) =>
-      _c.rpc('leer_ficha', params: {'p_persona': personaId, 'p_contexto': contexto});
-
-  @override
-  Future<List<AccesoMenor>> accesosFicha(String personaId) async => _rows(await _c
-          .from('registro_acceso_menores')
-          .select('created_at, contexto')
-          .eq('persona_id', personaId)
-          .order('created_at', ascending: false)
-          .limit(50))
-      .map((r) => AccesoMenor(fecha: DateTime.parse(r['created_at'] as String), contexto: r['contexto'] as String?))
-      .toList();
-
-  @override
-  Future<Map<String, bool>> prefsNotificacion() async {
-    final r = await _c.from('usuario').select('notif_prefs').eq('id', _uid).single();
-    final m = (r['notif_prefs'] as Map?) ?? const {};
-    return {for (final e in m.entries) e.key as String: e.value == true};
-  }
-
-  @override
-  Future<void> guardarPrefsNotificacion(Map<String, bool> prefs) =>
-      _c.from('usuario').update({'notif_prefs': prefs}).eq('id', _uid);
-
-  @override
-  Future<List<NotificacionApp>> notificaciones() async => _rows(await _c
-          .from('notificacion')
-          .select()
-          .order('created_at', ascending: false)
-          .limit(50))
-      .map(NotificacionApp.fromRow)
-      .toList();
-
-  @override
-  Future<void> marcarNotificacionLeida(String id) => _c.from('notificacion').update({'leida': true}).eq('id', id);
 
   @override
   Future<List<Jugador>> jugadores(String equipoId) async =>
@@ -173,10 +108,9 @@ class SupabaseLigaRepository implements LigaRepository {
 
   @override
   Future<DetalleEncuentro> detalleEncuentro(String encuentroId) async {
-    final enc = await _c.from('encuentro').select('incomparecencia').eq('id', encuentroId).single();
     final partidos = _rows(await _c
         .from('partido')
-        .select('id, orden, tipo, resultado_set(numero, juegos_local, juegos_visitante)')
+        .select('id, orden, tipo, set_partido(numero, juegos_local, juegos_visitante)')
         .eq('encuentro_id', encuentroId)
         .order('orden'));
     final ids = partidos.map((p) => p['id'] as String).toList();
@@ -184,22 +118,26 @@ class SupabaseLigaRepository implements LigaRepository {
         ? <Map<String, dynamic>>[]
         : _rows(await _c
             .from('v_jugadores_competicion')
-            .select('partido_id, lado, persona_id, nombre_mostrado')
+            .select('partido_id, lado, jugador_id, nombre_mostrado')
             .inFilter('partido_id', ids));
+    final vista = _rows(await _c
+        .from('v_encuentros_competicion')
+        .select('incomparecencia')
+        .eq('encuentro_id', encuentroId));
     List<Map<String, dynamic>> de(String pid, String lado) =>
         jug.where((j) => j['partido_id'] == pid && j['lado'] == lado).toList();
     return DetalleEncuentro(
-      incomparecencia: enc['incomparecencia'] as String?,
+      incomparecencia: vista.isEmpty ? null : vista.first['incomparecencia'] as String?,
       partidos: [
         for (final p in partidos)
           PartidoDetalle(
             orden: (p['orden'] as num).toInt(),
-            tipo: p['tipo'] as String,
+            tipo: (p['tipo'] as String).toLowerCase(),
             local: de(p['id'] as String, 'local').map((j) => j['nombre_mostrado'] as String).toList(),
             visitante: de(p['id'] as String, 'visitante').map((j) => j['nombre_mostrado'] as String).toList(),
-            localIds: de(p['id'] as String, 'local').map((j) => j['persona_id'] as String).toList(),
-            visitanteIds: de(p['id'] as String, 'visitante').map((j) => j['persona_id'] as String).toList(),
-            sets: (((p['resultado_set'] as List?) ?? const []).cast<Map<String, dynamic>>().toList()
+            localIds: de(p['id'] as String, 'local').map((j) => j['jugador_id'] as String).toList(),
+            visitanteIds: de(p['id'] as String, 'visitante').map((j) => j['jugador_id'] as String).toList(),
+            sets: (((p['set_partido'] as List?) ?? const []).cast<Map<String, dynamic>>().toList()
                   ..sort((a, b) => (a['numero'] as num).compareTo(b['numero'] as num)))
                 .map((s) => [(s['juegos_local'] as num).toInt(), (s['juegos_visitante'] as num).toInt()])
                 .toList(),
@@ -209,60 +147,54 @@ class SupabaseLigaRepository implements LigaRepository {
   }
 
   @override
-  Future<void> proponerResultado(String encuentroId, Map<String, dynamic> resultado) =>
-      _c.rpc('proponer_resultado', params: {'p_encuentro': encuentroId, 'p_resultado': resultado});
+  Future<void> registrarResultado(String encuentroId, Map<String, dynamic> resultado) =>
+      _c.rpc('registrar_resultado', params: {'p_encuentro': encuentroId, 'p_resultado': resultado});
 
   @override
-  Future<List<PersonaLite>> personas(String escuelaId) async => _rows(await _c
-          .from('persona')
+  Future<List<JugadorLite>> jugadoresOrg(String orgId) async => _rows(await _c
+          .from('jugador')
           .select('id, nombre, apellidos, fecha_nacimiento')
-          .eq('escuela_id', escuelaId)
+          .eq('organizacion_id', orgId)
           .order('apellidos'))
-      .map(PersonaLite.fromRow)
+      .map(JugadorLite.fromRow)
       .toList();
 
   @override
-  Future<void> crearPersona(String escuelaId, String nombre, String apellidos, DateTime fechaNacimiento) =>
-      _c.from('persona').insert({
-        'escuela_id': escuelaId, 'nombre': nombre, 'apellidos': apellidos, 'fecha_nacimiento': _iso(fechaNacimiento),
+  Future<void> crearJugador(String orgId, String nombre, String apellidos, DateTime fechaNacimiento) =>
+      _c.from('jugador').insert({
+        'organizacion_id': orgId, 'nombre': nombre, 'apellidos': apellidos, 'fecha_nacimiento': _iso(fechaNacimiento),
       });
 
   @override
-  Future<List<EquipoLite>> equipos(String escuelaId) async =>
-      _rows(await _c.from('equipo').select('id, nombre, deporte_id, categoria_id').eq('escuela_id', escuelaId).order('nombre'))
+  Future<List<EquipoLite>> equipos(String orgId) async =>
+      _rows(await _c.from('equipo').select('id, nombre, deporte').eq('organizacion_id', orgId).order('nombre'))
           .map(EquipoLite.fromRow)
           .toList();
 
   @override
-  Future<void> crearEquipo(String escuelaId, String nombre, String deporteId, {String? categoriaId}) =>
-      _c.from('equipo').insert({
-        'escuela_id': escuelaId, 'nombre': nombre, 'deporte_id': deporteId, 'categoria_id': categoriaId,
-      });
+  Future<void> crearEquipo(String orgId, String nombre, String deporteId) =>
+      _c.from('equipo').insert({'organizacion_id': orgId, 'nombre': nombre, 'deporte': deporteId});
 
   @override
-  Future<void> anadirJugador(String equipoId, String escuelaId, String personaId) =>
-      _c.from('equipo_miembro').insert({'equipo_id': equipoId, 'escuela_id': escuelaId, 'persona_id': personaId});
+  Future<void> anadirJugador(String equipoId, String jugadorId) =>
+      _c.from('equipo_miembro').insert({'equipo_id': equipoId, 'jugador_id': jugadorId});
 
   @override
-  Future<void> asignarEntrenador(String equipoId, String escuelaId, String usuarioId) =>
-      _c.from('equipo_entrenador').insert({'equipo_id': equipoId, 'escuela_id': escuelaId, 'usuario_id': usuarioId});
+  Future<void> asignarEntrenador(String equipoId, String usuarioId) =>
+      _c.from('entrenador_equipo').insert({'equipo_id': equipoId, 'usuario_id': usuarioId});
 
   @override
-  Future<List<UsuarioEscuela>> usuarios(String escuelaId) async => _rows(await _c
-          .from('pertenencia')
-          .select('rol, usuario(id, email, nombre)')
-          .eq('escuela_id', escuelaId))
-      .map((r) {
-        final u = r['usuario'] as Map<String, dynamic>;
-        return UsuarioEscuela(
-            usuarioId: u['id'] as String, email: (u['email'] as String?) ?? '', nombre: u['nombre'] as String?, rol: r['rol'] as String);
-      })
-      .toList();
+  Future<List<UsuarioEscuela>> usuarios(String orgId) async =>
+      _rows(await _c.from('v_usuarios_org').select().eq('organizacion_id', orgId))
+          .map((r) => UsuarioEscuela(
+              usuarioId: r['usuario_id'] as String, email: (r['email'] as String?) ?? '',
+              nombre: r['nombre'] as String?, rol: r['rol'] as String))
+          .toList();
 
   @override
-  Future<void> invitar(String escuelaId, String email, Rol rol, {String? personaId}) =>
+  Future<void> invitar(String orgId, String email, Rol rol, {String? jugadorId}) =>
       _c.rpc('invitar_usuario', params: {
-        'p_escuela': escuelaId, 'p_email': email, 'p_rol': rolADb(rol), 'p_persona': personaId,
+        'p_organizacion': orgId, 'p_email': email, 'p_rol': rolADb(rol), 'p_jugador': jugadorId,
       });
 
   @override
@@ -270,120 +202,57 @@ class SupabaseLigaRepository implements LigaRepository {
       _rows(await _c.from('v_ligas_abiertas').select()).map(LigaAbierta.fromRow).toList();
 
   @override
-  Future<void> inscribirEquipo(String ligaId, String equipoId, String escuelaId) =>
-      _c.from('inscripcion_equipo').insert({'competicion_id': ligaId, 'equipo_id': equipoId, 'escuela_id': escuelaId});
+  Future<void> inscribirEquipo(String ligaId, String equipoId) =>
+      _c.rpc('inscribir_equipo', params: {'p_competicion': ligaId, 'p_equipo': equipoId});
 
   @override
-  Future<List<Deporte>> deportes() async => _rows(await _c.from('deporte').select().order('nombre'))
-      .map((r) => Deporte(id: r['id'] as String, nombre: r['nombre'] as String))
-      .toList();
+  Future<List<Deporte>> deportes() async => deportesDisponibles;
 
   @override
-  Future<List<Temporada>> temporadas() async => _rows(await _c.from('temporada').select().order('inicio', ascending: false))
-      .map((r) => Temporada(
-          id: r['id'] as String, nombre: r['nombre'] as String,
-          inicio: DateTime.parse(r['inicio'] as String), fin: DateTime.parse(r['fin'] as String)))
-      .toList();
-
-  @override
-  Future<List<Liga>> ligasOrganizadas(String escuelaId) async => _rows(await _c
-          .from('competicion')
-          .select('id, nombre, estado, organization_id, deporte(nombre)')
-          .eq('organization_id', escuelaId)
-          .order('created_at'))
-      .map(Liga.fromRow)
-      .toList();
+  Future<List<Liga>> ligasOrganizadas(String orgId) async =>
+      _rows(await _c.from('v_ligas').select().eq('organizacion_id', orgId).order('created_at'))
+          .map(Liga.fromRow)
+          .toList();
 
   @override
   Future<void> crearLiga({
-    required String escuelaId, required String temporadaId, required String deporteId,
-    required String nombre, ReglasLiga reglas = const ReglasLiga(),
+    required String orgId, required String deporteId, required String nombre, required String tipo,
+    DateTime? fechaInicio, DateTime? fechaFin,
   }) =>
-      _c.from('competicion').insert({
-        'organization_id': escuelaId, 'temporada_id': temporadaId, 'deporte_id': deporteId,
-        'nombre': nombre, 'tipo': 'liga', 'reglas': reglas.toJson(),
+      _c.rpc('crear_competicion', params: {
+        'p_organizacion': orgId, 'p_nombre': nombre, 'p_deporte': deporteId, 'p_tipo': tipo,
+        'p_fecha_inicio': fechaInicio == null ? null : _iso(fechaInicio),
+        'p_fecha_fin': fechaFin == null ? null : _iso(fechaFin),
       });
 
   @override
-  Future<void> publicarLiga(String ligaId) => _c.from('competicion').update({'estado': 'publicada'}).eq('id', ligaId);
+  Future<void> editarLiga(String ligaId, {required String nombre, DateTime? fechaInicio, DateTime? fechaFin}) =>
+      _c.from('competicion').update({
+        'nombre': nombre,
+        'fecha_inicio': fechaInicio == null ? null : _iso(fechaInicio),
+        'fecha_fin': fechaFin == null ? null : _iso(fechaFin),
+      }).eq('id', ligaId).eq('estado', 'BORRADOR');
 
   @override
-  Future<int> generarCalendario(String ligaId, {DateTime? inicio, int diasEntreJornadas = 7}) async {
+  Future<void> publicarLiga(String ligaId) =>
+      _c.from('competicion').update({'estado': 'INSCRIPCION_ABIERTA'}).eq('id', ligaId).eq('estado', 'BORRADOR');
+
+  @override
+  Future<int> generarCalendario(String ligaId, {DateTime? inicio, int diasEntreJornadas = 7, int vueltas = 1}) async {
     final r = await _c.rpc('generar_calendario', params: {
       'p_competicion': ligaId,
       'p_fecha_inicio': inicio == null ? null : _iso(inicio),
       'p_dias_entre_jornadas': diasEntreJornadas,
+      'p_vueltas': vueltas,
     });
     return (r as num).toInt();
   }
 
   @override
-  Future<List<EncuentroVista>> pendientes(String escuelaId) async {
-    final ligas = await ligasOrganizadas(escuelaId);
-    if (ligas.isEmpty) return const [];
-    return _rows(await _c
-            .from('v_encuentros_competicion')
-            .select()
-            .inFilter('competicion_id', ligas.map((l) => l.id).toList())
-            .eq('estado', 'propuesto')
-            .order('jornada'))
-        .map(EncuentroVista.fromRow)
-        .toList();
-  }
+  Future<List<OrganizacionAdmin>> organizaciones() async =>
+      _rows(await _c.from('v_organizaciones_admin').select().order('nombre')).map(OrganizacionAdmin.fromRow).toList();
 
   @override
-  Future<void> confirmarResultado(String encuentroId) => _c.rpc('confirmar_resultado', params: {'p_encuentro': encuentroId});
-
-  @override
-  Future<void> rechazarResultado(String encuentroId, String motivo) =>
-      _c.rpc('rechazar_resultado', params: {'p_encuentro': encuentroId, 'p_motivo': motivo});
-
-  @override
-  Future<void> corregirResultado(String encuentroId, Map<String, dynamic> resultado, String motivo) =>
-      _c.rpc('corregir_resultado', params: {'p_encuentro': encuentroId, 'p_resultado': resultado, 'p_motivo': motivo});
-
-  @override
-  Future<List<Correccion>> correcciones(String encuentroId) async => _rows(await _c
-          .from('correccion_resultado')
-          .select('motivo, created_at')
-          .eq('encuentro_id', encuentroId)
-          .order('created_at', ascending: false))
-      .map((r) => Correccion(motivo: r['motivo'] as String, fecha: DateTime.parse(r['created_at'] as String)))
-      .toList();
-
-  @override
-  Future<List<EscuelaAdmin>> escuelas() async => _rows(await _c
-          .from('escuela')
-          .select('id, nombre, slug, activa, escuela_modulo(modulo, activo)')
-          .order('nombre'))
-      .map((r) => EscuelaAdmin(
-            id: r['id'] as String, nombre: r['nombre'] as String, slug: r['slug'] as String, activa: r['activa'] as bool,
-            modulos: {
-              for (final m in ((r['escuela_modulo'] as List?) ?? const []).cast<Map<String, dynamic>>())
-                m['modulo'] as String: m['activo'] as bool,
-            },
-          ))
-      .toList();
-
-  @override
-  Future<void> crearEscuela(String nombre, String slug) => _c.from('escuela').insert({'nombre': nombre, 'slug': slug});
-
-  @override
-  Future<void> setModulo(String escuelaId, String modulo, bool activo) =>
-      _c.from('escuela_modulo').upsert({'escuela_id': escuelaId, 'modulo': modulo, 'activo': activo});
-
-  @override
-  Future<void> crearTemporada(String nombre, DateTime inicio, DateTime fin) =>
-      _c.from('temporada').insert({'nombre': nombre, 'inicio': _iso(inicio), 'fin': _iso(fin)});
-
-  @override
-  Future<List<RegistroCambio>> registroCambios({int limite = 100}) async => _rows(await _c
-          .from('registro_cambios')
-          .select('id, escuela_id, tabla, accion, created_at')
-          .order('created_at', ascending: false)
-          .limit(limite))
-      .map((r) => RegistroCambio(
-          id: (r['id'] as num).toInt(), tabla: r['tabla'] as String, accion: r['accion'] as String,
-          fecha: DateTime.parse(r['created_at'] as String), escuelaId: r['escuela_id'] as String?))
-      .toList();
+  Future<void> crearOrganizacion(String nombre, String tipo, {String? ciudad}) =>
+      _c.from('organizacion').insert({'nombre': nombre, 'tipo': tipo, 'ciudad': ciudad});
 }

@@ -23,6 +23,8 @@ export async function nuevaBD() {
     await db.exec(readFileSync(path.join(migrations, f), 'utf8'));
   }
   // permisos sobre esquema auth para auth.uid() desde el rol authenticated
+  // los tests crean usuarios sueltos: salta la regla «solo por invitación» (se desactiva en el test de altas)
+  await db.exec("set app.alta_libre = 'on'");
   await db.exec('grant usage on schema auth to authenticated; grant execute on function auth.uid() to authenticated;');
   return db;
 }

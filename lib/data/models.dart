@@ -3,34 +3,50 @@
 DateTime? _fecha(dynamic v) => v == null ? null : DateTime.parse(v as String);
 int? _int(dynamic v) => v == null ? null : (v as num).toInt();
 
-enum Visibilidad { nombreCompleto, iniciales, soloEscuela }
-
-Visibilidad visibilidadDesdeDb(String v) => switch (v) {
-      'nombre_completo' => Visibilidad.nombreCompleto,
-      'iniciales' => Visibilidad.iniciales,
-      _ => Visibilidad.soloEscuela,
-    };
-String visibilidadADb(Visibilidad v) => switch (v) {
-      Visibilidad.nombreCompleto => 'nombre_completo',
-      Visibilidad.iniciales => 'iniciales',
-      Visibilidad.soloEscuela => 'solo_escuela',
-    };
-
 class Liga {
-  const Liga({required this.id, required this.nombre, required this.estado, this.deporte, this.organizationId});
+  const Liga({
+    required this.id, required this.nombre, required this.estado, this.deporte, this.organizationId,
+    this.deporteId, this.tipo, this.fechaInicio, this.fechaFin,
+  });
   final String id;
   final String nombre;
-  final String estado; // borrador | publicada | en_curso | finalizada
-  final String? deporte;
+  final String estado; // borrador | publicada | en_curso | finalizada | cancelada
+  final String? deporte; // nombre legible (Tenis / Pádel)
   final String? organizationId;
+  final String? deporteId; // código de deporte_tipo: TENIS | PADEL
+  final String? tipo; // competicion_tipo: MUNICIPAL | ENTRE_ESCUELAS | ESCUELA | AMIGOS
+  final DateTime? fechaInicio, fechaFin;
   factory Liga.fromRow(Map<String, dynamic> r) => Liga(
         id: r['id'] as String,
         nombre: r['nombre'] as String,
         estado: r['estado'] as String,
-        deporte: (r['deporte'] as Map?)?['nombre'] as String?,
-        organizationId: r['organization_id'] as String?,
+        deporte: r['deporte'] as String?,
+        organizationId: r['organizacion_id'] as String?,
+        deporteId: r['deporte_id'] as String?,
+        tipo: r['tipo'] as String?,
+        fechaInicio: _fecha(r['fecha_inicio']),
+        fechaFin: _fecha(r['fecha_fin']),
       );
 }
+
+/// Jornadas de un todos-contra-todos: n-1 (n par) o n (impar, con descanso), por vuelta.
+int jornadasLiga(int equipos, int vueltas) {
+  if (equipos < 2) return 0;
+  return (equipos.isEven ? equipos - 1 : equipos) * vueltas;
+}
+
+/// Deportes disponibles (enum deporte_tipo de la base de datos).
+const deportesDisponibles = [Deporte(id: 'TENIS', nombre: 'Tenis'), Deporte(id: 'PADEL', nombre: 'Pádel')];
+
+/// Tipos de competición que puede crear una organización según su tipo (organizacion_tipo).
+List<({String codigo, String etiqueta})> tiposCompeticionDe(String? orgTipo) => switch (orgTipo) {
+      'AYUNTAMIENTO' => const [(codigo: 'MUNICIPAL', etiqueta: 'Municipal')],
+      'GRUPO_AMIGOS' => const [(codigo: 'AMIGOS', etiqueta: 'Entre amigos')],
+      _ => const [
+          (codigo: 'ENTRE_ESCUELAS', etiqueta: 'Entre escuelas (abierta a inscripción)'),
+          (codigo: 'ESCUELA', etiqueta: 'Interna de la escuela'),
+        ],
+    };
 
 class LigaAbierta {
   const LigaAbierta({required this.id, required this.nombre, required this.deporteId, required this.deporte, required this.organizadora});
@@ -65,8 +81,8 @@ class EncuentroVista {
   final int? partidosLocal, partidosVisitante; // null si el resultado no es visible
   final String? incomparecencia; // 'local' | 'visitante'
   bool get tieneMarcador => partidosLocal != null && partidosVisitante != null;
-  bool get confirmado => estado == 'confirmado';
-  bool get propuesto => estado == 'propuesto';
+  /// Encuentro ya jugado (resultado registrado, incluida la incomparecencia).
+  bool get confirmado => estado == 'finalizado' || estado == 'no_presentado';
   factory EncuentroVista.fromRow(Map<String, dynamic> r) => EncuentroVista(
         id: r['encuentro_id'] as String,
         ligaId: r['competicion_id'] as String,
@@ -118,54 +134,50 @@ class MiEquipo {
   final String? ligaId, liga;
   factory MiEquipo.fromRow(Map<String, dynamic> r) => MiEquipo(
         equipoId: r['equipo_id'] as String, equipo: r['equipo'] as String,
-        escuelaId: r['escuela_id'] as String, escuela: r['escuela'] as String, rol: r['rol'] as String,
+        escuelaId: r['organizacion_id'] as String, escuela: r['organizacion'] as String, rol: r['rol'] as String,
         ligaId: r['competicion_id'] as String?, liga: r['competicion'] as String?,
       );
 }
 
 class Ficha {
-  const Ficha({required this.personaId, required this.escuelaId, required this.escuela, required this.nombre,
-      required this.apellidos, required this.fechaNacimiento, required this.visibilidad, required this.mostrarFoto,
-      required this.menor14, required this.consentimiento, required this.relacion});
-  final String personaId, escuelaId, escuela, nombre, apellidos;
-  final DateTime fechaNacimiento;
-  final Visibilidad visibilidad;
-  final bool mostrarFoto, menor14, consentimiento;
+  const Ficha({required this.jugadorId, this.escuelaId, this.escuela, required this.nombre,
+      required this.apellidos, this.fechaNacimiento, this.genero, this.nivel, this.manoDominante, required this.relacion});
+  final String jugadorId, nombre, apellidos;
+  final String? escuelaId, escuela;
+  final DateTime? fechaNacimiento;
+  final String? genero; // MASCULINO | FEMENINO | MIXTO
+  final String? nivel;
+  final String? manoDominante; // DIESTRO | ZURDO | AMBIDIESTRO
   final String relacion; // propia | tutor
   String get nombreCompleto => '$nombre $apellidos'.trim();
   factory Ficha.fromRow(Map<String, dynamic> r) => Ficha(
-        personaId: r['persona_id'] as String, escuelaId: r['escuela_id'] as String, escuela: r['escuela'] as String,
+        jugadorId: r['jugador_id'] as String, escuelaId: r['organizacion_id'] as String?, escuela: r['organizacion'] as String?,
         nombre: r['nombre'] as String, apellidos: (r['apellidos'] as String?) ?? '',
-        fechaNacimiento: DateTime.parse(r['fecha_nacimiento'] as String),
-        visibilidad: visibilidadDesdeDb(r['visibilidad_ficha'] as String),
-        mostrarFoto: r['mostrar_foto'] as bool, menor14: r['menor_14'] as bool,
-        consentimiento: r['consentimiento'] as bool, relacion: r['relacion'] as String,
+        fechaNacimiento: _fecha(r['fecha_nacimiento']), genero: r['genero'] as String?, nivel: r['nivel'] as String?,
+        manoDominante: r['mano_dominante'] as String?, relacion: r['relacion'] as String,
       );
 }
 
-class AccesoMenor {
-  const AccesoMenor({required this.fecha, this.contexto});
-  final DateTime fecha;
-  final String? contexto;
-}
+String etiquetaMano(String? m) => switch (m) {
+      'DIESTRO' => 'Diestro/a',
+      'ZURDO' => 'Zurdo/a',
+      'AMBIDIESTRO' => 'Ambidiestro/a',
+      _ => '—',
+    };
+
+String etiquetaGenero(String? g) => switch (g) {
+      'MASCULINO' => 'Masculino',
+      'FEMENINO' => 'Femenino',
+      'MIXTO' => 'Mixto',
+      _ => '—',
+    };
 
 class Jugador {
-  const Jugador({required this.personaId, required this.nombre, required this.apellidos});
-  final String personaId, nombre, apellidos;
+  const Jugador({required this.jugadorId, required this.nombre, required this.apellidos});
+  final String jugadorId, nombre, apellidos;
   String get nombreCompleto => '$nombre $apellidos'.trim();
   factory Jugador.fromRow(Map<String, dynamic> r) => Jugador(
-      personaId: r['persona_id'] as String, nombre: r['nombre'] as String, apellidos: (r['apellidos'] as String?) ?? '');
-}
-
-class NotificacionApp {
-  const NotificacionApp({required this.id, required this.titulo, this.cuerpo, required this.leida, required this.fecha});
-  final String id, titulo;
-  final String? cuerpo;
-  final bool leida;
-  final DateTime fecha;
-  factory NotificacionApp.fromRow(Map<String, dynamic> r) => NotificacionApp(
-        id: r['id'] as String, titulo: r['titulo'] as String, cuerpo: r['cuerpo'] as String?,
-        leida: r['leida'] as bool, fecha: DateTime.parse(r['created_at'] as String));
+      jugadorId: r['jugador_id'] as String, nombre: r['nombre'] as String, apellidos: (r['apellidos'] as String?) ?? '');
 }
 
 /// Detalle de un encuentro: partidos con jugadores y sets (desde la óptica local-visitante).
@@ -175,88 +187,61 @@ class PartidoDetalle {
   final int orden;
   final String tipo; // individual | dobles
   final List<String> local, visitante; // nombres mostrados
-  final List<String> localIds, visitanteIds; // ids de persona
+  final List<String> localIds, visitanteIds; // ids de jugador
   final List<List<int>> sets; // [[juegosLocal, juegosVisitante], ...]
 }
 
 class DetalleEncuentro {
   const DetalleEncuentro({required this.partidos, this.incomparecencia});
   final List<PartidoDetalle> partidos;
-  final String? incomparecencia;
+  final String? incomparecencia; // 'local' | 'visitante'
 }
 
-class Correccion {
-  const Correccion({required this.motivo, required this.fecha});
-  final String motivo;
-  final DateTime fecha;
-}
-
-// ───────── Escuela / organización / plataforma ─────────
-class PersonaLite {
-  const PersonaLite({required this.id, required this.nombre, required this.apellidos, required this.fechaNacimiento});
+// ───────── Organización / plataforma ─────────
+class JugadorLite {
+  const JugadorLite({required this.id, required this.nombre, required this.apellidos, this.fechaNacimiento});
   final String id, nombre, apellidos;
-  final DateTime fechaNacimiento;
+  final DateTime? fechaNacimiento;
   String get nombreCompleto => '$nombre $apellidos'.trim();
-  factory PersonaLite.fromRow(Map<String, dynamic> r) => PersonaLite(
+  factory JugadorLite.fromRow(Map<String, dynamic> r) => JugadorLite(
       id: r['id'] as String, nombre: r['nombre'] as String, apellidos: (r['apellidos'] as String?) ?? '',
-      fechaNacimiento: DateTime.parse(r['fecha_nacimiento'] as String));
+      fechaNacimiento: _fecha(r['fecha_nacimiento']));
 }
 
 class EquipoLite {
-  const EquipoLite({required this.id, required this.nombre, required this.deporteId, this.categoriaId});
-  final String id, nombre, deporteId;
-  final String? categoriaId;
-  factory EquipoLite.fromRow(Map<String, dynamic> r) => EquipoLite(
-      id: r['id'] as String, nombre: r['nombre'] as String, deporteId: r['deporte_id'] as String,
-      categoriaId: r['categoria_id'] as String?);
+  const EquipoLite({required this.id, required this.nombre, required this.deporteId});
+  final String id, nombre;
+  final String deporteId; // TENIS | PADEL
+  factory EquipoLite.fromRow(Map<String, dynamic> r) =>
+      EquipoLite(id: r['id'] as String, nombre: r['nombre'] as String, deporteId: r['deporte'] as String);
 }
 
 class UsuarioEscuela {
   const UsuarioEscuela({required this.usuarioId, required this.email, this.nombre, required this.rol});
-  final String usuarioId, email, rol; // rol en formato BD
+  final String usuarioId, email, rol; // rol: código de la BD (ENTRENADOR, TUTOR…)
   final String? nombre;
 }
 
 class Deporte {
   const Deporte({required this.id, required this.nombre});
-  final String id, nombre;
+  final String id, nombre; // id: código de deporte_tipo
 }
 
-class Temporada {
-  const Temporada({required this.id, required this.nombre, required this.inicio, required this.fin});
+/// Organización vista por el administrador de la plataforma.
+class OrganizacionAdmin {
+  const OrganizacionAdmin({required this.id, required this.nombre, required this.tipo, this.ciudad, required this.activa, this.administradores = 0});
   final String id, nombre;
-  final DateTime inicio, fin;
-}
-
-class EscuelaAdmin {
-  const EscuelaAdmin({required this.id, required this.nombre, required this.slug, required this.activa, this.modulos = const {}});
-  final String id, nombre, slug;
+  final String tipo; // ESCUELA | AYUNTAMIENTO | GRUPO_AMIGOS
+  final String? ciudad;
   final bool activa;
-  final Map<String, bool> modulos;
+  final int administradores;
+  factory OrganizacionAdmin.fromRow(Map<String, dynamic> r) => OrganizacionAdmin(
+      id: r['id'] as String, nombre: r['nombre'] as String, tipo: r['tipo'] as String, ciudad: r['ciudad'] as String?,
+      activa: r['activa'] as bool, administradores: _int(r['administradores']) ?? 0);
 }
 
-class RegistroCambio {
-  const RegistroCambio({required this.id, required this.tabla, required this.accion, required this.fecha, this.escuelaId});
-  final int id;
-  final String tabla, accion;
-  final DateTime fecha;
-  final String? escuelaId;
-}
-
-/// Reglas configurables de una liga (se serializan al formato JSON de competicion.reglas).
-class ReglasLiga {
-  const ReglasLiga({
-    this.vueltas = 1, this.individuales = 2, this.dobles = 1,
-    this.puntosVictoria = 3, this.puntosEmpate = 1, this.puntosDerrota = 0,
-    this.desempates = const ['enfrentamiento_directo', 'diferencia_partidos', 'diferencia_sets', 'diferencia_juegos'],
-  });
-  final int vueltas, individuales, dobles, puntosVictoria, puntosEmpate, puntosDerrota;
-  final List<String> desempates;
-  Map<String, dynamic> toJson() => {
-        'vueltas': vueltas,
-        'partidos_por_encuentro': {'individuales': individuales, 'dobles': dobles},
-        'puntos': {'victoria': puntosVictoria, 'empate': puntosEmpate, 'derrota': puntosDerrota},
-        'desempates': desempates,
-        'incomparecencia': {'partidos_local': 0, 'partidos_visitante': individuales + dobles},
-      };
-}
+String etiquetaTipoOrg(String tipo) => switch (tipo) {
+      'AYUNTAMIENTO' => 'Ayuntamiento',
+      'GRUPO_AMIGOS' => 'Grupo de amigos',
+      _ => 'Escuela',
+    };

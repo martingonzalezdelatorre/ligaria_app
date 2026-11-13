@@ -1,40 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets.dart';
-import '../../data/liga_repository.dart';
 import '../../data/models.dart';
-import 'correccion_page.dart';
+import '../entrenador/resultado_form_page.dart';
 import 'organizador_providers.dart';
 
-/// Detalle de un encuentro con su resultado: confirmar, rechazar o corregir.
+/// Detalle de un encuentro con su resultado. La organización puede registrarlo o corregirlo.
 class ResultadoPage extends ConsumerWidget {
   const ResultadoPage({super.key, required this.escuelaId, required this.encuentro});
   final String escuelaId;
   final EncuentroVista encuentro;
 
-  Future<void> _confirmar(BuildContext context, WidgetRef ref) async {
-    try {
-      await ref.read(ligaRepositoryProvider).confirmarResultado(encuentro.id);
-      refrescarResultado(ref, escuelaId, encuentro);
+  Future<void> _editar(BuildContext context, WidgetRef ref) async {
+    final guardado = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => ResultadoFormPage(encuentro: encuentro)),
+    );
+    if (guardado == true) {
+      refrescarResultado(ref, encuentro);
       if (!context.mounted) return;
-      avisar(context, 'Resultado confirmado.');
+      avisar(context, 'Resultado guardado. La clasificación se ha actualizado.');
       Navigator.of(context).pop();
-    } catch (e) {
-      if (context.mounted) avisar(context, mensajeError(e, defecto: 'No se pudo confirmar el resultado.'));
-    }
-  }
-
-  Future<void> _rechazar(BuildContext context, WidgetRef ref) async {
-    final motivo = await showDialog<String>(context: context, builder: (_) => const _MotivoDialog());
-    if (motivo == null) return;
-    try {
-      await ref.read(ligaRepositoryProvider).rechazarResultado(encuentro.id, motivo);
-      refrescarResultado(ref, escuelaId, encuentro);
-      if (!context.mounted) return;
-      avisar(context, 'Resultado devuelto al entrenador.');
-      Navigator.of(context).pop();
-    } catch (e) {
-      if (context.mounted) avisar(context, mensajeError(e, defecto: 'No se pudo rechazar el resultado.'));
     }
   }
 
@@ -42,8 +27,6 @@ class ResultadoPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tema = Theme.of(context);
     final detalle = ref.watch(orgDetalleProvider(encuentro.id));
-    final historial = ref.watch(orgCorreccionesProvider(encuentro.id)).value ?? const <Correccion>[];
-    final puedeCorregir = detalle.hasValue && !encuentro.estado.contains('programado');
     return Scaffold(
       appBar: AppBar(title: Text('Jornada ${encuentro.jornada}')),
       body: AsyncView<DetalleEncuentro>(
@@ -61,37 +44,20 @@ class ResultadoPage extends ConsumerWidget {
               ),
             ),
           for (final p in d.partidos) _PartidoCard(partido: p),
-          if (historial.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 16, 4, 4),
-              child: Text('Historial de correcciones', style: tema.textTheme.titleSmall),
-            ),
-            for (final c in historial)
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.history),
-                title: Text(c.motivo),
-                subtitle: Text(fechaLarga(c.fecha)),
-              ),
-          ],
         ]),
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Wrap(spacing: 8, runSpacing: 8, alignment: WrapAlignment.end, children: [
-            if (encuentro.propuesto) ...[
-              FilledButton(onPressed: () => _confirmar(context, ref), child: const Text('Confirmar')),
-              OutlinedButton(onPressed: () => _rechazar(context, ref), child: const Text('Rechazar')),
-            ],
-            if (puedeCorregir)
-              OutlinedButton(
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => CorreccionPage(
-                        escuelaId: escuelaId, encuentro: encuentro, detalle: detalle.requireValue))),
-                child: const Text('Corregir'),
-              ),
-          ]),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.icon(
+              key: const Key('editar-resultado'),
+              icon: const Icon(Icons.edit_note),
+              onPressed: () => _editar(context, ref),
+              label: Text(encuentro.confirmado ? 'Corregir resultado' : 'Registrar resultado'),
+            ),
+          ),
         ),
       ),
     );
@@ -123,46 +89,4 @@ class _PartidoCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _MotivoDialog extends StatefulWidget {
-  const _MotivoDialog();
-  @override
-  State<_MotivoDialog> createState() => _MotivoDialogState();
-}
-
-class _MotivoDialogState extends State<_MotivoDialog> {
-  final _c = TextEditingController();
-  String? _error;
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => AlertDialog(
-        title: const Text('Rechazar resultado'),
-        content: TextField(
-          controller: _c,
-          autofocus: true,
-          maxLines: 3,
-          decoration: InputDecoration(labelText: 'Motivo (se envía al entrenador)', errorText: _error, border: const OutlineInputBorder()),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancelar')),
-          FilledButton(
-            onPressed: () {
-              final t = _c.text.trim();
-              if (t.isEmpty) {
-                setState(() => _error = 'Indica el motivo');
-              } else {
-                Navigator.of(context).pop(t);
-              }
-            },
-            child: const Text('Rechazar'),
-          ),
-        ],
-      );
 }

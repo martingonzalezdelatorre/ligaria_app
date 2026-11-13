@@ -1,20 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth.dart';
+import '../../core/formulario.dart';
 import '../../core/theme.dart';
 import '../../core/widgets.dart';
-import '../../data/liga_repository.dart';
-import '../../data/models.dart';
-
-final _prefsProvider = FutureProvider.autoDispose<Map<String, bool>>(
-    (ref) => ref.watch(ligaRepositoryProvider).prefsNotificacion());
-final _notificacionesProvider = FutureProvider.autoDispose<List<NotificacionApp>>(
-    (ref) => ref.watch(ligaRepositoryProvider).notificaciones());
-
-const _tiposNotificacion = {
-  'resultados': 'Resultados (propuestos, confirmados y correcciones)',
-  'calendario': 'Cambios en el calendario',
-};
 
 class CuentaPage extends ConsumerStatefulWidget {
   const CuentaPage({super.key});
@@ -44,104 +33,95 @@ class _CuentaPageState extends ConsumerState<CuentaPage> {
     }
   }
 
-  Future<void> _guardarPref(Map<String, bool> actuales, String clave, bool valor) async {
-    try {
-      await ref.read(ligaRepositoryProvider).guardarPrefsNotificacion({...actuales, clave: valor});
-      ref.invalidate(_prefsProvider);
-    } catch (_) {
-      if (mounted) avisar(context, 'No se pudo guardar la preferencia.');
-    }
+  Widget _seccion(BuildContext context, IconData icono, String titulo, Widget hijo) {
+    final tema = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Row(children: [
+            Icon(icono, color: tema.colorScheme.primary, size: 22),
+            const SizedBox(width: 10),
+            Text(titulo, style: tema.textTheme.titleMedium),
+          ]),
+          const SizedBox(height: 14),
+          hijo,
+        ]),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final modo = ref.watch(themeModeProvider);
     final repo = ref.watch(authRepositoryProvider);
-    final prefs = ref.watch(_prefsProvider);
-    final notifs = ref.watch(_notificacionesProvider);
     final tema = Theme.of(context);
+    final cs = tema.colorScheme;
+    final email = repo.email ?? '';
+
+    final cabecera = Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [lima.withValues(alpha: .16), menta.withValues(alpha: .04)]),
+        ),
+        child: Row(children: [
+          AvatarEquipo(email.isEmpty ? '?' : email, tam: 56),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Tu cuenta', style: tema.textTheme.labelMedium?.copyWith(color: cs.onSurfaceVariant)),
+              Text(email, style: tema.textTheme.titleMedium, overflow: TextOverflow.ellipsis),
+            ]),
+          ),
+        ]),
+      ),
+    );
+
+    final password = _seccion(
+      context,
+      Icons.lock_outline,
+      'Cambiar contraseña',
+      Form(
+        key: _form,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          TextFormField(
+            controller: _nueva,
+            obscureText: true,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _cambiar(),
+            decoration: decoracionCampo('Nueva contraseña', Icons.password, ayuda: 'Al menos 8 caracteres'),
+            validator: (v) => (v == null || v.length < 8) ? 'Mínimo 8 caracteres' : null,
+          ),
+          const SizedBox(height: 14),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton(onPressed: _cambiar, child: const Text('Actualizar')),
+          ),
+          if (_mensaje != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_mensaje!)),
+        ]),
+      ),
+    );
+
+    final salir = OutlinedButton.icon(
+      onPressed: () => ref.read(authRepositoryProvider).cerrarSesion(),
+      icon: const Icon(Icons.logout),
+      label: const Text('Cerrar sesión'),
+    );
+
     return Scaffold(
       appBar: AppBar(title: const Text('Mi cuenta')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(repo.email ?? '', style: tema.textTheme.titleMedium),
-          const SizedBox(height: 24),
-          Text('Apariencia', style: tema.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          SegmentedButton<ThemeMode>(
-            segments: const [
-              ButtonSegment(value: ThemeMode.system, label: Text('Sistema')),
-              ButtonSegment(value: ThemeMode.light, label: Text('Claro')),
-              ButtonSegment(value: ThemeMode.dark, label: Text('Oscuro')),
-            ],
-            selected: {modo},
-            onSelectionChanged: (s) => ref.read(themeModeProvider.notifier).set(s.first),
-          ),
-          const SizedBox(height: 32),
-          Text('Notificaciones', style: tema.textTheme.titleSmall),
-          prefs.when(
-            loading: () => const Padding(padding: EdgeInsets.all(16), child: LinearProgressIndicator()),
-            error: (_, _) => const Padding(padding: EdgeInsets.all(8), child: Text('No se pudieron cargar tus preferencias.')),
-            data: (p) => Column(children: [
-              for (final e in _tiposNotificacion.entries)
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(e.value),
-                  value: p[e.key] ?? true,
-                  onChanged: (v) => _guardarPref(p, e.key, v),
-                ),
-            ]),
-          ),
-          notifs.when(
-            loading: () => const SizedBox.shrink(),
-            error: (_, _) => const SizedBox.shrink(),
-            data: (lista) => lista.isEmpty
-                ? const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Text('No tienes notificaciones.'))
-                : Column(children: [
-                    for (final n in lista.take(10))
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        dense: true,
-                        leading: Icon(n.leida ? Icons.notifications_none : Icons.notifications_active_outlined),
-                        title: Text(n.titulo, style: n.leida ? null : const TextStyle(fontWeight: FontWeight.bold)),
-                        subtitle: Text([fechaCorta(n.fecha), if (n.cuerpo != null) n.cuerpo!].join(' · ')),
-                        onTap: n.leida
-                            ? null
-                            : () async {
-                                await ref.read(ligaRepositoryProvider).marcarNotificacionLeida(n.id);
-                                ref.invalidate(_notificacionesProvider);
-                              },
-                      ),
-                  ]),
-          ),
-          const SizedBox(height: 24),
-          Text('Cambiar contraseña', style: tema.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          Form(
-            key: _form,
-            child: Column(children: [
-              TextFormField(
-                controller: _nueva,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Nueva contraseña', border: OutlineInputBorder()),
-                validator: (v) => (v == null || v.length < 8) ? 'Mínimo 8 caracteres' : null,
-              ),
-              const SizedBox(height: 12),
-              Align(
-                alignment: Alignment.centerRight,
-                child: FilledButton(onPressed: _cambiar, child: const Text('Actualizar')),
-              ),
-              if (_mensaje != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_mensaje!)),
-            ]),
-          ),
-          const SizedBox(height: 32),
-          OutlinedButton.icon(
-            onPressed: () => ref.read(authRepositoryProvider).cerrarSesion(),
-            icon: const Icon(Icons.logout),
-            label: const Text('Cerrar sesión'),
-          ),
-        ],
+      body: ContenidoCentrado(
+        maxAncho: 760,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(12, 8, 12, 32),
+          children: [
+            cabecera,
+            password,
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 12), child: salir),
+          ],
+        ),
       ),
     );
   }

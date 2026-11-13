@@ -47,7 +47,11 @@ class _AuthDemo implements AuthRepository {
   @override
   Stream<String?> get cambios => const Stream.empty();
   @override
+  Stream<void> get recuperacion => const Stream.empty();
+  @override
   Future<void> iniciarSesion(String email, String password) async {}
+  @override
+  Future<void> enviarRecuperacion(String email) async {}
   @override
   Future<void> cerrarSesion() async {}
   @override
@@ -86,7 +90,7 @@ class _LigaDemo implements LigaRepository {
   @override
   Future<List<EncuentroVista>> encuentros(String ligaId) async {
     final base = DateTime.now();
-    EncuentroVista e(int i, int j, int a, int b, {int? pl, int? pv, String estado = 'confirmado'}) => EncuentroVista(
+    EncuentroVista e(int i, int j, int a, int b, {int? pl, int? pv, String estado = 'finalizado'}) => EncuentroVista(
           id: 'm$i',
           ligaId: ligaId,
           jornada: j,
@@ -105,7 +109,7 @@ class _LigaDemo implements LigaRepository {
       e(3, 2, 4, 0, pl: 1, pv: 3),
       e(4, 2, 1, 2, pl: 0, pv: 4),
       e(5, 3, 0, 2, estado: 'programado'),
-      e(6, 3, 3, 4, estado: 'propuesto'),
+      e(6, 3, 3, 4, estado: 'programado'),
       e(7, 4, 5, 0, estado: 'programado'),
     ];
   }
@@ -135,28 +139,21 @@ class _LigaDemo implements LigaRepository {
   @override
   Future<List<Ficha>> misFichas() async => [
         Ficha(
-          personaId: 'p1', escuelaId: 'e1', escuela: 'Club Tenis Norte', nombre: 'Lucía', apellidos: 'Martín Gil',
-          fechaNacimiento: DateTime(2012, 5, 14), visibilidad: Visibilidad.iniciales, mostrarFoto: false,
-          menor14: true, consentimiento: true, relacion: 'tutor',
+          jugadorId: 'p1', escuelaId: 'e1', escuela: 'Club Tenis Norte', nombre: 'Lucía', apellidos: 'Martín Gil',
+          fechaNacimiento: DateTime(2012, 5, 14), nivel: 'Iniciación', manoDominante: 'DIESTRO', relacion: 'tutor',
         ),
       ];
 
   @override
   Future<List<Jugador>> jugadores(String equipoId) async => const [
-        Jugador(personaId: 'j1', nombre: 'Lucía', apellidos: 'Martín'),
-        Jugador(personaId: 'j2', nombre: 'Pablo', apellidos: 'Ruiz'),
-        Jugador(personaId: 'j3', nombre: 'Marta', apellidos: 'Soler'),
-        Jugador(personaId: 'j4', nombre: 'Diego', apellidos: 'Vera'),
+        Jugador(jugadorId: 'j1', nombre: 'Lucía', apellidos: 'Martín'),
+        Jugador(jugadorId: 'j2', nombre: 'Pablo', apellidos: 'Ruiz'),
+        Jugador(jugadorId: 'j3', nombre: 'Marta', apellidos: 'Soler'),
+        Jugador(jugadorId: 'j4', nombre: 'Diego', apellidos: 'Vera'),
       ];
 
   @override
-  Future<List<EncuentroVista>> pendientes(String escuelaId) async => (await encuentros(_ligaId)).where((e) => e.propuesto).toList();
-
-  @override
   Future<List<Liga>> ligasOrganizadas(String escuelaId) => misLigas();
-
-  @override
-  Future<List<AccesoMenor>> accesosFicha(String personaId) async => const [];
 
   @override
   dynamic noSuchMethod(Invocation invocation) => Future.value(const []);

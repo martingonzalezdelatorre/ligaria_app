@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/formulario.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets.dart';
 import '../../data/liga_repository.dart';
@@ -45,17 +46,16 @@ class LigasTab extends ConsumerWidget {
       final equipos = await ref.read(equiposEscuelaProvider(escuelaId).future);
       final validos = equipos.where((e) => e.deporteId == liga.deporteId).toList();
       if (!context.mounted) return;
-      final id = await showDialog<String>(
-        context: context,
-        builder: (_) => SimpleDialog(
-          title: Text('Inscribir en ${liga.nombre}'),
-          children: validos.isEmpty
-              ? [Padding(padding: const EdgeInsets.all(24), child: Text('No tienes equipos de ${liga.deporte}. Crea uno en «Equipos».'))]
-              : [for (final e in validos) SimpleDialogOption(onPressed: () => Navigator.of(context).pop(e.id), child: Text(e.nombre))],
-        ),
+      final id = await elegirDeLista<String>(
+        context,
+        icono: Icons.emoji_events_outlined,
+        titulo: 'Inscribir equipo',
+        subtitulo: liga.nombre,
+        opciones: [for (final e in validos) (e.id, e.nombre, null)],
+        vacio: 'No tienes equipos de ${liga.deporte}. Crea uno en «Equipos».',
       );
       if (id == null) return;
-      await repo.inscribirEquipo(liga.id, id, escuelaId);
+      await repo.inscribirEquipo(liga.id, id);
       if (context.mounted) avisar(context, 'Equipo inscrito en ${liga.nombre}.');
     } catch (e) {
       if (context.mounted) avisar(context, mensajeErrorEscuela(e));

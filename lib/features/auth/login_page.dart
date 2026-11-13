@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/auth.dart';
 import '../../core/ilustraciones.dart';
 import '../../core/theme.dart';
@@ -46,7 +47,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final tema = Theme.of(context);
     final ancha = Pantalla.esAncha(context);
     final formulario = _formulario(context);
-    final titulo = Text('Ligaria', style: tema.textTheme.headlineMedium?.copyWith(color: const Color(0xFF0F4D2C)));
+    final titulo = Column(crossAxisAlignment: ancha ? CrossAxisAlignment.start : CrossAxisAlignment.center, children: [
+      Text('Ligaria', style: tema.textTheme.headlineMedium?.copyWith(color: Colors.white)),
+    ]);
     final lema = Text('Calendarios, resultados y clasificación de tu liga, siempre a mano.',
         textAlign: ancha ? TextAlign.start : TextAlign.center,
         style: tema.textTheme.bodyLarge?.copyWith(color: cs.onSurfaceVariant));
@@ -80,7 +83,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         Expanded(
           flex: 5,
           child: Container(
-            color: verdeMenta,
+            color: Colors.transparent,
             padding: const EdgeInsets.all(40),
             child: Center(child: SingleChildScrollView(
               child: ConstrainedBox(
@@ -137,7 +140,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(height: 12),
               Text(_error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
             ],
-            const SizedBox(height: 24),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => context.push('/recuperar'),
+                child: const Text('¿Has olvidado tu contraseña?'),
+              ),
+            ),
+            const SizedBox(height: 12),
             FilledButton(
               onPressed: _cargando ? null : _entrar,
               child: _cargando

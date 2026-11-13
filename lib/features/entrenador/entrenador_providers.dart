@@ -68,9 +68,9 @@ final datosFormularioProvider =
 String mensajeErrorEntrenador(Object e) {
   final t = e.toString().toLowerCase();
   if (t.contains('no pertenece al equipo')) return 'Algún jugador no pertenece a su equipo.';
-  if (t.contains('ya está confirmado')) return 'El resultado ya está confirmado; pide una corrección a la organización.';
-  if (t.contains('sin permiso')) return 'No tienes permiso para proponer este resultado.';
+  if (t.contains('ya está registrado')) return 'El resultado ya está registrado; pide una corrección a la organización.';
+  if (t.contains('sin permiso')) return 'No tienes permiso para registrar este resultado.';
   if (t.contains('marcador de set')) return 'Hay un marcador de set no válido.';
   if (t.contains('demasiados jugadores')) return 'Hay demasiados jugadores en un partido.';
-  return 'No se pudo enviar el resultado. Inténtalo de nuevo.';
+  return 'No se pudo guardar el resultado. Inténtalo de nuevo.';
 }

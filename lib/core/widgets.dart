@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/models.dart';
@@ -13,8 +14,11 @@ String fechaLarga(DateTime d) => '${d.day} ${_meses[d.month - 1]} ${d.year}';
 
 String etiquetaEstadoEncuentro(String estado) => switch (estado) {
       'programado' => 'Programado',
-      'propuesto' => 'Pendiente de confirmar',
-      'confirmado' => 'Confirmado',
+      'en_juego' => 'En juego',
+      'finalizado' => 'Finalizado',
+      'aplazado' => 'Aplazado',
+      'suspendido' => 'Suspendido',
+      'no_presentado' => 'Incomparecencia',
       _ => estado,
     };
 
@@ -23,6 +27,7 @@ String etiquetaEstadoLiga(String estado) => switch (estado) {
       'publicada' => 'Abierta a inscripción',
       'en_curso' => 'En curso',
       'finalizada' => 'Finalizada',
+      'cancelada' => 'Cancelada',
       _ => estado,
     };
 
@@ -36,17 +41,22 @@ class AsyncView<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) => value.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
+        error: (e, st) {
+          debugPrint('AsyncView error: $e');
+          return Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               const Icon(Icons.error_outline, size: 40),
               const SizedBox(height: 8),
               const Text('No se pudieron cargar los datos.', textAlign: TextAlign.center),
+              // Solo en modo depuración: causa técnica real (no se muestra en producción).
+              if (kDebugMode) SelectableText('$e', textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
               if (onRetry != null) TextButton(onPressed: onRetry, child: const Text('Reintentar')),
             ]),
           ),
-        ),
+        );
+        },
         data: builder,
       );
 }
@@ -122,7 +132,7 @@ class TablaClasificacion extends StatelessWidget {
   Widget build(BuildContext context) {
     final tema = Theme.of(context);
     final cs = tema.colorScheme;
-    final cab = tema.textTheme.labelSmall?.copyWith(color: cs.outline, fontWeight: FontWeight.w700, letterSpacing: .6);
+    final cab = tema.textTheme.labelSmall?.copyWith(color: cs.onSurfaceVariant, fontWeight: FontWeight.w700, letterSpacing: .6);
     Widget num(String t) => SizedBox(
         width: 30, child: Text(t, textAlign: TextAlign.center, style: tema.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant)));
     return Card(
@@ -156,7 +166,7 @@ class TablaClasificacion extends StatelessWidget {
                         decoration: BoxDecoration(shape: BoxShape.circle, color: _medallas[f.posicion - 1]),
                         child: Text('${f.posicion}', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13)),
                       )
-                    : Text('${f.posicion}', style: tema.textTheme.titleSmall?.copyWith(color: cs.outline)),
+                    : Text('${f.posicion}', style: tema.textTheme.titleSmall?.copyWith(color: cs.onSurfaceVariant)),
               ),
               Expanded(
                 child: Row(children: [
@@ -165,7 +175,7 @@ class TablaClasificacion extends StatelessWidget {
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(f.equipo, overflow: TextOverflow.ellipsis, style: tema.textTheme.titleSmall),
-                      Text(f.escuela, style: tema.textTheme.bodySmall?.copyWith(color: cs.outline), overflow: TextOverflow.ellipsis),
+                      Text(f.escuela, style: tema.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant), overflow: TextOverflow.ellipsis),
                     ]),
                   ),
                 ]),
@@ -224,9 +234,9 @@ class TarjetaEncuentro extends StatelessWidget {
             Row(children: [
               Insignia('Jornada ${e.jornada}', color: cs.secondary),
               const SizedBox(width: 8),
-              Icon(Icons.calendar_today_outlined, size: 14, color: cs.outline),
+              Icon(Icons.calendar_today_outlined, size: 14, color: cs.onSurfaceVariant),
               const SizedBox(width: 4),
-              Expanded(child: Text(fechaCorta(e.fecha), style: tema.textTheme.bodySmall?.copyWith(color: cs.outline))),
+              Expanded(child: Text(fechaCorta(e.fecha), style: tema.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant))),
               ?trailing,
             ]),
             const SizedBox(height: 14),
@@ -240,7 +250,7 @@ class TarjetaEncuentro extends StatelessWidget {
                     borderRadius: BorderRadius.circular(14)),
                 child: Text(e.tieneMarcador ? '${e.partidosLocal} - ${e.partidosVisitante}' : 'VS',
                     style: tema.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w800, color: e.tieneMarcador ? cs.onPrimaryContainer : cs.outline)),
+                        fontWeight: FontWeight.w800, color: e.tieneMarcador ? cs.onPrimaryContainer : cs.onSurfaceVariant)),
               ),
               equipo(e.visitanteId, e.visitante),
             ]),
@@ -248,7 +258,7 @@ class TarjetaEncuentro extends StatelessWidget {
             Wrap(spacing: 8, runSpacing: 4, alignment: WrapAlignment.center, children: [
               if (e.incomparecencia != null) Insignia('Incomparecencia', color: cs.error, icono: Icons.block),
               Insignia(etiquetaEstadoEncuentro(e.estado),
-                  color: e.confirmado ? cs.primary : cs.outline,
+                  color: e.confirmado ? cs.primary : cs.onSurfaceVariant,
                   icono: e.confirmado ? Icons.check_circle : Icons.schedule),
             ]),
           ]),
@@ -285,11 +295,9 @@ class PestanasPildora extends StatelessWidget implements PreferredSizeWidget {
           child: Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Theme.of(context).colorScheme.surfaceContainerHigh
-                  : Colors.white,
+              color: Theme.of(context).colorScheme.surfaceContainerHigh,
               borderRadius: BorderRadius.circular(999),
-              boxShadow: [BoxShadow(color: const Color(0xFF0B3D22).withValues(alpha: .10), blurRadius: 16, offset: const Offset(0, 6))],
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .3), blurRadius: 16, offset: const Offset(0, 6))],
             ),
             child: TabBar(
               isScrollable: desplazable || tabs.length > 2,
@@ -310,7 +318,7 @@ class Insignia extends StatelessWidget {
   final IconData? icono;
   @override
   Widget build(BuildContext context) {
-    final c = color ?? Theme.of(context).colorScheme.outline;
+    final c = color ?? Theme.of(context).colorScheme.onSurfaceVariant;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(color: c.withValues(alpha: .13), borderRadius: BorderRadius.circular(999)),

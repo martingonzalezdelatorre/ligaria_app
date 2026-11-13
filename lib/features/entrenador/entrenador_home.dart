@@ -109,7 +109,7 @@ class _ProximaJornadaTab extends ConsumerWidget {
 
   Future<void> _abrir(BuildContext context, WidgetRef ref, EncuentroVista e) async {
     if (e.confirmado) {
-      avisar(context, 'Este resultado ya está confirmado.');
+      avisar(context, 'Este resultado ya está registrado. Si hay un error, pide una corrección a la organización.');
       return;
     }
     final enviado = await Navigator.of(context).push<bool>(
@@ -117,7 +117,7 @@ class _ProximaJornadaTab extends ConsumerWidget {
     );
     if (enviado == true) {
       ref.invalidate(proximaJornadaProvider);
-      if (context.mounted) avisar(context, 'Pendiente de confirmar por la organización.');
+      if (context.mounted) avisar(context, 'Resultado guardado.');
     }
   }
 }

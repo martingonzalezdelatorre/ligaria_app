@@ -1,0 +1,31 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/config.dart';
+import '../../data/liga_repository.dart';
+import '../../data/models.dart';
+
+/// Ayuntamiento del subdominio actual (para personalizar el login). Null en el sitio general.
+final ayuntamientoActualProvider = FutureProvider<AyuntamientoPublico?>((ref) async {
+  final slug = AppConfig.ayuntamientoSlug;
+  if (slug == null) return null;
+  return ref.watch(ligaRepositoryProvider).ayuntamientoPorSlug(slug);
+});
+
+final escuelasAyuntamientoProvider = FutureProvider.autoDispose.family<List<EscuelaAdmin>, String>(
+    (ref, id) => ref.watch(ligaRepositoryProvider).escuelasDeAyuntamiento(id));
+
+final saAyuntamientosProvider =
+    FutureProvider.autoDispose<List<AyuntamientoAdmin>>((ref) => ref.watch(ligaRepositoryProvider).ayuntamientos());
+
+/// Valida un subdominio igual que la base de datos (app.slug_valido).
+const slugsReservados = {
+  'www', 'app', 'api', 'admin', 'mail', 'correo', 'ligaria', 'soporte', 'ayuda', 'web', 'static',
+  'cdn', 'dev', 'staging', 'test', 'demo', 'blog', 'docs', 'status', 'auth', 'login',
+};
+
+String? validarSubdominio(String s) {
+  if (!RegExp(r'^[a-z0-9][a-z0-9-]{1,38}[a-z0-9]$').hasMatch(s) || s.contains('--')) {
+    return 'Entre 3 y 40 caracteres: minúsculas, números y guiones';
+  }
+  if (slugsReservados.contains(s)) return 'Ese subdominio está reservado';
+  return null;
+}

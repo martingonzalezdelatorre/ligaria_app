@@ -43,9 +43,9 @@ class _AreaTabsState extends State<AreaTabs> {
         child: Container(
           margin: const EdgeInsets.fromLTRB(14, 0, 14, 10),
           decoration: BoxDecoration(
-            color: Theme.of(context).brightness == Brightness.dark ? cs.surfaceContainerHigh : Colors.white,
+            color: cs.surfaceContainerHigh,
             borderRadius: BorderRadius.circular(28),
-            boxShadow: [BoxShadow(color: const Color(0xFF0B3D22).withValues(alpha: .16), blurRadius: 24, offset: const Offset(0, 8))],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .4), blurRadius: 24, offset: const Offset(0, 8))],
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(28),
@@ -92,7 +92,7 @@ class _Pildoras extends StatelessWidget {
             decoration: BoxDecoration(
               color: oscuro ? cs.surfaceContainerHigh : Colors.white,
               borderRadius: BorderRadius.circular(999),
-              boxShadow: [BoxShadow(color: const Color(0xFF0B3D22).withValues(alpha: .10), blurRadius: 16, offset: const Offset(0, 6))],
+              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .3), blurRadius: 16, offset: const Offset(0, 6))],
             ),
             child: Row(children: [
               for (var i = 0; i < secciones.length; i++)

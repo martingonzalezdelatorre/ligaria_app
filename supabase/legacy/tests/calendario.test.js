@@ -149,3 +149,40 @@ test('inscripción: deporte y categoría deben coincidir; no tras generar el cal
   await db.exec(`insert into equipo(id,escuela_id,deporte_id,nombre) values ('${id(351)}','${E.A}','${DEP}','Tarde')`);
   await assert.rejects(db.exec(`insert into inscripcion_equipo(competicion_id,equipo_id,escuela_id) values ('${id(400)}','${id(351)}','${E.A}')`), /ya está generado/);
 });
+
+const fechasDe = async (db) =>
+  (await db.query(`select fecha::text f from jornada order by numero`)).rows.map((x) => x.f);
+
+test('dias_juego = finde: todas las jornadas caen en sábado', async () => {
+  const db = await escenario(4, { dias_juego: 'finde' });
+  await generar(db); // inicio miércoles... 2026-10-03 es sábado
+  assert.deepEqual(await fechasDe(db), ['2026-10-03', '2026-10-10', '2026-10-17']);
+  const db2 = await escenario(4, { dias_juego: 'finde' });
+  await como(db2, U.org, (q) => q(`select generar_calendario('${id(400)}','2026-10-05')`)); // lunes
+  assert.deepEqual(await fechasDe(db2), ['2026-10-10', '2026-10-17', '2026-10-24']);
+});
+
+test('dias_juego = semana: mismo día laborable que la fecha de inicio', async () => {
+  const db = await escenario(4, { dias_juego: 'semana' });
+  await como(db, U.org, (q) => q(`select generar_calendario('${id(400)}','2026-10-07')`)); // miércoles
+  assert.deepEqual(await fechasDe(db), ['2026-10-07', '2026-10-14', '2026-10-21']);
+});
+
+test('dias_juego = ambos: alterna día laborable y sábado', async () => {
+  const db = await escenario(4, { dias_juego: 'ambos' });
+  await como(db, U.org, (q) => q(`select generar_calendario('${id(400)}','2026-10-07')`));
+  assert.deepEqual(await fechasDe(db), ['2026-10-07', '2026-10-10', '2026-10-14']);
+});
+
+test('jornadas fija un nº menor de jornadas y cada equipo juega una vez por jornada', async () => {
+  const db = await escenario(6, { dias_juego: 'finde', jornadas: 3 });
+  const n = await como(db, U.org, async (q) => (await q(`select generar_calendario('${id(400)}','2026-10-03') n`)).rows[0].n);
+  assert.equal(n, 9); // 3 jornadas × 3 encuentros
+  assert.equal((await fechasDe(db)).length, 3);
+});
+
+test('si las fechas de la liga no admiten las jornadas pedidas, se rechaza', async () => {
+  const db = await escenario(4, { dias_juego: 'finde' });
+  await db.exec(`update competicion set fecha_inicio='2026-10-01', fecha_fin='2026-10-12'`);
+  await assert.rejects(generar(db), /no caben/);
+});

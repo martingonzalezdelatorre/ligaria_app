@@ -1,0 +1,763 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
+import '../../core/formulario.dart';
+import '../../core/theme.dart';
+import '../../core/widgets.dart';
+import '../../data/liga_repository.dart';
+import '../../data/models.dart';
+import 'organizador_providers.dart';
+
+const _etiquetasDesempate = {
+  'enfrentamiento_directo': 'Enfrentamiento directo',
+  'diferencia_partidos': 'Diferencia de partidos',
+  'diferencia_sets': 'Diferencia de sets',
+  'diferencia_juegos': 'Diferencia de juegos',
+};
+
+class CrearLigaPage extends ConsumerWidget {
+  const CrearLigaPage({super.key, required this.escuelaId, this.liga});
+  final String escuelaId;
+  final Liga? liga; // si viene, se edita (solo ligas en borrador)
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final temporadas = ref.watch(orgTemporadasProvider);
+    final deportes = ref.watch(orgDeportesProvider);
+    return Scaffold(
+      appBar: AppBar(title: Text(liga == null ? 'Nueva liga' : 'Editar liga')),
+      body: AsyncView<List<Temporada>>(
+        value: temporadas,
+        onRetry: () => ref.invalidate(orgTemporadasProvider),
+        builder: (ts) => AsyncView<List<Deporte>>(
+          value: deportes,
+          onRetry: () => ref.invalidate(orgDeportesProvider),
+          builder: (ds) => (ts.isEmpty || ds.isEmpty)
+              ? const EstadoVacio(
+                  icono: Icons.info_outline,
+                  texto:
+                      'Hace falta al menos una temporada y un deporte.\nPídeselo al superadministrador.',
+                )
+              : _FormLiga(
+                  escuelaId: escuelaId,
+                  temporadas: ts,
+                  deportes: ds,
+                  liga: liga,
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FormLiga extends ConsumerStatefulWidget {
+  const _FormLiga({
+    required this.escuelaId,
+    required this.temporadas,
+    required this.deportes,
+    this.liga,
+  });
+  final Liga? liga;
+  final String escuelaId;
+  final List<Temporada> temporadas;
+  final List<Deporte> deportes;
+  @override
+  ConsumerState<_FormLiga> createState() => _FormLigaState();
+}
+
+class _FormLigaState extends ConsumerState<_FormLiga> {
+  final _form = GlobalKey<FormState>();
+  final _nombre = TextEditingController();
+  final _maxEquipos = TextEditingController(text: '8');
+  DateTime? _fechaInicio, _fechaFin;
+  late String _temporada = widget.temporadas.first.id;
+  late String _deporte = widget.deportes.first.id;
+  int _vueltas = 1,
+      _individuales = 2,
+      _dobles = 1,
+      _victoria = 3,
+      _empate = 1,
+      _derrota = 0;
+  List<String> _desempates = const ReglasLiga().desempates;
+  String _diasJuego = 'ambos';
+  int? _jornadasElegidas; // null = todas las del todos contra todos
+
+  int get _equipos => int.tryParse(_maxEquipos.text.trim()) ?? 0;
+  int get _totalJornadas => jornadasLiga(_equipos, _vueltas);
+  int get _jornadas => (_jornadasElegidas ?? _totalJornadas).clamp(
+    1,
+    _totalJornadas < 1 ? 1 : _totalJornadas,
+  );
+  int? get _caben =>
+      (_fechaInicio == null ||
+          _fechaFin == null ||
+          _fechaFin!.isBefore(_fechaInicio!))
+      ? null
+      : jornadasCaben(_fechaInicio!, _fechaFin!, _diasJuego);
+  bool _enviando = false;
+
+  bool get _editando => widget.liga != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final l = widget.liga;
+    if (l == null) return;
+    final r = l.reglas;
+    _nombre.text = l.nombre;
+    _maxEquipos.text = '${l.maxEquipos ?? 8}';
+    _fechaInicio = l.fechaInicio;
+    _fechaFin = l.fechaFin;
+    if (widget.temporadas.any((t) => t.id == l.temporadaId)) {
+      _temporada = l.temporadaId!;
+    }
+    if (widget.deportes.any((d) => d.id == l.deporteId)) {
+      _deporte = l.deporteId!;
+    }
+    _vueltas = r.vueltas;
+    _individuales = r.individuales;
+    _dobles = r.dobles;
+    _victoria = r.puntosVictoria;
+    _empate = r.puntosEmpate;
+    _derrota = r.puntosDerrota;
+    _desempates = [...r.desempates];
+    _diasJuego = r.diasJuego;
+    _jornadasElegidas = r.jornadas;
+  }
+
+  @override
+  void dispose() {
+    _nombre.dispose();
+    _maxEquipos.dispose();
+    super.dispose();
+  }
+
+  void _mover(int i, int delta) {
+    final l = [..._desempates];
+    final j = i + delta;
+    if (j < 0 || j >= l.length) return;
+    final t = l[i];
+    l[i] = l[j];
+    l[j] = t;
+    setState(() => _desempates = l);
+  }
+
+  Future<void> _crear() async {
+    if (!_form.currentState!.validate()) return;
+    if (_fechaInicio == null || _fechaFin == null) {
+      avisar(context, 'Indica la fecha de inicio y la de fin.');
+      return;
+    }
+    if (_fechaFin!.isBefore(_fechaInicio!)) {
+      avisar(context, 'La fecha de fin no puede ser anterior a la de inicio.');
+      return;
+    }
+    if (_totalJornadas < 1) {
+      avisar(context, 'Indica al menos 2 equipos.');
+      return;
+    }
+    if (_caben != null && _caben! < _jornadas) {
+      avisar(
+        context,
+        'Entre esas fechas solo caben $_caben jornadas (${etiquetasDiasJuego[_diasJuego]!.toLowerCase()}). Amplía las fechas o reduce las jornadas.',
+      );
+      return;
+    }
+    if (_individuales + _dobles < 1) {
+      avisar(context, 'Cada encuentro necesita al menos un partido.');
+      return;
+    }
+    setState(() => _enviando = true);
+    try {
+      final reglas = ReglasLiga(
+        vueltas: _vueltas,
+        individuales: _individuales,
+        dobles: _dobles,
+        puntosVictoria: _victoria,
+        puntosEmpate: _empate,
+        puntosDerrota: _derrota,
+        diasJuego: _diasJuego,
+        jornadas: _jornadas == _totalJornadas ? null : _jornadas,
+        desempates: _desempates,
+      );
+      final repo = ref.read(ligaRepositoryProvider);
+      if (_editando) {
+        await repo.editarLiga(
+          widget.liga!.id,
+          temporadaId: _temporada,
+          nombre: _nombre.text.trim(),
+          reglas: reglas,
+          fechaInicio: _fechaInicio,
+          fechaFin: _fechaFin,
+          maxEquipos: int.parse(_maxEquipos.text.trim()),
+        );
+      } else {
+        await repo.crearLiga(
+          escuelaId: widget.escuelaId,
+          temporadaId: _temporada,
+          deporteId: _deporte,
+          nombre: _nombre.text.trim(),
+          fechaInicio: _fechaInicio,
+          fechaFin: _fechaFin,
+          maxEquipos: int.parse(_maxEquipos.text.trim()),
+          reglas: reglas,
+        );
+      }
+      ref.invalidate(orgLigasProvider(widget.escuelaId));
+      if (!mounted) return;
+      avisar(
+        context,
+        _editando
+            ? 'Liga actualizada.'
+            : 'Liga creada. Publícala para abrir las inscripciones.',
+      );
+      Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        setState(() => _enviando = false);
+        avisar(
+          context,
+          mensajeError(
+            e,
+            defecto: _editando
+                ? 'No se pudo guardar la liga.'
+                : 'No se pudo crear la liga.',
+          ),
+        );
+      }
+    }
+  }
+
+  static IconData _iconoDeporte(String nombre) {
+    final n = nombre.toLowerCase();
+    if (n.contains('tenis') || n.contains('pádel') || n.contains('padel')) {
+      return Icons.sports_tennis;
+    }
+    if (n.contains('baloncesto')) return Icons.sports_basketball;
+    if (n.contains('fútbol') || n.contains('futbol')) {
+      return Icons.sports_soccer;
+    }
+    if (n.contains('balonmano')) return Icons.sports_handball;
+    if (n.contains('voley')) return Icons.sports_volleyball;
+    return Icons.sports;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    final cs = tema.colorScheme;
+    final basicos = _Seccion(
+      icono: Icons.emoji_events_rounded,
+      titulo: 'Datos de la liga',
+      hijo: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TextFormField(
+            controller: _nombre,
+            autofocus: true,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: decoracionCampo(
+              'Nombre de la liga',
+              Icons.title,
+              ayuda: 'Ej. Liga infantil 2026-27',
+            ),
+            validator: (v) =>
+                (v == null || v.trim().isEmpty) ? 'Escribe un nombre' : null,
+          ),
+          espacioCampo,
+          DropdownButtonFormField<String>(
+            initialValue: _temporada,
+            decoration: decoracionCampo(
+              'Temporada',
+              Icons.calendar_month_outlined,
+            ),
+            items: [
+              for (final t in widget.temporadas)
+                DropdownMenuItem(value: t.id, child: Text(t.nombre)),
+            ],
+            onChanged: (v) => setState(() => _temporada = v ?? _temporada),
+          ),
+          espacioCampo,
+          if (_editando)
+            InputDecorator(
+              decoration: decoracionCampo('Deporte', Icons.sports),
+              child: Text(
+                widget.deportes.firstWhere((d) => d.id == _deporte).nombre,
+              ),
+            )
+          else
+            SelectorTarjetas<String>(
+              etiqueta: 'Deporte',
+              valor: _deporte,
+              onCambio: (v) => setState(() => _deporte = v),
+              opciones: [
+                for (final d in widget.deportes)
+                  OpcionTarjeta(d.id, d.nombre, _iconoDeporte(d.nombre)),
+              ],
+            ),
+        ],
+      ),
+    );
+
+    final calendario = _Seccion(
+      icono: Icons.event_available_rounded,
+      titulo: 'Calendario y formato',
+      hijo: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _Rejilla([
+            _CampoFecha(
+              etiqueta: 'Fecha de inicio',
+              valor: _fechaInicio,
+              onCambio: (f) => setState(() => _fechaInicio = f),
+            ),
+            _CampoFecha(
+              etiqueta: 'Fecha de fin',
+              valor: _fechaFin,
+              onCambio: (f) => setState(() => _fechaFin = f),
+            ),
+          ]),
+          espacioCampo,
+          TextFormField(
+            controller: _maxEquipos,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: decoracionCampo(
+              'Cantidad máxima de equipos',
+              Icons.groups_outlined,
+            ),
+            onChanged: (_) => setState(() => _jornadasElegidas = null),
+            validator: (v) {
+              final n = int.tryParse((v ?? '').trim());
+              return (n == null || n < 2 || n > 64)
+                  ? 'Entre 2 y 64 equipos'
+                  : null;
+            },
+          ),
+          espacioCampo,
+          SegmentedButton<int>(
+            showSelectedIcon: false,
+            segments: const [
+              ButtonSegment(
+                value: 1,
+                label: Text('Solo ida'),
+                icon: Icon(Icons.arrow_forward),
+              ),
+              ButtonSegment(
+                value: 2,
+                label: Text('Ida y vuelta'),
+                icon: Icon(Icons.swap_horiz),
+              ),
+            ],
+            selected: {_vueltas},
+            onSelectionChanged: (s) => setState(() {
+              _vueltas = s.first;
+              _jornadasElegidas = null;
+            }),
+          ),
+          espacioCampo,
+          SelectorTarjetas<String>(
+            etiqueta: '¿Cuándo se juega?',
+            valor: _diasJuego,
+            onCambio: (v) => setState(() => _diasJuego = v),
+            opciones: const [
+              OpcionTarjeta(
+                'finde',
+                'Fin de semana',
+                Icons.weekend_outlined,
+                descripcion: 'Jornadas en sábado',
+              ),
+              OpcionTarjeta(
+                'semana',
+                'Entre semana',
+                Icons.work_outline,
+                descripcion: 'El día laborable de inicio',
+              ),
+              OpcionTarjeta(
+                'ambos',
+                'Ambos',
+                Icons.date_range_outlined,
+                descripcion: 'Entre semana y sábado',
+              ),
+            ],
+          ),
+          espacioCampo,
+          _Contador(
+            etiqueta: 'Jornadas',
+            valor: _jornadas,
+            min: 1,
+            max: _totalJornadas < 1 ? 1 : _totalJornadas,
+            onCambio: (v) => setState(() => _jornadasElegidas = v),
+          ),
+          const SizedBox(height: 12),
+          Builder(
+            builder: (_) {
+              final caben = _caben;
+              final falta = caben != null && caben < _jornadas;
+              final color = falta ? cs.error : cs.primary;
+              return Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: .12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      falta
+                          ? Icons.warning_amber_rounded
+                          : Icons.format_list_numbered,
+                      color: color,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Jornadas: $_jornadas',
+                            key: const Key('jornadas-liga'),
+                            style: tema.textTheme.titleSmall?.copyWith(
+                              color: color,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _totalJornadas < 1
+                                ? 'Indica al menos 2 equipos.'
+                                : 'Todos contra todos son $_totalJornadas. Al generar el calendario, los enfrentamientos y '
+                                      'las fechas se asignan solos.'
+                                      '${caben == null ? '' : ' Con tus fechas caben $caben.'}',
+                            style: tema.textTheme.bodySmall?.copyWith(
+                              color: cs.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+
+    final reglas = _Seccion(
+      icono: Icons.rule_rounded,
+      titulo: 'Partidos por encuentro',
+      hijo: _Rejilla([
+        _Contador(
+          etiqueta: 'Partidos individuales',
+          valor: _individuales,
+          max: 6,
+          onCambio: (v) => setState(() => _individuales = v),
+        ),
+        _Contador(
+          etiqueta: 'Partidos de dobles',
+          valor: _dobles,
+          max: 4,
+          onCambio: (v) => setState(() => _dobles = v),
+        ),
+      ]),
+    );
+
+    final puntos = _Seccion(
+      icono: Icons.scoreboard_outlined,
+      titulo: 'Puntuación',
+      hijo: _Rejilla([
+        _Contador(
+          etiqueta: 'Puntos por victoria',
+          valor: _victoria,
+          max: 10,
+          onCambio: (v) => setState(() => _victoria = v),
+        ),
+        _Contador(
+          etiqueta: 'Puntos por empate',
+          valor: _empate,
+          max: 10,
+          onCambio: (v) => setState(() => _empate = v),
+        ),
+        _Contador(
+          etiqueta: 'Puntos por derrota',
+          valor: _derrota,
+          max: 10,
+          onCambio: (v) => setState(() => _derrota = v),
+        ),
+      ]),
+    );
+
+    final desempates = _Seccion(
+      icono: Icons.leaderboard_outlined,
+      titulo: 'Orden de desempates',
+      subtitulo: 'Si dos equipos empatan a puntos, se aplica este orden.',
+      hijo: Column(
+        children: [
+          for (var i = 0; i < _desempates.length; i++)
+            Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+              decoration: BoxDecoration(
+                color: cristal,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: bordeCristal),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 26,
+                    height: 26,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: i == 0 ? lima : cs.surfaceContainerHighest,
+                    ),
+                    child: Text(
+                      '${i + 1}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: i == 0 ? tinta : cs.onSurface,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      _etiquetasDesempate[_desempates[i]] ?? _desempates[i],
+                      style: tema.textTheme.titleSmall,
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Subir',
+                    icon: const Icon(Icons.arrow_upward),
+                    onPressed: i == 0 ? null : () => _mover(i, -1),
+                  ),
+                  IconButton(
+                    tooltip: 'Bajar',
+                    icon: const Icon(Icons.arrow_downward),
+                    onPressed: i == _desempates.length - 1
+                        ? null
+                        : () => _mover(i, 1),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+
+    return Form(
+      key: _form,
+      child: Column(
+        children: [
+          Expanded(
+            child: ContenidoCentrado(
+              maxAncho: 760,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
+                children: [basicos, calendario, reglas, puntos, desempates],
+              ),
+            ),
+          ),
+          // Barra de acción fija
+          Container(
+            decoration: BoxDecoration(
+              color: tinta,
+              border: Border(top: BorderSide(color: Marca.de(context).borde)),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              16,
+              12,
+              16,
+              12 + MediaQuery.paddingOf(context).bottom,
+            ),
+            child: ContenidoCentrado(
+              maxAncho: 760,
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: _enviando ? null : _crear,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(64, 54),
+                  ),
+                  icon: _enviando
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: tinta,
+                          ),
+                        )
+                      : const Icon(Icons.check_rounded),
+                  label: Text(_editando ? 'Guardar cambios' : 'Crear liga'),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _Seccion extends StatelessWidget {
+  const _Seccion({
+    required this.icono,
+    required this.titulo,
+    this.subtitulo,
+    required this.hijo,
+  });
+  final IconData icono;
+  final String titulo;
+  final String? subtitulo;
+  final Widget hijo;
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 14),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: lima.withValues(alpha: .14),
+                    borderRadius: BorderRadius.circular(11),
+                  ),
+                  child: Icon(icono, color: lima, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(titulo, style: tema.textTheme.titleMedium),
+                ),
+              ],
+            ),
+            if (subtitulo != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                subtitulo!,
+                style: tema.textTheme.bodySmall?.copyWith(
+                  color: tema.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            hijo,
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Coloca los hijos en una o dos columnas según el ancho disponible.
+class _Rejilla extends StatelessWidget {
+  const _Rejilla(this.hijos);
+  final List<Widget> hijos;
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, c) {
+      final dos = c.maxWidth >= 480;
+      final ancho = dos ? (c.maxWidth - 12) / 2 : c.maxWidth;
+      return Wrap(
+        spacing: 12,
+        runSpacing: 12,
+        children: [for (final h in hijos) SizedBox(width: ancho, child: h)],
+      );
+    },
+  );
+}
+
+class _Contador extends StatelessWidget {
+  const _Contador({
+    required this.etiqueta,
+    required this.valor,
+    required this.max,
+    required this.onCambio,
+    this.min = 0,
+  });
+  final String etiqueta;
+  final int valor, max, min;
+  final ValueChanged<int> onCambio;
+  @override
+  Widget build(BuildContext context) {
+    final tema = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: cristal,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: bordeCristal),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text(etiqueta, style: tema.textTheme.bodyMedium)),
+          IconButton(
+            tooltip: 'Menos $etiqueta',
+            icon: const Icon(Icons.remove_circle_outline),
+            onPressed: valor > min ? () => onCambio(valor - 1) : null,
+          ),
+          SizedBox(
+            width: 26,
+            child: Text(
+              '$valor',
+              textAlign: TextAlign.center,
+              style: tema.textTheme.titleMedium,
+            ),
+          ),
+          IconButton(
+            tooltip: 'Más $etiqueta',
+            icon: const Icon(Icons.add_circle_outline),
+            onPressed: valor < max ? () => onCambio(valor + 1) : null,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CampoFecha extends StatelessWidget {
+  const _CampoFecha({
+    required this.etiqueta,
+    required this.valor,
+    required this.onCambio,
+  });
+  final String etiqueta;
+  final DateTime? valor;
+  final ValueChanged<DateTime> onCambio;
+  @override
+  Widget build(BuildContext context) => InkWell(
+    borderRadius: BorderRadius.circular(14),
+    onTap: () async {
+      final f = await showDatePicker(
+        context: context,
+        initialDate: valor ?? DateTime.now(),
+        firstDate: DateTime(2020),
+        lastDate: DateTime(2100),
+      );
+      if (f != null) onCambio(f);
+    },
+    child: InputDecorator(
+      decoration: decoracionCampo(
+        etiqueta,
+        Icons.event,
+        sufijo: const Icon(Icons.expand_more),
+      ),
+      child: Text(valor == null ? 'Seleccionar' : fechaLarga(valor!)),
+    ),
+  );
+}

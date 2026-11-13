@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>Confirma tu cuenta en Ligaria</title>
+</head>
+<body style="margin:0;padding:0;background-color:#06110e;">
+<!-- Texto de vista previa en la bandeja de entrada -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#06110e;">Un último paso: confirma tu email y entra en Ligaria.</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#06110e" style="background-color:#06110e;">
+ <tr><td align="center" style="padding:32px 16px;">
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+   <!-- Logo -->
+   <tr><td align="left" style="padding:0 8px 24px 8px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+     <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+       <td width="34" height="34" align="center" valign="middle" bgcolor="#c6ff3d" style="background-color:#c6ff3d;border-radius:10px;font-size:20px;line-height:34px;font-weight:900;color:#06110e;">L</td>
+       <td style="padding-left:10px;font-size:22px;font-weight:900;letter-spacing:-0.5px;color:#ffffff;">Ligaria</td>
+     </tr></table>
+   </td></tr>
+
+   <!-- Tarjeta -->
+   <tr><td bgcolor="#101d19" style="background-color:#101d19;border:1px solid #26372f;border-radius:24px;padding:40px 32px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+     <div style="display:inline-block;background-color:#1c2f12;color:#c6ff3d;font-size:12px;font-weight:800;letter-spacing:.5px;padding:6px 14px;border-radius:999px;">ÚLTIMO PASO</div>
+
+     <h1 style="margin:20px 0 12px 0;font-size:32px;line-height:1.1;font-weight:900;letter-spacing:-1px;color:#ffffff;">
+       Confirma tu cuenta y <span style="color:#c6ff3d;">entra en la liga.</span>
+     </h1>
+
+     <p style="margin:0 0 28px 0;font-size:16px;line-height:1.6;color:#a9bbb4;">
+       Gracias por registrarte en Ligaria. Confirma que <strong style="color:#ffffff;">{{ .Email }}</strong> es tu correo para activar la cuenta y consultar calendarios, resultados y clasificaciones de las ligas entre escuelas.
+     </p>
+
+     <!-- Botón -->
+     <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+       <td align="center" bgcolor="#c6ff3d" style="background-color:#c6ff3d;border-radius:999px;">
+         <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:16px 34px;font-size:16px;font-weight:800;color:#06110e;text-decoration:none;border-radius:999px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">Confirmar mi cuenta</a>
+       </td>
+     </tr></table>
+
+     <!-- Qué viene después -->
+     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:36px;border-top:1px solid #26372f;">
+      <tr><td style="padding-top:24px;font-size:14px;line-height:1.7;color:#a9bbb4;">
+        <strong style="color:#ffffff;">Después de confirmar podrás:</strong><br>
+        <span style="color:#c6ff3d;">✓</span>&nbsp; Iniciar sesión en la app desde el móvil o el ordenador<br>
+        <span style="color:#c6ff3d;">✓</span>&nbsp; Ver resultados y clasificación online<br>
+        <span style="color:#c6ff3d;">✓</span>&nbsp; Gestionar tu privacidad y la de tus hijos
+      </td></tr>
+     </table>
+
+     <p style="margin:28px 0 0 0;font-size:13px;line-height:1.6;color:#7f938b;">
+       Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+       <a href="{{ .ConfirmationURL }}" target="_blank" style="color:#14c79a;word-break:break-all;">{{ .ConfirmationURL }}</a>
+     </p>
+   </td></tr>
+
+   <!-- Pie -->
+   <tr><td align="center" style="padding:24px 16px 0 16px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#7f938b;">
+     ¿No has creado tú esta cuenta? Ignora este correo: no se activará nada.<br>
+     <strong style="color:#a9bbb4;">Ligaria</strong> · Ligas de tenis y pádel entre escuelas
+   </td></tr>
+  </table>
+
+ </td></tr>
+</table>
+</body>
+</html>

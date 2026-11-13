@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:ligaria_app/data/liga_repository.dart';
-import 'package:ligaria_app/data/models.dart';
 import 'package:ligaria_app/core/auth.dart';
 import 'package:ligaria_app/features/auth/login_page.dart';
+import 'package:ligaria_app/features/auth/recuperar_pages.dart';
 import 'package:ligaria_app/features/cuenta/cuenta_page.dart';
 import 'package:ligaria_app/features/home/home_page.dart';
 
@@ -24,6 +24,11 @@ class FakeAuth implements AuthRepository {
   String? get email => 'ana@x.es';
   @override
   Stream<String?> get cambios => _c.stream;
+  String? emailRecuperacion;
+  @override
+  Stream<void> get recuperacion => const Stream.empty();
+  @override
+  Future<void> enviarRecuperacion(String email) async => emailRecuperacion = email;
   @override
   Future<void> iniciarSesion(String email, String password) async {
     ultimoEmail = email;
@@ -40,14 +45,7 @@ class FakeAuth implements AuthRepository {
 
 class MockLigas extends Mock implements LigaRepository {}
 
-MockLigas ligasMock({Map<String, bool> prefs = const {'resultados': true, 'calendario': true}, List<NotificacionApp> notifs = const []}) {
-  final m = MockLigas();
-  when(() => m.prefsNotificacion()).thenAnswer((_) async => prefs);
-  when(() => m.notificaciones()).thenAnswer((_) async => notifs);
-  when(() => m.guardarPrefsNotificacion(any())).thenAnswer((_) async {});
-  when(() => m.marcarNotificacionLeida(any())).thenAnswer((_) async {});
-  return m;
-}
+MockLigas ligasMock() => MockLigas();
 
 Widget app(FakeAuth repo, Widget home, {LigaRepository? ligas}) => ProviderScope(
       overrides: [
@@ -71,7 +69,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(1), 'secreta');
     await tester.ensureVisible(find.text('Entrar'));
     await tester.tap(find.text('Entrar'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1)); // el fondo animado nunca se asienta
     expect(repo.ultimoEmail, 'ana@x.es');
   });
 
@@ -81,8 +79,46 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(1), 'mala');
     await tester.ensureVisible(find.text('Entrar'));
     await tester.tap(find.text('Entrar'));
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 1)); // el fondo animado nunca se asienta
     expect(find.text('Correo o contraseña incorrectos.'), findsOneWidget);
+  });
+
+  testWidgets('recuperar contraseña: valida el correo y lo envía', (tester) async {
+    final repo = FakeAuth();
+    await tester.pumpWidget(app(repo, const RecuperarPasswordPage()));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.tap(find.text('Enviar enlace'));
+    await tester.pump();
+    expect(find.text('Introduce un correo válido'), findsOneWidget);
+    expect(repo.emailRecuperacion, isNull);
+
+    await tester.enterText(find.byType(TextFormField), 'ana@x.es');
+    await tester.tap(find.text('Enviar enlace'));
+    await tester.pump(const Duration(seconds: 1));
+    expect(repo.emailRecuperacion, 'ana@x.es');
+    expect(find.text('Revisa tu correo'), findsOneWidget);
+  });
+
+  testWidgets('nueva contraseña: exige 8 caracteres, que coincidan, y la guarda', (tester) async {
+    final repo = FakeAuth();
+    await tester.pumpWidget(app(repo, const NuevaPasswordPage()));
+    await tester.pump(const Duration(seconds: 1));
+    await tester.enterText(find.byType(TextFormField).at(0), 'corta');
+    await tester.tap(find.text('Guardar contraseña'));
+    await tester.pump();
+    expect(find.text('Mínimo 8 caracteres'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'una-larga-123');
+    await tester.enterText(find.byType(TextFormField).at(1), 'otra-distinta');
+    await tester.tap(find.text('Guardar contraseña'));
+    await tester.pump();
+    expect(find.text('Las contraseñas no coinciden'), findsOneWidget);
+    expect(repo.nuevaPass, isNull);
+
+    await tester.enterText(find.byType(TextFormField).at(1), 'una-larga-123');
+    await tester.tap(find.text('Guardar contraseña'));
+    await tester.pump(const Duration(seconds: 1));
+    expect(repo.nuevaPass, 'una-larga-123');
   });
 
   test('áreas por rol: cada rol abre su área y una persona con varios roles ve varias', () {
@@ -107,21 +143,13 @@ void main() {
       child: const MaterialApp(home: HomePage()),
     ));
     await tester.pumpAndSettle();
-    expect(find.textContaining('no está asociada a ninguna escuela'), findsOneWidget);
-  });
-
-  testWidgets('mi cuenta: guarda preferencias de notificación', (tester) async {
-    final ligas = ligasMock(prefs: const {'resultados': true, 'calendario': true});
-    await tester.pumpWidget(app(FakeAuth(), const CuentaPage(), ligas: ligas));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byType(SwitchListTile).at(1));
-    await tester.pumpAndSettle();
-    verify(() => ligas.guardarPrefsNotificacion({'resultados': true, 'calendario': false})).called(1);
+    expect(find.textContaining('no está asociada a ninguna organización'), findsOneWidget);
   });
 
   testWidgets('mi cuenta: exige 8 caracteres y cambia la contraseña', (tester) async {
     final repo = FakeAuth();
     await tester.pumpWidget(app(repo, const CuentaPage()));
+    await tester.scrollUntilVisible(find.text('Actualizar'), 200, scrollable: find.byType(Scrollable).first);
     await tester.enterText(find.byType(TextFormField), 'corta');
     await tester.tap(find.text('Actualizar'));
     await tester.pump();
@@ -129,6 +157,8 @@ void main() {
     expect(repo.nuevaPass, isNull);
 
     await tester.enterText(find.byType(TextFormField), 'una-larga-123');
+    await tester.ensureVisible(find.text('Actualizar'));
+    await tester.pump();
     await tester.tap(find.text('Actualizar'));
     await tester.pumpAndSettle();
     expect(repo.nuevaPass, 'una-larga-123');
@@ -136,9 +166,9 @@ void main() {
   });
 
   test('rolDesdeDb mapea todos los roles', () {
-    for (final r in ['superadmin', 'organizador_liga', 'admin_escuela', 'entrenador', 'alumno', 'tutor']) {
+    for (final r in ['ADMINISTRADOR', 'ORGANIZADOR_LIGAS', 'ADMIN_ESCUELAS', 'ENTRENADOR', 'JUGADOR', 'TUTOR']) {
       expect(() => rolDesdeDb(r), returnsNormally);
     }
-    expect(() => rolDesdeDb('otro'), throwsArgumentError);
+    expect(() => rolDesdeDb('OTRO'), throwsArgumentError);
   });
 }

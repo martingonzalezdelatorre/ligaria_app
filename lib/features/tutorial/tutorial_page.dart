@@ -16,22 +16,22 @@ const _comunes = [
 const _porRol = <Rol, List<_Paso>>{
   Rol.alumno: [
     _Paso(Icons.leaderboard_outlined, 'Tu liga', 'Elige tu liga arriba para ver tu equipo, el calendario, los resultados y la clasificación.'),
-    _Paso(Icons.lock_outline, 'Tu privacidad', 'En «Mi ficha» decides cómo te ven otras escuelas: nombre completo, iniciales o solo tu escuela.'),
+    _Paso(Icons.lock_outline, 'Tu privacidad', 'Otras escuelas solo ven tu nombre y la inicial de tu apellido junto a los resultados. En «Mi ficha» ves tus datos.'),
   ],
   Rol.tutor: [
-    _Paso(Icons.family_restroom, 'Familias', 'Desde «Mi ficha» gestionas el consentimiento y la privacidad de tu hijo o hija, y ves quién ha consultado su ficha.'),
+    _Paso(Icons.family_restroom, 'Familias', 'Desde «Mi ficha» consultas los datos de tu hijo o hija; en «Liga» sigues su equipo, calendario y resultados.'),
   ],
   Rol.entrenador: [
-    _Paso(Icons.edit_note, 'Resultados en un minuto', 'En «Próxima jornada» abre el encuentro, marca quién ganó cada partido y envía. La organización lo confirma.'),
+    _Paso(Icons.edit_note, 'Resultados en un minuto', 'En «Próxima jornada» abre el encuentro, marca quién ganó cada partido y guarda. Si hay un error, la organización puede corregirlo.'),
   ],
   Rol.adminEscuela: [
     _Paso(Icons.school_outlined, 'Tu escuela', 'Da de alta jugadores y tutores, crea equipos e inscríbelos en las ligas abiertas.'),
   ],
   Rol.organizadorLiga: [
-    _Paso(Icons.emoji_events_outlined, 'Organizar una liga', 'Crea la liga con sus reglas, genera el calendario y confirma o corrige los resultados que propongan los entrenadores.'),
+    _Paso(Icons.emoji_events_outlined, 'Organizar una liga', 'Crea la liga, ábrela a la inscripción, genera el calendario y registra o corrige los resultados desde «Ver liga».'),
   ],
   Rol.superadmin: [
-    _Paso(Icons.admin_panel_settings_outlined, 'Plataforma', 'Gestiona escuelas, módulos, temporadas y consulta el registro de cambios.'),
+    _Paso(Icons.admin_panel_settings_outlined, 'Plataforma', 'Crea organizaciones (escuelas, ayuntamientos, grupos) y asígnales su administrador por correo.'),
   ],
 };
 

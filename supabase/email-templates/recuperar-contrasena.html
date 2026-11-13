@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="supported-color-schemes" content="dark">
+<title>Restablece tu contraseña de Ligaria</title>
+</head>
+<body style="margin:0;padding:0;background-color:#06110e;">
+<!-- Texto de vista previa en la bandeja de entrada -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:#06110e;">Restablece tu contraseña de Ligaria en un minuto.</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#06110e" style="background-color:#06110e;">
+ <tr><td align="center" style="padding:32px 16px;">
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+   <!-- Logo -->
+   <tr><td align="left" style="padding:0 8px 24px 8px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+     <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+       <td width="34" height="34" align="center" valign="middle" bgcolor="#c6ff3d" style="background-color:#c6ff3d;border-radius:10px;font-size:20px;line-height:34px;font-weight:900;color:#06110e;">L</td>
+       <td style="padding-left:10px;font-size:22px;font-weight:900;letter-spacing:-0.5px;color:#ffffff;">Ligaria</td>
+     </tr></table>
+   </td></tr>
+
+   <!-- Tarjeta -->
+   <tr><td bgcolor="#101d19" style="background-color:#101d19;border:1px solid #26372f;border-radius:24px;padding:40px 32px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+     <div style="display:inline-block;background-color:#1c2f12;color:#c6ff3d;font-size:12px;font-weight:800;letter-spacing:.5px;padding:6px 14px;border-radius:999px;">CONTRASEÑA</div>
+
+     <h1 style="margin:20px 0 12px 0;font-size:32px;line-height:1.1;font-weight:900;letter-spacing:-1px;color:#ffffff;">
+       Restablece tu contraseña y <span style="color:#c6ff3d;">vuelve a jugar.</span>
+     </h1>
+
+     <p style="margin:0 0 28px 0;font-size:16px;line-height:1.6;color:#a9bbb4;">
+       Hemos recibido una solicitud para cambiar la contraseña de la cuenta <strong style="color:#ffffff;">{{ .Email }}</strong>. Pulsa el botón para elegir una nueva. Por seguridad, el enlace caduca en poco tiempo.</p>
+
+     <!-- Botón -->
+     <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+       <td align="center" bgcolor="#c6ff3d" style="background-color:#c6ff3d;border-radius:999px;">
+         <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:16px 34px;font-size:16px;font-weight:800;color:#06110e;text-decoration:none;border-radius:999px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">Cambiar mi contraseña</a>
+       </td>
+     </tr></table>
+
+     <!-- Qué viene después -->
+     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:36px;border-top:1px solid #26372f;">
+      <tr><td style="padding-top:24px;font-size:14px;line-height:1.7;color:#a9bbb4;">
+        <strong style="color:#ffffff;">Antes de continuar, recuerda:</strong><br>
+        <span style="color:#c6ff3d;">✓</span>&nbsp; El enlace es de un solo uso y caduca pronto<br>
+        <span style="color:#c6ff3d;">✓</span>&nbsp; Elige una contraseña de al menos 8 caracteres<br>
+        <span style="color:#c6ff3d;">✓</span>&nbsp; Tus resultados y tu ficha seguirán exactamente igual
+      </td></tr>
+     </table>
+
+     <p style="margin:28px 0 0 0;font-size:13px;line-height:1.6;color:#7f938b;">
+       Si el botón no funciona, copia y pega este enlace en tu navegador:<br>
+       <a href="{{ .ConfirmationURL }}" target="_blank" style="color:#14c79a;word-break:break-all;">{{ .ConfirmationURL }}</a>
+     </p>
+   </td></tr>
+
+   <!-- Pie -->
+   <tr><td align="center" style="padding:24px 16px 0 16px;font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#7f938b;">
+     ¿No has pedido este cambio? Ignora este correo: tu contraseña actual seguirá funcionando.<br>
+     <strong style="color:#a9bbb4;">Ligaria</strong> · Ligas de tenis y pádel entre escuelas
+   </td></tr>
+  </table>
+
+ </td></tr>
+</table>
+</body>
+</html>

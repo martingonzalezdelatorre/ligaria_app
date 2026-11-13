@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ilustraciones.dart';
+import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../../data/models.dart';
 import 'alumno_providers.dart';
@@ -181,7 +182,7 @@ class _Calendario extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                   child: Text('Descansa: ${d.equipo}',
                       style: TextStyle(
-                          color: Theme.of(context).colorScheme.outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                           fontWeight: mios.contains(d.equipoId) ? FontWeight.bold : null)),
                 ),
             ],
@@ -266,14 +267,14 @@ class ResumenLiga extends ConsumerWidget {
     Widget dato(String valor, String etiqueta, {IconData? icono}) => Expanded(
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(color: Colors.white.withValues(alpha: .16), borderRadius: BorderRadius.circular(16)),
+            decoration: BoxDecoration(color: tinta.withValues(alpha: .12), borderRadius: BorderRadius.circular(16)),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(etiqueta, style: tema.textTheme.labelSmall?.copyWith(color: Colors.white70, letterSpacing: .4)),
+              Text(etiqueta, style: tema.textTheme.labelSmall?.copyWith(color: tinta.withValues(alpha: .7), letterSpacing: .4)),
               const SizedBox(height: 2),
               Text(valor,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: tema.textTheme.titleLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
+                  style: tema.textTheme.titleLarge?.copyWith(color: tinta, fontWeight: FontWeight.w800)),
             ]),
           ),
         );
@@ -283,8 +284,8 @@ class ResumenLiga extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFF22A862), Color(0xFF0E6B3A)]),
-        boxShadow: [BoxShadow(color: const Color(0xFF0E6B3A).withValues(alpha: .35), blurRadius: 24, offset: const Offset(0, 10))],
+        gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [lima, Color(0xFF5FE08A)]),
+        boxShadow: [BoxShadow(color: lima.withValues(alpha: .28), blurRadius: 36)],
       ),
       child: Stack(children: [
         const Positioned.fill(child: CustomPaint(painter: PistaPainter(opacidad: .16, grosor: 1.6))),
@@ -293,16 +294,16 @@ class ResumenLiga extends ConsumerWidget {
           padding: const EdgeInsets.all(18),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Row(children: [
-              Insignia(etiquetaEstadoLiga(liga.estado), color: Colors.white, icono: Icons.bolt),
+              Insignia(etiquetaEstadoLiga(liga.estado), color: tinta, icono: Icons.bolt),
               if (liga.deporte != null) ...[
                 const SizedBox(width: 8),
-                Text(liga.deporte!, style: tema.textTheme.labelLarge?.copyWith(color: Colors.white70)),
+                Text(liga.deporte!, style: tema.textTheme.labelLarge?.copyWith(color: tinta.withValues(alpha: .75))),
               ],
             ]),
             const SizedBox(height: 12),
             if (mostrarNombre)
               Text(liga.nombre,
-                  style: tema.textTheme.headlineSmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w800, height: 1.1)),
+                  style: tema.textTheme.headlineSmall?.copyWith(color: tinta, fontWeight: FontWeight.w800, height: 1.1)),
             if (miEquipo != null)
               Padding(
                 padding: const EdgeInsets.only(top: 4),
@@ -312,7 +313,7 @@ class ResumenLiga extends ConsumerWidget {
                   Expanded(
                       child: Text(miEquipo.equipo,
                           overflow: TextOverflow.ellipsis,
-                          style: tema.textTheme.titleMedium?.copyWith(color: Colors.white))),
+                          style: tema.textTheme.titleMedium?.copyWith(color: tinta))),
                 ]),
               ),
             const SizedBox(height: 14),
@@ -325,16 +326,16 @@ class ResumenLiga extends ConsumerWidget {
                 flex: 2,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
+                  decoration: BoxDecoration(color: tinta, borderRadius: BorderRadius.circular(16)),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('PRÓXIMO PARTIDO', style: tema.textTheme.labelSmall?.copyWith(color: tema.colorScheme.outline, letterSpacing: .4)),
+                    Text('PRÓXIMO PARTIDO', style: tema.textTheme.labelSmall?.copyWith(color: Colors.white70, letterSpacing: .4)),
                     const SizedBox(height: 2),
                     Text(rival == null ? 'Sin fecha' : 'vs $rival',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: tema.textTheme.titleSmall?.copyWith(color: const Color(0xFF0E4D2B), fontWeight: FontWeight.w800)),
+                        style: tema.textTheme.titleSmall?.copyWith(color: lima, fontWeight: FontWeight.w800)),
                     if (proximo != null)
-                      Text(fechaCorta(proximo.fecha), style: tema.textTheme.bodySmall?.copyWith(color: tema.colorScheme.outline)),
+                      Text(fechaCorta(proximo.fecha), style: tema.textTheme.bodySmall?.copyWith(color: Colors.white70)),
                   ]),
                 ),
               ),

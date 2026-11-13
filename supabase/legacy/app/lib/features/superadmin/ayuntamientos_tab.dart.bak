@@ -1,0 +1,222 @@
+import 'package:flutter/material.dart';
+import '../../core/formulario.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/config.dart';
+import '../../core/widgets.dart';
+import '../../data/liga_repository.dart';
+import '../../data/models.dart';
+import '../ayuntamiento/ayuntamiento_providers.dart';
+import 'superadmin_providers.dart';
+
+/// Alta de ayuntamientos, asignación de su administrador y vínculo con escuelas.
+class AyuntamientosTab extends ConsumerWidget {
+  const AyuntamientosTab({super.key});
+
+  Future<void> _crear(BuildContext context, WidgetRef ref) async {
+    final r = await mostrarFormulario<(String, String)>(context, (_) => const _NuevoAyuntamientoDialog());
+    if (r == null) return;
+    try {
+      await ref.read(ligaRepositoryProvider).crearAyuntamiento(r.$1, r.$2);
+      ref.invalidate(saAyuntamientosProvider);
+      if (context.mounted) avisar(context, 'Ayuntamiento creado: https://${r.$2}.${AppConfig.baseDomain}');
+    } catch (_) {
+      if (context.mounted) avisar(context, 'No se pudo crear. Comprueba que el subdominio no esté en uso.');
+    }
+  }
+
+  Future<void> _admin(BuildContext context, WidgetRef ref, AyuntamientoAdmin a) async {
+    final email = await _pedirTexto(context, 'Administrador de ${a.nombre}', 'Correo electrónico', teclado: TextInputType.emailAddress);
+    if (email == null || !email.contains('@')) return;
+    try {
+      await ref.read(ligaRepositoryProvider).asignarAdminAyuntamiento(a.id, email);
+      ref.invalidate(saAyuntamientosProvider);
+      if (context.mounted) avisar(context, 'Administrador asignado.');
+    } catch (_) {
+      if (context.mounted) avisar(context, 'No se pudo asignar el administrador.');
+    }
+  }
+
+  Future<void> _escuelas(BuildContext context, WidgetRef ref, AyuntamientoAdmin a) async {
+    final escuelas = await ref.read(ligaRepositoryProvider).escuelas();
+    if (!context.mounted) return;
+    final sel = await mostrarFormulario<Set<String>>(context, (_) => _EscuelasDialog(ayuntamiento: a, escuelas: escuelas));
+    if (sel == null) return;
+    final repo = ref.read(ligaRepositoryProvider);
+    try {
+      for (final e in escuelas) {
+        final antes = e.ayuntamientoId == a.id, ahora = sel.contains(e.id);
+        if (antes != ahora) await repo.vincularEscuela(e.id, ahora ? a.id : null);
+      }
+      ref.invalidate(saAyuntamientosProvider);
+      ref.invalidate(saEscuelasProvider);
+      if (context.mounted) avisar(context, 'Escuelas actualizadas.');
+    } catch (_) {
+      if (context.mounted) avisar(context, 'No se pudieron actualizar las escuelas.');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => _crear(context, ref),
+          icon: const Icon(Icons.add),
+          label: const Text('Nuevo ayuntamiento'),
+        ),
+        body: AsyncView<List<AyuntamientoAdmin>>(
+          value: ref.watch(saAyuntamientosProvider),
+          onRetry: () => ref.invalidate(saAyuntamientosProvider),
+          builder: (lista) => lista.isEmpty
+              ? const EstadoVacio(icono: Icons.account_balance_outlined, texto: 'Todavía no hay ayuntamientos.')
+              : ListView(padding: const EdgeInsets.only(top: 8, bottom: 96), children: [
+                  for (final a in lista)
+                    Card(
+                      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      child: ListTile(
+                        leading: const Icon(Icons.account_balance_outlined),
+                        title: Text(a.nombre),
+                        subtitle: Text('${a.slug}.${AppConfig.baseDomain} · ${a.administradores} administrador(es)'),
+                        trailing: PopupMenuButton<String>(
+                          onSelected: (v) => v == 'admin' ? _admin(context, ref, a) : _escuelas(context, ref, a),
+                          itemBuilder: (_) => const [
+                            PopupMenuItem(value: 'admin', child: Text('Asignar administrador')),
+                            PopupMenuItem(value: 'escuelas', child: Text('Escuelas vinculadas')),
+                          ],
+                        ),
+                      ),
+                    ),
+                ]),
+        ),
+      );
+}
+
+Future<String?> _pedirTexto(BuildContext context, String titulo, String etiqueta, {TextInputType? teclado}) =>
+    mostrarFormulario<String>(context, (_) => _PedirTexto(titulo: titulo, etiqueta: etiqueta, teclado: teclado));
+
+class _PedirTexto extends StatefulWidget {
+  const _PedirTexto({required this.titulo, required this.etiqueta, this.teclado});
+  final String titulo, etiqueta;
+  final TextInputType? teclado;
+  @override
+  State<_PedirTexto> createState() => _PedirTextoState();
+}
+
+class _PedirTextoState extends State<_PedirTexto> {
+  final _c = TextEditingController();
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => HojaFormulario(
+        icono: Icons.person_add_alt_1_rounded,
+        titulo: widget.titulo,
+        etiquetaAccion: 'Aceptar',
+        iconoAccion: Icons.check_rounded,
+        onAccion: () => Navigator.of(context).pop(_c.text.trim()),
+        children: [
+          TextField(
+            controller: _c,
+            autofocus: true,
+            keyboardType: widget.teclado,
+            onSubmitted: (_) => Navigator.of(context).pop(_c.text.trim()),
+            decoration: decoracionCampo(widget.etiqueta, Icons.alternate_email),
+          ),
+        ],
+      );
+}
+
+class _EscuelasDialog extends StatefulWidget {
+  const _EscuelasDialog({required this.ayuntamiento, required this.escuelas});
+  final AyuntamientoAdmin ayuntamiento;
+  final List<EscuelaAdmin> escuelas;
+  @override
+  State<_EscuelasDialog> createState() => _EscuelasDialogState();
+}
+
+class _EscuelasDialogState extends State<_EscuelasDialog> {
+  late final Set<String> _sel = {for (final e in widget.escuelas) if (e.ayuntamientoId == widget.ayuntamiento.id) e.id};
+
+  @override
+  Widget build(BuildContext context) => HojaFormulario(
+        icono: Icons.school_rounded,
+        titulo: 'Escuelas de ${widget.ayuntamiento.nombre}',
+        subtitulo: '${_sel.length} seleccionadas',
+        etiquetaAccion: 'Guardar',
+        iconoAccion: Icons.check_rounded,
+        onAccion: () => Navigator.of(context).pop(_sel),
+        children: [
+          for (final e in widget.escuelas)
+            CheckboxListTile(
+              contentPadding: EdgeInsets.zero,
+              value: _sel.contains(e.id),
+              title: Text(e.nombre),
+              subtitle: e.ayuntamientoId != null && e.ayuntamientoId != widget.ayuntamiento.id ? const Text('Vinculada a otro ayuntamiento') : null,
+              onChanged: (v) => setState(() => v == true ? _sel.add(e.id) : _sel.remove(e.id)),
+            ),
+        ],
+      );
+}
+
+class _NuevoAyuntamientoDialog extends StatefulWidget {
+  const _NuevoAyuntamientoDialog();
+  @override
+  State<_NuevoAyuntamientoDialog> createState() => _NuevoAyuntamientoState();
+}
+
+class _NuevoAyuntamientoState extends State<_NuevoAyuntamientoDialog> {
+  final _nombre = TextEditingController();
+  final _slug = TextEditingController();
+  bool _editado = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _nombre.dispose();
+    _slug.dispose();
+    super.dispose();
+  }
+
+  void _crear() {
+    final sl = slugDe(_slug.text), err = validarSubdominio(sl);
+    if (_nombre.text.trim().length < 2) {
+      setState(() => _error = 'Escribe el nombre');
+    } else if (err != null) {
+      setState(() => _error = err);
+    } else {
+      Navigator.of(context).pop((_nombre.text.trim(), sl));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => HojaFormulario(
+        icono: Icons.account_balance_rounded,
+        titulo: 'Nuevo ayuntamiento',
+        subtitulo: 'Tendrá su propio subdominio para gestionar ligas.',
+        etiquetaAccion: 'Crear',
+        iconoAccion: Icons.check_rounded,
+        onAccion: _crear,
+        children: [
+          TextField(
+            controller: _nombre,
+            autofocus: true,
+            textCapitalization: TextCapitalization.words,
+            textInputAction: TextInputAction.next,
+            decoration: decoracionCampo('Nombre', Icons.account_balance_outlined),
+            onChanged: (v) {
+              if (!_editado) _slug.text = slugDe(v).replaceAll('-', '');
+            },
+          ),
+          espacioCampo,
+          TextField(
+            controller: _slug,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _crear(),
+            decoration: decoracionCampo('Subdominio', Icons.language).copyWith(suffixText: '.${AppConfig.baseDomain}', errorText: _error),
+            onChanged: (_) => _editado = true,
+          ),
+        ],
+      );
+}
