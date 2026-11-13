@@ -6,18 +6,21 @@ PWA en **Flutter Web** + **Supabase** (Postgres con RLS y Auth).
 ## Estructura
 
 ```
-lib/                       App Flutter (core, data, features por rol)
-supabase/migrations/       0001 esquema base · 0002 acceso de la app (RLS, vistas v_*, RPC, invitaciones)
-supabase/legacy/           Esquema anterior y copias (.bak) de lo retirado; solo referencia
-supabase/seed.sql          Datos de ejemplo de DESARROLLO
-supabase/tests/            Tests SQL con PGlite (Postgres en WASM, sin Docker)
-test/                      Tests de widgets (mocktail)
+apps/ligariaia/lib/        App Ligaria IA (core, data, features por rol)
+apps/ligaria_friends/      App Ligaria Friends (mismo estilo, backend propio)
+packages/ligaria_ui/       Tema, widgets y animaciones compartidos por ambas apps
+backend/ligariaia/supabase/migrations/       0001 esquema base · 0002 acceso de la app (RLS, vistas v_*, RPC, invitaciones)
+backend/ligariaia/supabase/legacy/           Esquema anterior y copias (.bak) de lo retirado; solo referencia
+backend/ligariaia/supabase/seed.sql          Datos de ejemplo de DESARROLLO
+backend/ligariaia/supabase/tests/            Tests SQL con PGlite (Postgres en WASM, sin Docker)
+apps/*/test/               Tests de widgets (mocktail)
+backend/friends/supabase/  Proyecto Supabase de Friends (LIGARIA_BACKEND=friends scripts/supabase.sh ...)
 ```
 
 ## Tests
 
 ```bash
-cd supabase/tests && npm install && npm test   # RLS, calendario, clasificación, seed
+cd backend/ligariaia/supabase/tests && npm install && npm test   # RLS, calendario, clasificación, seed
 ```
 
 ```bash
@@ -35,7 +38,7 @@ flutter analyze && flutter test
    (comprueba antes con `scripts/supabase.sh estado`):
    `scripts/supabase.sh marcar 0001 0002`
    ⚠️ La base remota existente tiene el esquema ANTERIOR: el nuevo esquema (0001) no es compatible. Aplícalo en un
-   proyecto nuevo o resetea antes (`supabase/reset.sql`); `subir` sobre producción NO migra datos.
+   proyecto nuevo o resetea antes (`backend/ligariaia/supabase/reset.sql`); `subir` sobre producción NO migra datos.
 
 **Cada vez que haya una migración nueva**
 
@@ -51,7 +54,7 @@ flutter run -d chrome --dart-define-from-file=env.json
 flutter build web --dart-define-from-file=env.json     # sirve build/web en tu hosting
 ```
 
-El seed (`supabase/seed.sql`) es solo para desarrollo: no lo cargues en producción.
+El seed (`backend/ligariaia/supabase/seed.sql`) es solo para desarrollo: no lo cargues en producción.
 
 ## Registro de usuarios (contrato para la web)
 
@@ -106,3 +109,13 @@ Contraseña de todos: `Ligaria2026!` — **no cargar el seed en producción**.
 - **Privacidad**: de otras organizaciones solo se muestra «Nombre I.» de los jugadores.
 - **Retirado** (sin tablas equivalentes): temporadas, consentimiento/visibilidad de menores, notificaciones,
   registro de cambios, correcciones con historial.
+
+## Monorepo (pub workspace)
+
+```bash
+flutter pub get                                   # en la raíz: resuelve las dos apps y el paquete
+cd apps/ligariaia && flutter test                 # o apps/ligaria_friends, packages/ligaria_ui
+cd apps/ligaria_friends && flutter run -d chrome --dart-define-from-file=env.json
+```
+
+El estilo vive en `packages/ligaria_ui`: cada app solo aporta su acento (`temaOscuro(acento: ...)`) y su logo.

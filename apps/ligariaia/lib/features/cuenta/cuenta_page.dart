@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/auth.dart';
-import '../../core/formulario.dart';
-import '../../core/theme.dart';
-import '../../core/widgets.dart';
 
 class CuentaPage extends ConsumerStatefulWidget {
   const CuentaPage({super.key});

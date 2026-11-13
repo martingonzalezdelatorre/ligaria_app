@@ -1,0 +1,10 @@
+name: ligaria_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.12.2
+
+workspace:
+  - apps/ligariaia
+  - apps/ligaria_friends
+  - packages/ligaria_ui

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth.dart';
-import '../../core/ilustraciones.dart';
-import '../../core/theme.dart';
 import '../../core/widgets.dart';
 import '../alumno/alumno_home.dart';
 import '../entrenador/entrenador_home.dart';
@@ -202,21 +201,3 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 }
 
-/// Logotipo de marca: cuadrado redondeado con degradado y raqueta.
-class LogoLigaria extends StatelessWidget {
-  const LogoLigaria({super.key, this.tam = 48});
-  final double tam;
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: tam,
-      height: tam,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(tam * .3),
-        gradient: const LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [lima, Color(0xFF7BE36B)]),
-        boxShadow: [BoxShadow(color: lima.withValues(alpha: .45), blurRadius: tam * .6)],
-      ),
-      child: Icon(Icons.sports_tennis, color: tinta, size: tam * .55),
-    );
-  }
-}

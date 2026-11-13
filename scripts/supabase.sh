@@ -9,7 +9,7 @@
 #   scripts/supabase.sh marcar 0001 0002 ...   # marca como YA aplicadas migraciones que ejecutaste a mano
 set -euo pipefail
 REF="gftslrixaeggchimldmf"
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../backend/${LIGARIA_BACKEND:-ligariaia}"
 SB="npx --yes supabase"
 
 case "${1:-}" in

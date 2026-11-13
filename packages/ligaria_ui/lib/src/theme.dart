@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-const _acento = Color(0xFFFF8A3D); // naranja
+const acentoNaranja = Color(0xFFFF8A3D); // naranja
 
 /// Anchos de referencia para el diseño adaptable.
 class Pantalla {
@@ -22,7 +20,7 @@ const bordeCristal = Color(0x1FFFFFFF); // blanco 12 %
 const superficieOscura = Color(0xFF101D19);
 
 /// Tema único, oscuro, con lima eléctrico como color principal.
-ThemeData _construir(Brightness _) {
+ThemeData _construir(Brightness _, Color acento) {
   final cs = ColorScheme.fromSeed(seedColor: lima, brightness: Brightness.dark).copyWith(
     primary: lima,
     onPrimary: tinta,
@@ -30,7 +28,7 @@ ThemeData _construir(Brightness _) {
     onPrimaryContainer: lima,
     secondary: menta,
     onSecondary: tinta,
-    tertiary: _acento,
+    tertiary: acento,
     onTertiary: tinta,
     surface: tinta,
     onSurface: Colors.white,
@@ -177,7 +175,7 @@ ThemeData _construir(Brightness _) {
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(color: lima),
     dividerTheme: const DividerThemeData(color: borde, space: 1, thickness: 1),
-    extensions: const [Marca(acento: _acento, borde: borde, superficie: cristal)],
+    extensions: [Marca(acento: acento, borde: borde, superficie: cristal)],
   );
 }
 
@@ -186,7 +184,7 @@ class Marca extends ThemeExtension<Marca> {
   const Marca({required this.acento, required this.borde, required this.superficie});
   final Color acento, borde, superficie;
   static Marca de(BuildContext c) =>
-      Theme.of(c).extension<Marca>() ?? const Marca(acento: _acento, borde: bordeCristal, superficie: cristal);
+      Theme.of(c).extension<Marca>() ?? const Marca(acento: acentoNaranja, borde: bordeCristal, superficie: cristal);
   @override
   Marca copyWith({Color? acento, Color? borde, Color? superficie}) =>
       Marca(acento: acento ?? this.acento, borde: borde ?? this.borde, superficie: superficie ?? this.superficie);
@@ -199,27 +197,7 @@ class Marca extends ThemeExtension<Marca> {
           superficie: Color.lerp(superficie, other.superficie, t)!);
 }
 
-ThemeData temaClaro() => _construir(Brightness.light);
-ThemeData temaOscuro() => _construir(Brightness.dark);
+/// [acento] diferencia cada app (ligariaia: naranja, friends: otro) sin cambiar la base.
+ThemeData temaClaro({Color acento = acentoNaranja}) => _construir(Brightness.light, acento);
+ThemeData temaOscuro({Color acento = acentoNaranja}) => _construir(Brightness.dark, acento);
 
-/// Modo de tema (sistema / claro / oscuro), persistido localmente.
-class ThemeModeNotifier extends Notifier<ThemeMode> {
-  static const _clave = 'theme_mode';
-
-  @override
-  ThemeMode build() {
-    _cargar();
-    return ThemeMode.dark;
-  }
-
-  Future<void> _cargar() async {}
-
-  Future<void> set(ThemeMode modo) async {
-    state = modo;
-    try {
-      await (await SharedPreferences.getInstance()).setString(_clave, modo.name);
-    } catch (_) {}
-  }
-}
-
-final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);

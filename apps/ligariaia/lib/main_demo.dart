@@ -1,11 +1,12 @@
 // Modo demo: arranca la app con datos de ejemplo, sin Supabase.
 //   flutter run -d chrome -t lib/main_demo.dart
 import 'package:flutter/material.dart';
+import 'package:ligaria_ui/ligaria_ui.dart';
+import 'core/theme_mode.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/auth.dart';
 import 'core/router.dart';
-import 'core/theme.dart';
 import 'data/liga_repository.dart';
 import 'data/models.dart';
 

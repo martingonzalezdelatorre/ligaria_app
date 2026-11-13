@@ -4,7 +4,7 @@
 $ErrorActionPreference = 'Stop'
 $ref = 'gftslrixaeggchimldmf'
 
-Set-Location (Join-Path $PSScriptRoot '..')
+Set-Location (Join-Path $PSScriptRoot '../backend/ligariaia')
 
 Write-Host "Host del Session pooler (Supabase > Connect > Session pooler)."
 Write-Host "Ejemplo: aws-0-eu-west-1.pooler.supabase.com"

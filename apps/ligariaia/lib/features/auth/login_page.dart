@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth.dart';
-import '../../core/ilustraciones.dart';
-import '../../core/theme.dart';
-import '../home/home_page.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});

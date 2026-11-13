@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ligaria_app/core/auth.dart';
-import 'package:ligaria_app/core/formulario.dart';
-import 'package:ligaria_app/data/liga_repository.dart';
-import 'package:ligaria_app/data/models.dart';
-import 'package:ligaria_app/features/escuela/escuela_home.dart';
-import 'package:ligaria_app/features/escuela/escuela_providers.dart';
+import 'package:ligariaia/core/auth.dart';
+import 'package:ligariaia/data/liga_repository.dart';
+import 'package:ligariaia/data/models.dart';
+import 'package:ligariaia/features/escuela/escuela_home.dart';
+import 'package:ligariaia/features/escuela/escuela_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockRepo extends Mock implements LigaRepository {}

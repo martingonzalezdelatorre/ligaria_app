@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth.dart';
-import '../../core/ilustraciones.dart';
-import '../home/home_page.dart' show LogoLigaria;
+
 
 /// Marco común: fondo de la marca y tarjeta centrada.
 class _Marco extends StatelessWidget {

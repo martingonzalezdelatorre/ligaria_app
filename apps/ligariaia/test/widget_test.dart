@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:ligaria_app/data/liga_repository.dart';
-import 'package:ligaria_app/core/auth.dart';
-import 'package:ligaria_app/features/auth/login_page.dart';
-import 'package:ligaria_app/features/auth/recuperar_pages.dart';
-import 'package:ligaria_app/features/cuenta/cuenta_page.dart';
-import 'package:ligaria_app/features/home/home_page.dart';
+import 'package:ligariaia/data/liga_repository.dart';
+import 'package:ligariaia/core/auth.dart';
+import 'package:ligariaia/features/auth/login_page.dart';
+import 'package:ligariaia/features/auth/recuperar_pages.dart';
+import 'package:ligariaia/features/cuenta/cuenta_page.dart';
+import 'package:ligariaia/features/home/home_page.dart';
 
 class FakeAuth implements AuthRepository {
   FakeAuth({this.falla = false, this.perts = const []});

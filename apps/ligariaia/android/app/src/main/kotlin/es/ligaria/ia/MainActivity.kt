@@ -1,4 +1,4 @@
-package com.example.ligaria_app
+package es.ligaria.ia
 
 import io.flutter.embedding.android.FlutterActivity
 
