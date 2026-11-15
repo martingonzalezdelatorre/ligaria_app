@@ -50,53 +50,85 @@ class _LoginPageState extends State<LoginPage> {
       child: AutofillGroup(
         child: Form(
           key: _form,
-          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            Text('Bienvenido de nuevo', style: t.headlineSmall),
-            const SizedBox(height: 6),
-            Text('Entra y organiza tu próximo partido.', style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-            const SizedBox(height: 24),
-            if (_error != null) ...[AvisoError(_error!), const SizedBox(height: 16)],
-            TextFormField(
-              controller: _email,
-              keyboardType: TextInputType.emailAddress,
-              autofillHints: const [AutofillHints.email],
-              textInputAction: TextInputAction.next,
-              validator: validarEmail,
-              decoration: decoracionCampo('Email', Icons.alternate_email_rounded),
-            ),
-            espacioCampo,
-            CampoPassword(controller: _pass, onEnviar: _entrar),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton(
-                onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => RecuperarPage(auth: widget.auth, emailInicial: _email.text))),
-                child: const Text('¿Olvidaste tu contraseña?'),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Bienvenido de nuevo', style: t.headlineSmall),
+              const SizedBox(height: 6),
+              Text(
+                'Entra y organiza tu próximo partido.',
+                style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               ),
-            ),
-            const SizedBox(height: 8),
-            BotonPrincipal(texto: 'Iniciar sesión', cargando: _cargando, onPressed: _entrar),
-            const SizedBox(height: 20),
-            Row(children: [
-              const Expanded(child: Divider()),
-              Flexible(
-                flex: 4,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Text('¿Aún no juegas con nosotros?',
-                      textAlign: TextAlign.center, style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              const SizedBox(height: 24),
+              if (_error != null) ...[
+                AvisoError(_error!),
+                const SizedBox(height: 16),
+              ],
+              TextFormField(
+                controller: _email,
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                textInputAction: TextInputAction.next,
+                validator: validarEmail,
+                decoration: decoracionCampo(
+                  'Email',
+                  Icons.alternate_email_rounded,
                 ),
               ),
-              const Expanded(child: Divider()),
-            ]),
-            const SizedBox(height: 16),
-            OutlinedButton.icon(
-              onPressed: () => Navigator.of(context).push(MaterialPageRoute(
-                  builder: (_) => RegistroPage(auth: widget.auth))),
-              icon: const Icon(Icons.person_add_alt_1_rounded),
-              label: const Text('Crear cuenta'),
-            ),
-          ]),
+              espacioCampo,
+              CampoPassword(controller: _pass, onEnviar: _entrar),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => RecuperarPage(
+                        auth: widget.auth,
+                        emailInicial: _email.text,
+                      ),
+                    ),
+                  ),
+                  child: const Text('¿Olvidaste tu contraseña?'),
+                ),
+              ),
+              const SizedBox(height: 8),
+              BotonPrincipal(
+                texto: 'Iniciar sesión',
+                cargando: _cargando,
+                onPressed: _entrar,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  const Expanded(child: Divider()),
+                  Flexible(
+                    flex: 4,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: Text(
+                        '¿Aún no juegas con nosotros?',
+                        textAlign: TextAlign.center,
+                        style: t.bodySmall?.copyWith(
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Expanded(child: Divider()),
+                ],
+              ),
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => RegistroPage(auth: widget.auth),
+                  ),
+                ),
+                icon: const Icon(Icons.person_add_alt_1_rounded),
+                label: const Text('Crear cuenta'),
+              ),
+            ],
+          ),
         ),
       ),
     );

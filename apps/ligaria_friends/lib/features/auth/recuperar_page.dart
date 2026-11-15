@@ -47,36 +47,67 @@ class _RecuperarPageState extends State<RecuperarPage> {
     return AuthScaffold(
       atras: true,
       child: _enviado
-          ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-              const Center(child: MedallonVacio(icono: Icons.mark_email_read_outlined)),
-              const SizedBox(height: 20),
-              Text('Revisa tu correo', style: t.headlineSmall, textAlign: TextAlign.center),
-              const SizedBox(height: 8),
-              Text('Si existe una cuenta con ${_email.text.trim()}, te hemos enviado un enlace para elegir una contraseña nueva. Caduca en poco tiempo; mira también la carpeta de spam.',
-                  style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant), textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              BotonPrincipal(texto: 'Volver a iniciar sesión', onPressed: () => Navigator.of(context).maybePop()),
-            ])
-          : Form(
-              key: _form,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-                Text('Recupera tu contraseña', style: t.headlineSmall),
-                const SizedBox(height: 6),
-                Text('Escribe tu correo y te enviaremos un enlace para elegir una contraseña nueva.', style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-                const SizedBox(height: 24),
-                if (_error != null) ...[AvisoError(_error!), const SizedBox(height: 16)],
-                TextFormField(
-                  controller: _email,
-                  keyboardType: TextInputType.emailAddress,
-                  autofillHints: const [AutofillHints.email],
-                  textInputAction: TextInputAction.done,
-                  validator: validarEmail,
-                  onFieldSubmitted: (_) => _enviar(),
-                  decoration: decoracionCampo('Correo electrónico', Icons.mail_outline),
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Center(
+                  child: MedallonVacio(icono: Icons.mark_email_read_outlined),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  'Revisa tu correo',
+                  style: t.headlineSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Si existe una cuenta con ${_email.text.trim()}, te hemos enviado un enlace para elegir una contraseña nueva. Caduca en poco tiempo; mira también la carpeta de spam.',
+                  style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
-                BotonPrincipal(texto: 'Enviar enlace', cargando: _cargando, onPressed: _enviar),
-              ]),
+                BotonPrincipal(
+                  texto: 'Volver a iniciar sesión',
+                  onPressed: () => Navigator.of(context).maybePop(),
+                ),
+              ],
+            )
+          : Form(
+              key: _form,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('Recupera tu contraseña', style: t.headlineSmall),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Escribe tu correo y te enviaremos un enlace para elegir una contraseña nueva.',
+                    style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                  const SizedBox(height: 24),
+                  if (_error != null) ...[
+                    AvisoError(_error!),
+                    const SizedBox(height: 16),
+                  ],
+                  TextFormField(
+                    controller: _email,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.email],
+                    textInputAction: TextInputAction.done,
+                    validator: validarEmail,
+                    onFieldSubmitted: (_) => _enviar(),
+                    decoration: decoracionCampo(
+                      'Correo electrónico',
+                      Icons.mail_outline,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  BotonPrincipal(
+                    texto: 'Enviar enlace',
+                    cargando: _cargando,
+                    onPressed: _enviar,
+                  ),
+                ],
+              ),
             ),
     );
   }

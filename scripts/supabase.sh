@@ -7,9 +7,16 @@
 #   scripts/supabase.sh simular    # muestra lo que se aplicaría, sin cambiar nada
 #   scripts/supabase.sh subir      # aplica las migraciones pendientes (pide confirmación)
 #   scripts/supabase.sh marcar 0001 0002 ...   # marca como YA aplicadas migraciones que ejecutaste a mano
+# Por defecto actúa sobre Ligaria IA. Para Ligaria Friends (proyecto Supabase distinto):
+#   LIGARIA_BACKEND=friends FRIENDS_REF=<ref-del-proyecto> scripts/supabase.sh enlazar
 set -euo pipefail
-REF="gftslrixaeggchimldmf"
-cd "$(dirname "$0")/../backend/${LIGARIA_BACKEND:-ligariaia}"
+BACKEND="${LIGARIA_BACKEND:-ligariaia}"
+case "$BACKEND" in
+  ligariaia) REF="gftslrixaeggchimldmf" ;;
+  friends)   REF="${FRIENDS_REF:?Define FRIENDS_REF con el project-ref del proyecto Supabase de Friends}" ;;
+  *) echo "LIGARIA_BACKEND desconocido: $BACKEND"; exit 1 ;;
+esac
+cd "$(dirname "$0")/../backend/$BACKEND"
 SB="npx --yes supabase"
 
 case "${1:-}" in

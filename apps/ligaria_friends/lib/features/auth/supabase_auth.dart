@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
-import 'package:supabase_flutter/supabase_flutter.dart' as sb show AuthException;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    as sb
+    show AuthException;
 import 'auth_repositorio.dart';
 
 /// Autenticación real con Supabase Auth (email + contraseña).
@@ -17,35 +19,70 @@ class SupabaseAuth implements AuthRepositorio {
   }
 
   @override
-  Future<void> iniciarSesion({required String email, required String password}) =>
-      _traducir(() => _a.signInWithPassword(email: email.trim(), password: password));
+  Future<void> iniciarSesion({
+    required String email,
+    required String password,
+  }) => _traducir(
+    () => _a.signInWithPassword(email: email.trim(), password: password),
+  );
 
   @override
-  Future<bool> registrar({required String nombre, required String email, required String password}) =>
-      _traducir(() async {
-        final r = await _a.signUp(
-          email: email.trim(),
-          password: password,
-          data: {'nombre': nombre},
-          emailRedirectTo: kIsWeb ? Uri.base.origin : null,
-        );
-        // Con "Confirm email" activo, Supabase no devuelve sesión hasta confirmar.
-        // Si el email ya existe, devuelve un usuario sin identidades (anti-enumeración).
-        if (r.user != null && (r.user!.identities?.isEmpty ?? false)) {
-          throw const AuthException('Ya existe una cuenta con ese email.');
-        }
-        return r.session != null;
-      });
+  Future<bool> registrar({
+    required String nombre,
+    required String email,
+    required String password,
+    String? nombreTienda,
+  }) => _traducir(() async {
+    final r = await _a.signUp(
+      email: email.trim(),
+      password: password,
+      data: {
+        'nombre': nombre,
+        if (nombreTienda != null) ...{
+          'tipo_cuenta': 'TIENDA',
+          'nombre_tienda': nombreTienda,
+        },
+      },
+      emailRedirectTo: kIsWeb ? Uri.base.origin : null,
+    );
+    // Con "Confirm email" activo, Supabase no devuelve sesión hasta confirmar.
+    // Si el email ya existe, devuelve un usuario sin identidades (anti-enumeración).
+    if (r.user != null && (r.user!.identities?.isEmpty ?? false)) {
+      throw const AuthException('Ya existe una cuenta con ese email.');
+    }
+    return r.session != null;
+  });
 
   @override
-  Future<void> recuperarPassword({required String email}) =>
-      _traducir(() => _a.resetPasswordForEmail(email.trim(), redirectTo: kIsWeb ? Uri.base.origin : null));
+  Future<TipoCuenta> tipoCuenta() => _traducir(() async {
+    final uid = _a.currentUser?.id;
+    if (uid == null) return TipoCuenta.jugador;
+    final fila = await Supabase.instance.client
+        .from('perfil')
+        .select('tipo_cuenta')
+        .eq('id', uid)
+        .maybeSingle();
+    return fila?['tipo_cuenta'] == 'TIENDA'
+        ? TipoCuenta.tienda
+        : TipoCuenta.jugador;
+  });
 
   @override
-  Stream<void> get recuperacion => _a.onAuthStateChange.where((e) => e.event == AuthChangeEvent.passwordRecovery);
+  Future<void> recuperarPassword({required String email}) => _traducir(
+    () => _a.resetPasswordForEmail(
+      email.trim(),
+      redirectTo: kIsWeb ? Uri.base.origin : null,
+    ),
+  );
 
   @override
-  Future<void> cambiarPassword(String nueva) => _traducir(() => _a.updateUser(UserAttributes(password: nueva)));
+  Stream<void> get recuperacion => _a.onAuthStateChange.where(
+    (e) => e.event == AuthChangeEvent.passwordRecovery,
+  );
+
+  @override
+  Future<void> cambiarPassword(String nueva) =>
+      _traducir(() => _a.updateUser(UserAttributes(password: nueva)));
 
   @override
   Future<void> cerrarSesion() => _a.signOut();
@@ -60,16 +97,21 @@ class SupabaseAuth implements AuthRepositorio {
     } on sb.AuthException catch (e) {
       throw AuthException(e.message);
     } catch (_) {
-      throw const AuthException('No se pudo conectar. Revisa tu conexión e inténtalo de nuevo.');
+      throw const AuthException(
+        'No se pudo conectar. Revisa tu conexión e inténtalo de nuevo.',
+      );
     }
   }
 
   String _mensaje(AuthApiException e) => switch (e.code) {
-        'invalid_credentials' => 'Email o contraseña incorrectos.',
-        'email_not_confirmed' => 'Confirma tu email antes de entrar (revisa tu correo).',
-        'user_already_exists' || 'email_exists' => 'Ya existe una cuenta con ese email.',
-        'weak_password' => 'La contraseña es demasiado débil.',
-        'over_request_rate_limit' || 'over_email_send_rate_limit' => 'Demasiados intentos. Espera un momento.',
-        _ => 'No se pudo completar la operación (${e.message}).',
-      };
+    'invalid_credentials' => 'Email o contraseña incorrectos.',
+    'email_not_confirmed' =>
+      'Confirma tu email antes de entrar (revisa tu correo).',
+    'user_already_exists' ||
+    'email_exists' => 'Ya existe una cuenta con ese email.',
+    'weak_password' => 'La contraseña es demasiado débil.',
+    'over_request_rate_limit' ||
+    'over_email_send_rate_limit' => 'Demasiados intentos. Espera un momento.',
+    _ => 'No se pudo completar la operación (${e.message}).',
+  };
 }

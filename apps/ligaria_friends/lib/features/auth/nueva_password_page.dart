@@ -6,7 +6,11 @@ import 'auth_widgets.dart';
 /// Paso 2 de la recuperación: se llega desde el enlace del correo (sesión de recuperación)
 /// y se elige la contraseña nueva.
 class NuevaPasswordPage extends StatefulWidget {
-  const NuevaPasswordPage({super.key, required this.auth, required this.onTerminar});
+  const NuevaPasswordPage({
+    super.key,
+    required this.auth,
+    required this.onTerminar,
+  });
   final AuthRepositorio auth;
 
   /// Se llama al guardar o cancelar; la raíz vuelve entonces al flujo normal.
@@ -41,7 +45,10 @@ class _NuevaPasswordPageState extends State<NuevaPasswordPage> {
       if (mounted) widget.onTerminar();
     } on AuthException {
       if (mounted) {
-        setState(() => _error = 'No se pudo cambiar la contraseña. El enlace puede haber caducado: pide uno nuevo.');
+        setState(
+          () => _error =
+              'No se pudo cambiar la contraseña. El enlace puede haber caducado: pide uno nuevo.',
+        );
       }
     } finally {
       if (mounted) setState(() => _cargando = false);
@@ -60,25 +67,43 @@ class _NuevaPasswordPageState extends State<NuevaPasswordPage> {
     return AuthScaffold(
       child: Form(
         key: _form,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('Elige tu nueva contraseña', style: t.headlineSmall),
-          const SizedBox(height: 6),
-          Text('Mínimo 8 caracteres.', style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-          const SizedBox(height: 24),
-          if (_error != null) ...[AvisoError(_error!), const SizedBox(height: 16)],
-          CampoPassword(controller: _nueva, etiqueta: 'Nueva contraseña', accion: TextInputAction.next),
-          espacioCampo,
-          CampoPassword(
-            controller: _repite,
-            etiqueta: 'Repite la contraseña',
-            validator: (v) => v != _nueva.text ? 'Las contraseñas no coinciden' : null,
-            onEnviar: _guardar,
-          ),
-          const SizedBox(height: 24),
-          BotonPrincipal(texto: 'Guardar contraseña', cargando: _cargando, onPressed: _guardar),
-          const SizedBox(height: 8),
-          TextButton(onPressed: _cancelar, child: const Text('Cancelar')),
-        ]),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Elige tu nueva contraseña', style: t.headlineSmall),
+            const SizedBox(height: 6),
+            Text(
+              'Mínimo 8 caracteres.',
+              style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+            ),
+            const SizedBox(height: 24),
+            if (_error != null) ...[
+              AvisoError(_error!),
+              const SizedBox(height: 16),
+            ],
+            CampoPassword(
+              controller: _nueva,
+              etiqueta: 'Nueva contraseña',
+              accion: TextInputAction.next,
+            ),
+            espacioCampo,
+            CampoPassword(
+              controller: _repite,
+              etiqueta: 'Repite la contraseña',
+              validator: (v) =>
+                  v != _nueva.text ? 'Las contraseñas no coinciden' : null,
+              onEnviar: _guardar,
+            ),
+            const SizedBox(height: 24),
+            BotonPrincipal(
+              texto: 'Guardar contraseña',
+              cargando: _cargando,
+              onPressed: _guardar,
+            ),
+            const SizedBox(height: 8),
+            TextButton(onPressed: _cancelar, child: const Text('Cancelar')),
+          ],
+        ),
       ),
     );
   }

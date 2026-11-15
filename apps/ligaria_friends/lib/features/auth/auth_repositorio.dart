@@ -1,5 +1,8 @@
 import 'dart:async';
 
+/// Perfil de la cuenta: decide qué parte de la app se muestra al entrar.
+enum TipoCuenta { jugador, tienda }
+
 /// Contrato de autenticación de Friends. Las pantallas solo dependen de esto:
 /// [SupabaseAuth] (producción) o [AuthDemo] (sin configuración / tests).
 abstract class AuthRepositorio {
@@ -11,7 +14,16 @@ abstract class AuthRepositorio {
 
   /// Devuelve `true` si el usuario queda con sesión iniciada; `false` si debe
   /// confirmar antes su email.
-  Future<bool> registrar({required String nombre, required String email, required String password});
+  /// Si [nombreTienda] no es null, se crea una cuenta de perfil Tienda con ese comercio.
+  Future<bool> registrar({
+    required String nombre,
+    required String email,
+    required String password,
+    String? nombreTienda,
+  });
+
+  /// Perfil de la sesión actual.
+  Future<TipoCuenta> tipoCuenta();
 
   Future<void> recuperarPassword({required String email});
 
@@ -32,7 +44,12 @@ class AuthException implements Exception {
 
 /// Implementación en memoria para desarrollo y pruebas.
 class AuthDemo implements AuthRepositorio {
-  final _usuarios = <String, String>{'demo@ligaria.es': 'demo1234'};
+  final _usuarios = <String, String>{
+    'demo@ligaria.es': 'demo1234',
+    'tienda@ligaria.es': 'tienda1234',
+  };
+  final _tiendas = <String>{'tienda@ligaria.es'};
+  String? _actual;
   bool _dentro = false;
   final _ctl = StreamController<bool>.broadcast();
 
@@ -53,20 +70,36 @@ class AuthDemo implements AuthRepositorio {
   Future<void> _latencia() => Future.delayed(const Duration(milliseconds: 700));
 
   @override
-  Future<void> iniciarSesion({required String email, required String password}) async {
+  Future<void> iniciarSesion({
+    required String email,
+    required String password,
+  }) async {
     await _latencia();
     if (_usuarios[email.trim().toLowerCase()] != password) {
       throw const AuthException('Email o contraseña incorrectos.');
     }
+    _actual = email.trim().toLowerCase();
     _fijar(true);
   }
 
   @override
-  Future<bool> registrar({required String nombre, required String email, required String password}) async {
+  Future<TipoCuenta> tipoCuenta() async =>
+      _tiendas.contains(_actual) ? TipoCuenta.tienda : TipoCuenta.jugador;
+
+  @override
+  Future<bool> registrar({
+    required String nombre,
+    required String email,
+    required String password,
+    String? nombreTienda,
+  }) async {
     await _latencia();
     final e = email.trim().toLowerCase();
-    if (_usuarios.containsKey(e)) throw const AuthException('Ya existe una cuenta con ese email.');
+    if (_usuarios.containsKey(e))
+      throw const AuthException('Ya existe una cuenta con ese email.');
     _usuarios[e] = password;
+    if (nombreTienda != null) _tiendas.add(e);
+    _actual = e;
     _fijar(true);
     return true;
   }

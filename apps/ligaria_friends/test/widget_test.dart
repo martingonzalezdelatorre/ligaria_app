@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ligaria_friends/features/auth/auth_repositorio.dart';
+import 'package:ligaria_friends/features/jugador/amistosos/amistosos_repositorio.dart';
+import 'package:ligaria_friends/features/jugador/grupos/grupos_repositorio.dart';
+import 'package:ligaria_friends/features/jugador/ligas/ligas_repositorio.dart';
 import 'package:ligaria_friends/features/auth/nueva_password_page.dart';
 import 'package:ligaria_friends/main.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
@@ -14,7 +17,14 @@ Future<void> avanzar(WidgetTester tester) async {
 void main() {
   pruebasRecuperacion();
   testWidgets('arranca en el login con recuperar y registro', (tester) async {
-    await tester.pumpWidget(LigariaFriendsApp(auth: AuthDemo()));
+    await tester.pumpWidget(
+      LigariaFriendsApp(
+        auth: AuthDemo(),
+        grupos: GruposDemo(),
+        ligas: LigasDemo(),
+        amistosos: AmistososDemo(GruposDemo()),
+      ),
+    );
     await avanzar(tester);
     expect(find.text('Iniciar sesión'), findsOneWidget);
     expect(find.text('¿Olvidaste tu contraseña?'), findsOneWidget);
@@ -22,18 +32,59 @@ void main() {
   });
 
   testWidgets('login correcto lleva al inicio', (tester) async {
-    await tester.pumpWidget(LigariaFriendsApp(auth: AuthDemo()));
+    await tester.pumpWidget(
+      LigariaFriendsApp(
+        auth: AuthDemo(),
+        grupos: GruposDemo(),
+        ligas: LigasDemo(),
+        amistosos: AmistososDemo(GruposDemo()),
+      ),
+    );
     await avanzar(tester);
     await tester.enterText(find.byType(TextFormField).at(0), 'demo@ligaria.es');
     await tester.enterText(find.byType(TextFormField).at(1), 'demo1234');
     await tester.tap(find.text('Iniciar sesión'));
     await avanzar(tester);
     await avanzar(tester);
+    await avanzar(tester);
     expect(find.textContaining('Aún no tienes grupos'), findsOneWidget);
   });
 
+  testWidgets('una cuenta Tienda entra a su panel de productos y pedidos', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      LigariaFriendsApp(
+        auth: AuthDemo(),
+        grupos: GruposDemo(),
+        ligas: LigasDemo(),
+        amistosos: AmistososDemo(GruposDemo()),
+      ),
+    );
+    await avanzar(tester);
+    await tester.enterText(
+      find.byType(TextFormField).at(0),
+      'tienda@ligaria.es',
+    );
+    await tester.enterText(find.byType(TextFormField).at(1), 'tienda1234');
+    await tester.tap(find.text('Iniciar sesión'));
+    await avanzar(tester);
+    await avanzar(tester);
+    await avanzar(tester);
+    expect(find.text('Mis productos'), findsOneWidget);
+    expect(find.text('Pedidos'), findsOneWidget);
+    expect(find.text('Grupos'), findsNothing);
+  });
+
   testWidgets('credenciales incorrectas muestran error', (tester) async {
-    await tester.pumpWidget(LigariaFriendsApp(auth: AuthDemo()));
+    await tester.pumpWidget(
+      LigariaFriendsApp(
+        auth: AuthDemo(),
+        grupos: GruposDemo(),
+        ligas: LigasDemo(),
+        amistosos: AmistososDemo(GruposDemo()),
+      ),
+    );
     await avanzar(tester);
     await tester.enterText(find.byType(TextFormField).at(0), 'demo@ligaria.es');
     await tester.enterText(find.byType(TextFormField).at(1), 'incorrecta1');
@@ -47,7 +98,14 @@ void main() {
     tester.view.physicalSize = const Size(1200, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(LigariaFriendsApp(auth: AuthDemo()));
+    await tester.pumpWidget(
+      LigariaFriendsApp(
+        auth: AuthDemo(),
+        grupos: GruposDemo(),
+        ligas: LigasDemo(),
+        amistosos: AmistososDemo(GruposDemo()),
+      ),
+    );
     await avanzar(tester);
     await tester.tap(find.text('¿Olvidaste tu contraseña?'));
     await avanzar(tester);
@@ -64,7 +122,14 @@ void main() {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
-    await tester.pumpWidget(LigariaFriendsApp(auth: AuthDemo()));
+    await tester.pumpWidget(
+      LigariaFriendsApp(
+        auth: AuthDemo(),
+        grupos: GruposDemo(),
+        ligas: LigasDemo(),
+        amistosos: AmistososDemo(GruposDemo()),
+      ),
+    );
     await avanzar(tester);
     expect(find.text('Iniciar sesión'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -77,10 +142,15 @@ void pruebasRecuperacion() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     var terminado = false;
-    await tester.pumpWidget(MaterialApp(
-      theme: temaOscuro(),
-      home: NuevaPasswordPage(auth: AuthDemo(), onTerminar: () => terminado = true),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: temaOscuro(),
+        home: NuevaPasswordPage(
+          auth: AuthDemo(),
+          onTerminar: () => terminado = true,
+        ),
+      ),
+    );
     await avanzar(tester);
     await tester.enterText(find.byType(TextFormField).at(0), 'nuevaclave1');
     await tester.enterText(find.byType(TextFormField).at(1), 'distinta99');

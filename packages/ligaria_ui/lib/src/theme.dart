@@ -136,7 +136,7 @@ ThemeData _construir(Brightness _, Color acento) {
       constraints: const BoxConstraints(minWidth: 400, maxWidth: 560),
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
       actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-      titleTextStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+      titleTextStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
       backgroundColor: superficieOscura,
