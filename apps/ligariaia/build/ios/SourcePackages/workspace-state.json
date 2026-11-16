@@ -1,0 +1,69 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "app_links-7.2.2",
+          "kind" : "fileSystem",
+          "location" : "/Users/martingonzalez/Desktop/development/ligaria_app/apps/ligariaia/ios/Flutter/ephemeral/Packages/.packages/app_links-7.2.2",
+          "name" : "app_links"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/martingonzalez/Desktop/development/ligaria_app/apps/ligariaia/ios/Flutter/ephemeral/Packages/.packages/app_links-7.2.2"
+        },
+        "subpath" : "app_links-7.2.2"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "flutterframework",
+          "kind" : "fileSystem",
+          "location" : "/Users/martingonzalez/Desktop/development/ligaria_app/apps/ligariaia/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework",
+          "name" : "FlutterFramework"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/martingonzalez/Desktop/development/ligaria_app/apps/ligariaia/ios/Flutter/ephemeral/Packages/.packages/FlutterFramework"
+        },
+        "subpath" : "flutterframework"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "shared_preferences_foundation-2.5.7",
+          "kind" : "fileSystem",
+          "location" : "/Users/martingonzalez/Desktop/development/ligaria_app/apps/ligariaia/ios/Flutter/ephemeral/Packages/.packages/shared_preferences_foundation-2.5.7",
+          "name" : "shared_preferences_foundation"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/martingonzalez/Desktop/development/ligaria_app/apps/ligariaia/ios/Flutter/ephemeral/Packages/.packages/shared_preferences_foundation-2.5.7"
+        },
+        "subpath" : "shared_preferences_foundation-2.5.7"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "url_launcher_ios-6.4.2",
+          "kind" : "fileSystem",
+          "location" : "/Users/martingonzalez/Desktop/development/ligaria_app/apps/ligariaia/ios/Flutter/ephemeral/Packages/.packages/url_launcher_ios-6.4.2",
+          "name" : "url_launcher_ios"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/martingonzalez/Desktop/development/ligaria_app/apps/ligariaia/ios/Flutter/ephemeral/Packages/.packages/url_launcher_ios-6.4.2"
+        },
+        "subpath" : "url_launcher_ios-6.4.2"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}
