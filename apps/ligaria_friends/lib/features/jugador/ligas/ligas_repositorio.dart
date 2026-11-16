@@ -475,8 +475,9 @@ class LigasDemo implements LigasRepositorio {
           in _participantes[ligaId] ?? <(Participante, List<String>)>[])
         p.$1,
     ];
-    if (ps.length < 2)
+    if (ps.length < 2) {
       throw const LigasException('Hacen falta al menos 2 participantes.');
+    }
     final arr = <Participante?>[...ps];
     if (arr.length.isOdd) arr.add(null);
     final n = arr.length;
@@ -484,8 +485,9 @@ class LigasDemo implements LigasRepositorio {
     for (var r = 1; r < n; r++) {
       for (var i = 0; i < n ~/ 2; i++) {
         final a = arr[i], b = arr[n - 1 - i];
-        if (a != null && b != null)
+        if (a != null && b != null) {
           out.add(_PartidoDemo('partido-${_n++}', r, a.nombre, b.nombre));
+        }
       }
       arr.insert(1, arr.removeLast());
     }
@@ -591,8 +593,9 @@ class LigasDemo implements LigasRepositorio {
     final p = _partidos[liga.id]!.firstWhere((p) => p.id == partidoId);
     var sl = 0, sv = 0;
     for (final s in sets) {
-      if (s[0] == s[1])
+      if (s[0] == s[1]) {
         throw const LigasException('Un set no puede acabar en empate.');
+      }
       if (sl == liga.setsParaGanar || sv == liga.setsParaGanar) {
         throw const LigasException(
           'El partido ya estaba decidido antes de ese set.',

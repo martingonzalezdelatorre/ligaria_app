@@ -214,13 +214,15 @@ class _LigaPageState extends State<LigaPage> {
             child: FutureBuilder<_Datos>(
               future: _datos,
               builder: (context, snap) {
-                if (snap.connectionState != ConnectionState.done)
+                if (snap.connectionState != ConnectionState.done) {
                   return const Center(child: CircularProgressIndicator());
-                if (snap.hasError)
+                }
+                if (snap.hasError) {
                   return EstadoVacio(
                     icono: Icons.error_outline,
                     texto: '${snap.error}',
                   );
+                }
                 final d = snap.data!;
                 return ListView(
                   padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
@@ -301,7 +303,6 @@ class _LigaPageState extends State<LigaPage> {
       for (final p in d.participantes)
         _Fila(
           izquierda: AvatarEquipo(p.nombre, tam: 36),
-          child: Text(p.nombre, style: t.titleSmall),
           derecha: widget.esAdmin
               ? IconButton(
                   tooltip: 'Quitar',
@@ -310,6 +311,7 @@ class _LigaPageState extends State<LigaPage> {
                       _ejecutar(() => widget.ligas.quitarParticipante(p.id)),
                 )
               : null,
+          child: Text(p.nombre, style: t.titleSmall),
         ),
       if (widget.esAdmin) ...[
         const SizedBox(height: 20),
@@ -353,6 +355,27 @@ class _LigaPageState extends State<LigaPage> {
         ),
         for (final p in e.value)
           _Fila(
+            derecha: p.jugado
+                ? Icon(Icons.check_circle_rounded, color: cs.primary)
+                : Column(
+                    children: [
+                      if (_vivos.contains(p.id))
+                        FilledButton.tonalIcon(
+                          onPressed: () => _ver(p),
+                          icon: const Icon(Icons.visibility_outlined, size: 18),
+                          label: const Text('Ver marcador'),
+                        ),
+                      FilledButton.icon(
+                        onPressed: () => _tanteador(p),
+                        icon: const Icon(Icons.scoreboard_outlined, size: 18),
+                        label: const Text('Tanteador'),
+                      ),
+                      TextButton(
+                        onPressed: () => _resultado(p),
+                        child: const Text('Introducir resultado'),
+                      ),
+                    ],
+                  ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -411,27 +434,6 @@ class _LigaPageState extends State<LigaPage> {
                   ),
               ],
             ),
-            derecha: p.jugado
-                ? Icon(Icons.check_circle_rounded, color: cs.primary)
-                : Column(
-                    children: [
-                      if (_vivos.contains(p.id))
-                        FilledButton.tonalIcon(
-                          onPressed: () => _ver(p),
-                          icon: const Icon(Icons.visibility_outlined, size: 18),
-                          label: const Text('Ver marcador'),
-                        ),
-                      FilledButton.icon(
-                        onPressed: () => _tanteador(p),
-                        icon: const Icon(Icons.scoreboard_outlined, size: 18),
-                        label: const Text('Tanteador'),
-                      ),
-                      TextButton(
-                        onPressed: () => _resultado(p),
-                        child: const Text('Introducir resultado'),
-                      ),
-                    ],
-                  ),
           ),
       ],
     ];
@@ -471,7 +473,7 @@ class _Fila extends StatelessWidget {
         children: [
           if (izquierda != null) ...[izquierda!, const SizedBox(width: 12)],
           Expanded(child: child),
-          if (derecha != null) derecha!,
+          ?derecha,
         ],
       ),
     );

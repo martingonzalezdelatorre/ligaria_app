@@ -95,8 +95,9 @@ class AuthDemo implements AuthRepositorio {
   }) async {
     await _latencia();
     final e = email.trim().toLowerCase();
-    if (_usuarios.containsKey(e))
+    if (_usuarios.containsKey(e)) {
       throw const AuthException('Ya existe una cuenta con ese email.');
+    }
     _usuarios[e] = password;
     if (nombreTienda != null) _tiendas.add(e);
     _actual = e;

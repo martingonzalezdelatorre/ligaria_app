@@ -4,6 +4,7 @@ import 'amistosos/amistosos_repositorio.dart';
 import 'grupos/grupos_page.dart';
 import 'grupos/grupos_repositorio.dart';
 import 'ligas/ligas_repositorio.dart';
+import 'ranking/ranking_page.dart';
 import 'store/store_page.dart';
 
 /// Pantalla principal del perfil Jugador: grupos, ligas y partidos, y Store.
@@ -34,6 +35,11 @@ class _JugadorShellState extends State<JugadorShell> {
       activo: Icons.storefront,
       texto: 'Store',
     ),
+    (
+      icono: Icons.emoji_events_outlined,
+      activo: Icons.emoji_events,
+      texto: 'Ranking',
+    ),
   ];
 
   @override
@@ -48,6 +54,7 @@ class _JugadorShellState extends State<JugadorShell> {
           amistosos: widget.amistosos,
         ),
         const StorePage(),
+        const RankingPage(),
       ],
     );
     return Scaffold(

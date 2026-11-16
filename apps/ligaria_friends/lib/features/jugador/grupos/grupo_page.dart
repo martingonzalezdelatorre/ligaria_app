@@ -384,8 +384,9 @@ class _DialogoDestinoState extends State<_DialogoDestino> {
   }
 
   void _enviar() {
-    if (_form.currentState!.validate())
+    if (_form.currentState!.validate()) {
       Navigator.pop(context, _ctl.text.trim());
+    }
   }
 
   @override

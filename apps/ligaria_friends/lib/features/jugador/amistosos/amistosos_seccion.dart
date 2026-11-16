@@ -113,8 +113,9 @@ class _AmistososSeccionState extends State<AmistososSeccion> {
     future: _lista,
     builder: (context, snap) {
       final lista = snap.data ?? const <Amistoso>[];
-      if (lista.isEmpty)
+      if (lista.isEmpty) {
         return const SizedBox.shrink(); // sin amistosos no ocupa sitio
+      }
       final t = Theme.of(context).textTheme;
       return StreamBuilder<Set<String>>(
         stream: MarcadorRepositorio.instancia.enDirecto(widget.grupo.id),

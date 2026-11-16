@@ -13,6 +13,7 @@ import 'features/auth/nueva_password_page.dart';
 import 'features/auth/supabase_auth.dart';
 import 'features/jugador/amistosos/amistosos_repositorio.dart';
 import 'features/jugador/jugador_shell.dart';
+import 'features/jugador/ranking/ranking_repositorio.dart';
 import 'features/jugador/store/store_repositorio.dart';
 import 'features/tienda/tienda_repositorio.dart';
 import 'features/tienda/tienda_shell.dart';
@@ -53,6 +54,7 @@ Future<void> main() async {
     MarcadorRepositorio.instancia = MarcadorSupabase();
     ConfirmacionRepositorio.instancia = ConfirmacionSupabase();
     StoreRepositorio.instancia = StoreSupabase();
+    RankingRepositorio.instancia = RankingSupabase();
     TiendaRepositorio.instancia = TiendaSupabase();
   } else {
     // Sin --dart-define: modo demo (demo@ligaria.es / demo1234).

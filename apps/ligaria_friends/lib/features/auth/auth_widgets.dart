@@ -5,8 +5,9 @@ import 'package:ligaria_ui/ligaria_ui.dart';
 String? validarEmail(String? v) {
   final t = v?.trim() ?? '';
   if (t.isEmpty) return 'Introduce tu email';
-  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t))
+  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t)) {
     return 'Email no válido';
+  }
   return null;
 }
 

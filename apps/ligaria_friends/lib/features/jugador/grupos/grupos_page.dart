@@ -142,10 +142,12 @@ class _GruposPageState extends State<GruposPage> {
   Widget build(BuildContext context) => FutureBuilder<List<Grupo>>(
     future: _grupos,
     builder: (context, snap) {
-      if (snap.connectionState != ConnectionState.done)
+      if (snap.connectionState != ConnectionState.done) {
         return const Center(child: CircularProgressIndicator());
-      if (snap.hasError)
+      }
+      if (snap.hasError) {
         return EstadoVacio(icono: Icons.error_outline, texto: '${snap.error}');
+      }
       final grupos = snap.data!;
       return ListView(
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),

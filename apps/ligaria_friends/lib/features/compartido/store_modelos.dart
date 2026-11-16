@@ -1,5 +1,6 @@
 /// Modelos de Store compartidos por los perfiles Jugador y Tienda.
 /// No dependen de ninguna pantalla ni de Supabase.
+library;
 
 /// Importe en euros con coma decimal.
 String euros(double v) => '${v.toStringAsFixed(2).replaceAll('.', ',')} €';
