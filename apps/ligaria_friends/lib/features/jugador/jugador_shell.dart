@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:ligaria_notificaciones/ligaria_notificaciones.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
+import '../../core/notificaciones.dart';
 import 'amistosos/amistosos_repositorio.dart';
 import 'grupos/grupos_page.dart';
 import 'grupos/grupos_repositorio.dart';
@@ -15,11 +17,15 @@ class JugadorShell extends StatefulWidget {
     required this.ligas,
     required this.amistosos,
     this.onSalir,
+    this.notificaciones,
   });
   final GruposRepositorio grupos;
   final LigasRepositorio ligas;
   final AmistososRepositorio amistosos;
   final VoidCallback? onSalir;
+
+  /// Sin servicio (modo demo) no se muestra la campana.
+  final NotificacionesServicio? notificaciones;
 
   @override
   State<JugadorShell> createState() => _JugadorShellState();
@@ -68,6 +74,11 @@ class _JugadorShellState extends State<JugadorShell> {
           ],
         ),
         actions: [
+          if (widget.notificaciones != null)
+            CampanaNotificaciones(
+              servicio: widget.notificaciones!,
+              tipos: tiposNotificacion,
+            ),
           if (widget.onSalir != null)
             IconButton(
               tooltip: 'Cerrar sesión',

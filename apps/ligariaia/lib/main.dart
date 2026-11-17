@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/auth.dart';
 import 'core/config.dart';
+import 'core/notificaciones.dart';
 import 'core/router.dart';
 
 Future<void> main() async {
@@ -67,6 +68,7 @@ class LigariaApp extends ConsumerWidget {
       supportedLocales: _locales,
       localizationsDelegates: _delegates,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => NotificacionesRaiz(child: child ?? const SizedBox.shrink()),
     );
   }
 }

@@ -1,14 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:ligaria_notificaciones/ligaria_notificaciones.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
+import '../../core/notificaciones.dart';
 import 'pedidos_recibidos_page.dart';
 import 'productos_page.dart';
 import 'tienda_repositorio.dart';
 
 /// Pantalla principal del perfil Tienda: gestionar productos y ver los pedidos recibidos.
 class TiendaShell extends StatefulWidget {
-  const TiendaShell({super.key, required this.repo, this.onSalir});
+  const TiendaShell({
+    super.key,
+    required this.repo,
+    this.onSalir,
+    this.notificaciones,
+  });
   final TiendaRepositorio repo;
   final VoidCallback? onSalir;
+
+  /// Sin servicio (modo demo) no se muestra la campana.
+  final NotificacionesServicio? notificaciones;
   @override
   State<TiendaShell> createState() => _TiendaShellState();
 }
@@ -42,6 +52,11 @@ class _TiendaShellState extends State<TiendaShell> {
           ],
         ),
         actions: [
+          if (widget.notificaciones != null)
+            CampanaNotificaciones(
+              servicio: widget.notificaciones!,
+              tipos: tiposNotificacion,
+            ),
           if (widget.onSalir != null)
             IconButton(
               tooltip: 'Cerrar sesión',

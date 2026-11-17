@@ -1,0 +1,19 @@
+name: ligaria_notificaciones
+description: Notificaciones de Ligaria - bandeja, Realtime de Supabase y avisos locales (sin Firebase).
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_local_notifications: ^23.0.2
+  shared_preferences: ^2.5.6
+  supabase_flutter: ^2.18.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

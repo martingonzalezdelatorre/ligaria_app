@@ -8,3 +8,4 @@ workspace:
   - apps/ligariaia
   - apps/ligaria_friends
   - packages/ligaria_ui
+  - packages/ligaria_notificaciones

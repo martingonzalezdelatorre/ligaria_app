@@ -2,10 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:ligaria_notificaciones/ligaria_notificaciones.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 import 'core/config.dart';
 import 'core/invitacion.dart';
+import 'core/notificaciones.dart';
 import 'features/auth/registro_page.dart';
 import 'features/auth/auth_repositorio.dart';
 import 'features/auth/login_page.dart';
@@ -173,29 +175,49 @@ class _SegunPerfil extends StatefulWidget {
 }
 
 class _SegunPerfilState extends State<_SegunPerfil> {
-  late final Future<TipoCuenta> _tipo = widget.auth.tipoCuenta();
+  late final Future<(TipoCuenta, NotificacionesServicio?)> _datos = _cargar();
+
+  Future<(TipoCuenta, NotificacionesServicio?)> _cargar() async {
+    final tipo = await widget.auth.tipoCuenta();
+    return (tipo, await crearServicioNotificaciones());
+  }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<TipoCuenta>(
-    future: _tipo,
-    builder: (context, snap) {
-      if (snap.connectionState != ConnectionState.done) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
-      }
-      if (snap.data == TipoCuenta.tienda) {
-        return TiendaShell(
-          repo: TiendaRepositorio.instancia,
-          onSalir: widget.auth.cerrarSesion,
-        );
-      }
-      return _UnirseAlEntrar(
-        grupos: widget.grupos,
-        ligas: widget.ligas,
-        amistosos: widget.amistosos,
-        onSalir: widget.auth.cerrarSesion,
+  void dispose() {
+    // Al cerrar sesión (o salir) se detiene y libera el servicio de notificaciones.
+    _datos.then((d) => d.$2?.liberar(), onError: (_) {});
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      FutureBuilder<(TipoCuenta, NotificacionesServicio?)>(
+        future: _datos,
+        builder: (context, snap) {
+          if (snap.connectionState != ConnectionState.done) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          final (tipo, notif) = snap.data!;
+          return NotificacionesHost(
+            servicio: notif,
+            child: tipo == TipoCuenta.tienda
+                ? TiendaShell(
+                    repo: TiendaRepositorio.instancia,
+                    onSalir: widget.auth.cerrarSesion,
+                    notificaciones: notif,
+                  )
+                : _UnirseAlEntrar(
+                    grupos: widget.grupos,
+                    ligas: widget.ligas,
+                    amistosos: widget.amistosos,
+                    onSalir: widget.auth.cerrarSesion,
+                    notificaciones: notif,
+                  ),
+          );
+        },
       );
-    },
-  );
 }
 
 /// Sin sesión: login; si se llegó por un enlace de invitación, abre directamente el registro.
@@ -233,11 +255,13 @@ class _UnirseAlEntrar extends StatefulWidget {
     required this.ligas,
     required this.amistosos,
     required this.onSalir,
+    this.notificaciones,
   });
   final GruposRepositorio grupos;
   final LigasRepositorio ligas;
   final AmistososRepositorio amistosos;
   final VoidCallback onSalir;
+  final NotificacionesServicio? notificaciones;
   @override
   State<_UnirseAlEntrar> createState() => _UnirseAlEntrarState();
 }
@@ -276,6 +300,7 @@ class _UnirseAlEntrarState extends State<_UnirseAlEntrar> {
         ligas: widget.ligas,
         amistosos: widget.amistosos,
         onSalir: widget.onSalir,
+        notificaciones: widget.notificaciones,
       );
     },
   );

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ligaria_notificaciones/ligaria_notificaciones.dart';
 import '../../core/auth.dart';
+import '../../core/notificaciones.dart';
 import '../../core/widgets.dart';
 import '../alumno/alumno_home.dart';
 import '../entrenador/entrenador_home.dart';
@@ -107,6 +109,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        _campana(),
                         IconButton(tooltip: 'Tutorial', icon: const Icon(Icons.help_outline), onPressed: () => context.push('/tutorial')),
                         IconButton(tooltip: 'Mi cuenta', icon: const Icon(Icons.account_circle_outlined), onPressed: () => context.push('/cuenta')),
                       ]),
@@ -172,6 +175,13 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
+  /// Campana de notificaciones; no aparece sin sesión de Supabase (demo y tests).
+  Widget _campana() {
+    final servicio = ref.watch(notificacionesProvider).value;
+    if (servicio == null) return const SizedBox.shrink();
+    return CampanaNotificaciones(servicio: servicio, tipos: tiposNotificacion);
+  }
+
   AppBar _barra(BuildContext context, String titulo, {bool mostrarLogo = false}) {
     final cs = Theme.of(context).colorScheme;
     return AppBar(
@@ -184,6 +194,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         Expanded(child: Text(titulo, overflow: TextOverflow.ellipsis, style: TextStyle(color: cs.onSurface, fontWeight: FontWeight.w800, fontSize: 19))),
       ]),
       actions: [
+        _campana(),
         IconButton(tooltip: 'Tutorial', icon: const Icon(Icons.help_outline), onPressed: () => context.push('/tutorial')),
         Padding(
           padding: const EdgeInsets.only(right: 10),
