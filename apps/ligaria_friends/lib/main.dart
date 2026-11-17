@@ -20,6 +20,8 @@ import 'features/jugador/grupos/grupos_repositorio.dart';
 import 'features/jugador/ligas/confirmacion_repositorio.dart';
 import 'features/jugador/ligas/ligas_repositorio.dart';
 import 'features/jugador/ligas/marcador_repositorio.dart';
+import 'features/jugador/ajustes/ajustes_repositorio.dart';
+import 'features/jugador/ranking/ranking_repositorio.dart';
 
 /// Acento propio de Friends; el resto del estilo viene de `ligaria_ui`.
 const acentoFriends = Color(0xFF8B5CF6);
@@ -35,7 +37,7 @@ Future<void> main() async {
   final LigasRepositorio ligas;
   final AmistososRepositorio amistosos;
   await Invitacion.cargar();
-  if (AppConfig.configurada) {
+  if (AppConfig.usaSupabase) {
     // Si venimos del enlace del correo de recuperación, hay que recordarlo antes de que Supabase consuma la URL.
     recuperacionInicial =
         kIsWeb &&
@@ -54,12 +56,15 @@ Future<void> main() async {
     ConfirmacionRepositorio.instancia = ConfirmacionSupabase();
     StoreRepositorio.instancia = StoreSupabase();
     TiendaRepositorio.instancia = TiendaSupabase();
+    RankingRepositorio.instancia = RankingSupabase();
+    AjustesRepositorio.instancia = AjustesSupabase();
   } else {
-    // Sin --dart-define: modo demo (demo@ligaria.es / demo1234).
+    // Modo demo (demo@ligaria.es / demo1234): en memoria y con datos de ejemplo.
     auth = AuthDemo();
     grupos = GruposDemo();
     ligas = LigasDemo();
     amistosos = AmistososDemo(grupos);
+    await sembrarDemo(grupos, amistosos);
   }
   runApp(
     LigariaFriendsApp(
@@ -69,6 +74,37 @@ Future<void> main() async {
       amistosos: amistosos,
     ),
   );
+}
+
+/// Datos de ejemplo del modo demo: un grupo con amigos y dos amistosos (uno ya jugado).
+Future<void> sembrarDemo(
+  GruposRepositorio grupos,
+  AmistososRepositorio amistosos,
+) async {
+  await grupos.crear(
+    nombre: 'Pádel de los viernes',
+    descripcion: 'Partidos entre amigos',
+  );
+  final g = (await grupos.misGrupos()).first;
+  await amistosos.crear(
+    grupoId: g.id,
+    deporte: Deporte.padel,
+    local: const ['u0', 'u1'],
+    visitante: const ['u2', 'u3'],
+    setsParaGanar: 2,
+    lugar: 'Club de pádel',
+  );
+  await amistosos.crear(
+    deporte: Deporte.padel, // sin grupo: entre amigos
+    local: const ['u0'],
+    visitante: const ['u9'],
+    setsParaGanar: 2,
+  );
+  final lista = await amistosos.amistosos(g.id);
+  await amistosos.registrarResultado(lista.first.id, const [
+    [6, 3],
+    [6, 4],
+  ]);
 }
 
 class LigariaFriendsApp extends StatelessWidget {
@@ -188,6 +224,7 @@ class _SegunPerfilState extends State<_SegunPerfil> {
         );
       }
       return _UnirseAlEntrar(
+        auth: widget.auth,
         grupos: widget.grupos,
         ligas: widget.ligas,
         amistosos: widget.amistosos,
@@ -228,11 +265,13 @@ class _AbrirRegistroState extends State<_AbrirRegistro> {
 /// Con sesión: si hay una invitación pendiente, entra al grupo antes de mostrar el inicio.
 class _UnirseAlEntrar extends StatefulWidget {
   const _UnirseAlEntrar({
+    required this.auth,
     required this.grupos,
     required this.ligas,
     required this.amistosos,
     required this.onSalir,
   });
+  final AuthRepositorio auth;
   final GruposRepositorio grupos;
   final LigasRepositorio ligas;
   final AmistososRepositorio amistosos;
@@ -248,7 +287,7 @@ class _UnirseAlEntrarState extends State<_UnirseAlEntrar> {
     final codigo = Invitacion.pendiente;
     if (codigo == null) return null;
     try {
-      await widget.grupos.unirse(codigo);
+      await widget.grupos.unirse(codigo, invitador: Invitacion.invitador);
       await Invitacion.limpiar();
       return '¡Ya estás en el grupo! Puedes crear ligas y partidos amistosos.';
     } on GruposException catch (e) {
@@ -271,6 +310,7 @@ class _UnirseAlEntrarState extends State<_UnirseAlEntrar> {
         });
       }
       return JugadorShell(
+        auth: widget.auth,
         grupos: widget.grupos,
         ligas: widget.ligas,
         amistosos: widget.amistosos,

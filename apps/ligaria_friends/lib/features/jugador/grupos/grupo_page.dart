@@ -27,9 +27,7 @@ class GrupoPage extends StatefulWidget {
 
 class _GrupoPageState extends State<GrupoPage> {
   late String _codigo = widget.grupo.codigo;
-  late final Future<List<Miembro>> _miembros = widget.repo.miembros(
-    widget.grupo.id,
-  );
+  late Future<List<Miembro>> _miembros = widget.repo.miembros(widget.grupo.id);
   bool _regenerando = false;
 
   /// Pide el destinatario. Email: lo envía Supabase con su plantilla. WhatsApp: abre el chat con el mensaje.
@@ -57,10 +55,11 @@ class _GrupoPageState extends State<GrupoPage> {
       g,
       _codigo,
       destino,
+      widget.repo.yo,
     ).catchError((_) => false);
     if (!ok && mounted) {
       _copiar(
-        Invitacion.mensaje(g, _codigo),
+        Invitacion.mensaje(g, _codigo, widget.repo.yo),
         'No se pudo abrir WhatsApp. Invitación copiada',
       );
     }
@@ -69,6 +68,50 @@ class _GrupoPageState extends State<GrupoPage> {
   void _copiar(String texto, String aviso) {
     Clipboard.setData(ClipboardData(text: texto));
     avisar(context, aviso);
+  }
+
+  /// Añade a este grupo a un amigo invitado antes (que aún no esté en él).
+  Future<void> _anadirAmigo() async {
+    try {
+      final enGrupo = {for (final m in await _miembros) m.id};
+      final libres = (await widget.repo.contactos())
+          .where((c) => !enGrupo.contains(c.id))
+          .toList();
+      if (!mounted) return;
+      if (libres.isEmpty) {
+        avisar(
+          context,
+          'No tienes amigos que añadir: invita a alguien y aparecerá aquí.',
+        );
+        return;
+      }
+      final elegido = await showDialog<Contacto>(
+        context: context,
+        builder: (c) => SimpleDialog(
+          title: const Text('Añadir un amigo al grupo'),
+          children: [
+            for (final a in libres)
+              SimpleDialogOption(
+                onPressed: () => Navigator.pop(c, a),
+                child: Row(
+                  children: [
+                    AvatarEquipo(a.nombre, tam: 32),
+                    const SizedBox(width: 12),
+                    Text(a.nombre),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+      if (elegido == null) return;
+      await widget.repo.anadirContacto(widget.grupo.id, elegido.id);
+      if (!mounted) return;
+      setState(() => _miembros = widget.repo.miembros(widget.grupo.id));
+      avisar(context, '${elegido.nombre} añadido al grupo');
+    } on GruposException catch (e) {
+      if (mounted) avisar(context, e.mensaje);
+    }
   }
 
   Future<void> _regenerar() async {
@@ -166,14 +209,24 @@ class _GrupoPageState extends State<GrupoPage> {
                     onWhatsapp: () => _compartir(porEmail: false),
                     onEmail: () => _compartir(porEmail: true),
                     onCopiarMensaje: () => _copiar(
-                      Invitacion.enlace(_codigo),
+                      Invitacion.enlace(_codigo, widget.repo.yo),
                       'Enlace copiado. Quien lo abra se registra y entra al grupo',
                     ),
                     onRegenerar: _regenerar,
                   ),
                 ),
                 const SizedBox(height: 24),
-                Text('Miembros', style: t.titleLarge),
+                Row(
+                  children: [
+                    Expanded(child: Text('Miembros', style: t.titleLarge)),
+                    if (g.esAdmin)
+                      TextButton.icon(
+                        onPressed: _anadirAmigo,
+                        icon: const Icon(Icons.group_add_outlined),
+                        label: const Text('Añadir amigo'),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: 12),
                 FutureBuilder<List<Miembro>>(
                   future: _miembros,

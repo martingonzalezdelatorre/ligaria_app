@@ -41,6 +41,13 @@ class Miembro {
   final bool esYo;
 }
 
+/// Amigo al que el usuario invitó alguna vez a un grupo (vista `v_mis_contactos`).
+class Contacto {
+  const Contacto({required this.id, required this.nombre});
+  final String id;
+  final String nombre;
+}
+
 class GruposException implements Exception {
   const GruposException(this.mensaje);
   final String mensaje;
@@ -50,10 +57,24 @@ class GruposException implements Exception {
 
 /// Contrato de acceso a grupos. [GruposSupabase] en producción, [GruposDemo] sin configuración / tests.
 abstract class GruposRepositorio {
+  /// Id del usuario actual (va en los enlaces de invitación para que quede como contacto).
+  String? get yo;
+
   Future<List<Grupo>> misGrupos();
   Future<void> crear({required String nombre, String? descripcion});
-  Future<void> unirse(String codigo);
+
+  /// [invitador]: quien compartió el enlace; pasa a tener al nuevo miembro como contacto.
+  Future<void> unirse(String codigo, {String? invitador});
   Future<List<Miembro>> miembros(String grupoId);
+
+  /// Amigos invitados por el usuario (siguen visibles aunque ya no compartan grupo).
+  Future<List<Contacto>> contactos();
+
+  /// Quienes pueden jugar un amistoso contigo: tú, tus amigos y los miembros de tus grupos.
+  Future<List<Miembro>> jugadoresPosibles();
+
+  /// Añade a un amigo a este grupo (solo administradores).
+  Future<void> anadirContacto(String grupoId, String usuarioId);
 
   /// Genera un código de invitación nuevo (solo administradores) y lo devuelve.
   Future<String> regenerarCodigo(String grupoId);
@@ -68,6 +89,9 @@ abstract class GruposRepositorio {
 
 class GruposSupabase implements GruposRepositorio {
   SupabaseClient get _c => Supabase.instance.client;
+
+  @override
+  String? get yo => _c.auth.currentUser?.id;
 
   @override
   Future<List<Grupo>> misGrupos() => _traducir(() async {
@@ -85,8 +109,63 @@ class GruposSupabase implements GruposRepositorio {
       );
 
   @override
-  Future<void> unirse(String codigo) => _traducir(
-    () => _c.rpc('unirse_a_grupo', params: {'p_codigo': codigo.trim()}),
+  Future<void> unirse(String codigo, {String? invitador}) => _traducir(
+    () => _c.rpc(
+      'unirse_a_grupo',
+      params: {'p_codigo': codigo.trim(), 'p_invitador': invitador},
+    ),
+  );
+
+  @override
+  Future<List<Contacto>> contactos() => _traducir(() async {
+    final filas = await _c.from('v_mis_contactos').select().order('nombre');
+    return [
+      for (final f in filas)
+        Contacto(id: f['id'] as String, nombre: f['nombre'] as String),
+    ];
+  });
+
+  @override
+  Future<List<Miembro>> jugadoresPosibles() => _traducir(() async {
+    final yo = _c.auth.currentUser?.id;
+    final porId = <String, Miembro>{};
+    // La RLS de grupo_miembro deja ver solo los miembros de mis grupos.
+    final filas = await _c
+        .from('grupo_miembro')
+        .select('usuario_id, alias, perfil(nombre, apodo)');
+    for (final f in filas) {
+      final perfil = f['perfil'] as Map<String, dynamic>?;
+      final id = f['usuario_id'] as String;
+      porId[id] = Miembro(
+        id: id,
+        nombre:
+            (perfil?['apodo'] as String?) ??
+            (perfil?['nombre'] as String?) ??
+            'Jugador',
+        esAdmin: false,
+        esYo: id == yo,
+      );
+    }
+    for (final c in await contactos()) {
+      porId.putIfAbsent(
+        c.id,
+        () => Miembro(id: c.id, nombre: c.nombre, esAdmin: false, esYo: false),
+      );
+    }
+    final lista = porId.values.toList()
+      ..sort(
+        (a, b) =>
+            a.esYo != b.esYo ? (a.esYo ? -1 : 1) : a.nombre.compareTo(b.nombre),
+      );
+    return lista;
+  });
+
+  @override
+  Future<void> anadirContacto(String grupoId, String usuarioId) => _traducir(
+    () => _c.rpc(
+      'anadir_contacto_a_grupo',
+      params: {'p_grupo': grupoId, 'p_usuario': usuarioId},
+    ),
   );
 
   @override
@@ -161,6 +240,9 @@ class GruposDemo implements GruposRepositorio {
   int _n = 0;
 
   @override
+  String? get yo => 'u0';
+
+  @override
   Future<List<Grupo>> misGrupos() async => List.unmodifiable(_grupos);
 
   @override
@@ -214,7 +296,48 @@ class GruposDemo implements GruposRepositorio {
   }
 
   @override
-  Future<void> unirse(String codigo) async {
+  Future<List<Contacto>> contactos() async => const [
+    Contacto(id: 'u1', nombre: 'Amigo 1'),
+    Contacto(id: 'u9', nombre: 'Amigo externo'),
+  ];
+
+  @override
+  Future<List<Miembro>> jugadoresPosibles() async {
+    final porId = <String, Miembro>{};
+    for (final g in _grupos) {
+      for (final m in await miembros(g.id)) {
+        porId.putIfAbsent(m.id, () => m);
+      }
+    }
+    for (final c in await contactos()) {
+      porId.putIfAbsent(
+        c.id,
+        () => Miembro(id: c.id, nombre: c.nombre, esAdmin: false, esYo: false),
+      );
+    }
+    porId.putIfAbsent(
+      'u0',
+      () => const Miembro(id: 'u0', nombre: 'Demo', esAdmin: false, esYo: true),
+    );
+    return porId.values.toList();
+  }
+
+  @override
+  Future<void> anadirContacto(String grupoId, String usuarioId) async {
+    final i = _grupos.indexWhere((g) => g.id == grupoId);
+    final g = _grupos[i];
+    _grupos[i] = Grupo(
+      id: g.id,
+      nombre: g.nombre,
+      descripcion: g.descripcion,
+      codigo: g.codigo,
+      esAdmin: g.esAdmin,
+      miembros: g.miembros + 1,
+    );
+  }
+
+  @override
+  Future<void> unirse(String codigo, {String? invitador}) async {
     if (codigo.trim().toUpperCase() != 'DEMO000001') {
       throw const GruposException('Código de invitación no válido.');
     }

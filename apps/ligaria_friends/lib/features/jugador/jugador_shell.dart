@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ligaria_notificaciones/ligaria_notificaciones.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import '../../core/notificaciones.dart';
+import '../auth/auth_repositorio.dart';
+import 'ajustes/ajustes_page.dart';
 import 'amistosos/amistosos_repositorio.dart';
 import 'grupos/grupos_page.dart';
 import 'grupos/grupos_repositorio.dart';
@@ -17,12 +19,16 @@ class JugadorShell extends StatefulWidget {
     required this.ligas,
     required this.amistosos,
     this.onSalir,
+    this.auth,
     this.notificaciones,
   });
   final GruposRepositorio grupos;
   final LigasRepositorio ligas;
   final AmistososRepositorio amistosos;
   final VoidCallback? onSalir;
+
+  /// Para cambiar la contraseña desde Ajustes.
+  final AuthRepositorio? auth;
 
   /// Sin servicio (modo demo) no se muestra la campana.
   final NotificacionesServicio? notificaciones;
@@ -60,7 +66,7 @@ class _JugadorShellState extends State<JugadorShell> {
           amistosos: widget.amistosos,
         ),
         const StorePage(),
-        const RankingPage(),
+        RankingPage(grupos: widget.grupos),
       ],
     );
     return Scaffold(
@@ -79,6 +85,15 @@ class _JugadorShellState extends State<JugadorShell> {
               servicio: widget.notificaciones!,
               tipos: tiposNotificacion,
             ),
+          IconButton(
+            tooltip: 'Ajustes de cuenta',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => AjustesPage(auth: widget.auth),
+              ),
+            ),
+            icon: const Icon(Icons.settings_outlined),
+          ),
           if (widget.onSalir != null)
             IconButton(
               tooltip: 'Cerrar sesión',

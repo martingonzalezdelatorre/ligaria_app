@@ -6,7 +6,7 @@ import '../ligas/ligas_repositorio.dart';
 class Amistoso {
   const Amistoso({
     required this.id,
-    required this.grupoId,
+    this.grupoId,
     required this.deporte,
     required this.local,
     required this.visitante,
@@ -17,7 +17,10 @@ class Amistoso {
     this.fechaHora,
     this.lugar,
   });
-  final String id, grupoId, local, visitante, estado;
+  final String id, local, visitante, estado;
+
+  /// `null`: amistoso entre amigos, sin grupo.
+  final String? grupoId;
   final Deporte deporte;
   final int setsParaGanar;
   final String? ganador, resultado, lugar;
@@ -26,7 +29,7 @@ class Amistoso {
 
   factory Amistoso.desdeFila(Map<String, dynamic> f) => Amistoso(
     id: f['id'] as String,
-    grupoId: f['grupo_id'] as String,
+    grupoId: f['grupo_id'] as String?,
     deporte: Deporte.desde(f['deporte'] as String),
     local: (f['local_nombre'] as String?) ?? 'Jugador',
     visitante: (f['visitante_nombre'] as String?) ?? 'Jugador',
@@ -43,11 +46,12 @@ class Amistoso {
 
 /// Acceso a amistosos. [AmistososSupabase] en producción, [AmistososDemo] sin configuración.
 abstract class AmistososRepositorio {
-  Future<List<Amistoso>> amistosos(String grupoId);
+  /// [grupoId] `null`: los amistosos sin grupo.
+  Future<List<Amistoso>> amistosos(String? grupoId);
 
   /// [local] y [visitante]: ids de usuario (1 por lado en individual, 2 en parejas).
   Future<void> crear({
-    required String grupoId,
+    String? grupoId,
     required Deporte deporte,
     required List<String> local,
     required List<String> visitante,
@@ -64,18 +68,19 @@ class AmistososSupabase implements AmistososRepositorio {
   SupabaseClient get _c => Supabase.instance.client;
 
   @override
-  Future<List<Amistoso>> amistosos(String grupoId) => _traducir(() async {
-    final filas = await _c
-        .from('v_amistosos')
-        .select()
-        .eq('grupo_id', grupoId)
-        .order('created_at', ascending: false);
+  Future<List<Amistoso>> amistosos(String? grupoId) => _traducir(() async {
+    final base = _c.from('v_amistosos').select();
+    final filas =
+        await (grupoId == null
+                ? base.filter('grupo_id', 'is', null)
+                : base.eq('grupo_id', grupoId))
+            .order('created_at', ascending: false);
     return filas.map(Amistoso.desdeFila).toList();
   });
 
   @override
   Future<void> crear({
-    required String grupoId,
+    String? grupoId,
     required Deporte deporte,
     required List<String> local,
     required List<String> visitante,
@@ -128,13 +133,13 @@ class AmistososDemo implements AmistososRepositorio {
   int _n = 0;
 
   @override
-  Future<List<Amistoso>> amistosos(String grupoId) async => [
+  Future<List<Amistoso>> amistosos(String? grupoId) async => [
     for (final a in _lista.reversed.where((a) => a.grupoId == grupoId)) a,
   ];
 
   @override
   Future<void> crear({
-    required String grupoId,
+    String? grupoId,
     required Deporte deporte,
     required List<String> local,
     required List<String> visitante,
@@ -142,7 +147,7 @@ class AmistososDemo implements AmistososRepositorio {
     DateTime? fechaHora,
     String? lugar,
   }) async {
-    final miembros = await _grupos.miembros(grupoId);
+    final miembros = await _grupos.jugadoresPosibles();
     String nombres(List<String> ids) => [
       for (final id in ids) miembros.firstWhere((m) => m.id == id).nombre,
     ].join(' / ');

@@ -21,7 +21,7 @@ abstract class ConfirmacionRepositorio {
   static ConfirmacionRepositorio instancia = ConfirmacionDemo();
 
   /// Confirmación de cada partido con resultado del grupo, por id de partido / amistoso.
-  Future<Map<String, Confirmacion>> delGrupo(String grupoId);
+  Future<Map<String, Confirmacion>> delGrupo(String? grupoId);
 
   Future<void> confirmar({String? amistosoId, String? partidoId});
 }
@@ -30,11 +30,11 @@ class ConfirmacionSupabase implements ConfirmacionRepositorio {
   SupabaseClient get _c => Supabase.instance.client;
 
   @override
-  Future<Map<String, Confirmacion>> delGrupo(String grupoId) async {
-    final filas = await _c
-        .from('v_confirmaciones')
-        .select()
-        .eq('grupo_id', grupoId);
+  Future<Map<String, Confirmacion>> delGrupo(String? grupoId) async {
+    final base = _c.from('v_confirmaciones').select();
+    final filas = await (grupoId == null
+        ? base.filter('grupo_id', 'is', null)
+        : base.eq('grupo_id', grupoId));
     return {
       for (final f in filas)
         f['ref_id'] as String: Confirmacion(
@@ -60,7 +60,7 @@ class ConfirmacionDemo implements ConfirmacionRepositorio {
   final _hechas = <String>{};
 
   @override
-  Future<Map<String, Confirmacion>> delGrupo(String grupoId) async => {};
+  Future<Map<String, Confirmacion>> delGrupo(String? grupoId) async => {};
 
   /// En la demo no hay filas que listar: se calcula por id.
   Confirmacion de(String id) => _hechas.contains(id)

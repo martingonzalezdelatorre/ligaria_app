@@ -14,7 +14,7 @@ const tiposNotificacion = {
 
 /// Servicio de notificaciones de la sesión actual; `null` en modo demo (sin Supabase).
 Future<NotificacionesServicio?> crearServicioNotificaciones() async {
-  if (!AppConfig.configurada) return null;
+  if (!AppConfig.usaSupabase) return null;
   return NotificacionesServicio(
     repo: NotificacionesSupabase(Supabase.instance.client),
     avisos: AvisosLocales(),

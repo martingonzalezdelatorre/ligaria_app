@@ -10,17 +10,17 @@ import '../ligas/marcador_repositorio.dart';
 import '../ligas/tanteador_page.dart';
 import 'amistosos_repositorio.dart';
 
-/// Sección «Amistosos» de un grupo: partidos sin liga, con su resultado.
+/// Sección «Amistosos»: partidos sin liga, con su resultado. [grupo] `null`: los amistosos entre amigos, sin grupo.
 class AmistososSeccion extends StatefulWidget {
-  const AmistososSeccion({super.key, required this.grupo, required this.repo});
-  final Grupo grupo;
+  const AmistososSeccion({super.key, this.grupo, required this.repo});
+  final Grupo? grupo;
   final AmistososRepositorio repo;
   @override
   State<AmistososSeccion> createState() => _AmistososSeccionState();
 }
 
 class _AmistososSeccionState extends State<AmistososSeccion> {
-  late Future<List<Amistoso>> _lista = widget.repo.amistosos(widget.grupo.id);
+  late Future<List<Amistoso>> _lista = widget.repo.amistosos(widget.grupo?.id);
 
   Map<String, Confirmacion> _conf = {};
 
@@ -33,14 +33,14 @@ class _AmistososSeccionState extends State<AmistososSeccion> {
   Future<void> _cargarConf() async {
     try {
       final c = await ConfirmacionRepositorio.instancia.delGrupo(
-        widget.grupo.id,
+        widget.grupo?.id,
       );
       if (mounted) setState(() => _conf = c);
     } catch (_) {}
   }
 
   void _recargar() {
-    final nueva = widget.repo.amistosos(widget.grupo.id);
+    final nueva = widget.repo.amistosos(widget.grupo?.id);
     setState(() {
       _lista = nueva;
     });
@@ -118,12 +118,15 @@ class _AmistososSeccionState extends State<AmistososSeccion> {
       }
       final t = Theme.of(context).textTheme;
       return StreamBuilder<Set<String>>(
-        stream: MarcadorRepositorio.instancia.enDirecto(widget.grupo.id),
+        stream: MarcadorRepositorio.instancia.enDirecto(widget.grupo?.id),
         builder: (context, vivo) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 24),
-            Text('Amistosos', style: t.titleLarge),
+            Text(
+              widget.grupo == null ? 'Amistosos con amigos' : 'Amistosos',
+              style: t.titleLarge,
+            ),
             const SizedBox(height: 12),
             for (final a in lista)
               _Fila(

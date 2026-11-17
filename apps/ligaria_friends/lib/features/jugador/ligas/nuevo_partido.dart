@@ -16,16 +16,15 @@ class _LigaActiva {
 enum _Modo { amistoso, liga }
 
 /// Crea un partido: un amistoso del grupo (sin liga) o un partido de una liga en curso.
-/// Devuelve `true` si se creó.
-/// Devuelve el grupo donde se creó el partido (o `null` si se canceló).
-Future<Grupo?> mostrarNuevoPartido(
+/// Devuelve `null` si se canceló; si se creó, el grupo del partido (`grupo` nulo en un amistoso sin grupo).
+Future<({Grupo? grupo})?> mostrarNuevoPartido(
   BuildContext context, {
   required List<Grupo> grupos,
   required GruposRepositorio gruposRepo,
   required LigasRepositorio ligas,
   required AmistososRepositorio amistosos,
 }) async {
-  return showDialog<Grupo>(
+  return showDialog<({Grupo? grupo})>(
     context: context,
     builder: (_) => _NuevoPartido(
       grupos: grupos,
@@ -59,8 +58,9 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
   bool _guardando = false;
 
   // Amistoso
-  Grupo? _grupo;
-  Future<List<Miembro>>? _miembros;
+  Grupo? _grupo; // opcional: un amistoso no tiene por qué ser de un grupo
+  late final Future<List<Miembro>> _miembros = widget.gruposRepo
+      .jugadoresPosibles();
   Deporte _deporte = Deporte.padel;
   Modalidad _modalidad = Modalidad.parejas;
   int _sets = 2;
@@ -71,12 +71,6 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
   _LigaActiva? _liga;
   Future<List<Participante>>? _participantes;
   String? _local, _visitante;
-
-  @override
-  void initState() {
-    super.initState();
-    if (widget.grupos.length == 1) _elegirGrupo(widget.grupos.first);
-  }
 
   @override
   void dispose() {
@@ -98,12 +92,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
 
   int get _porLado => _modalidad == Modalidad.individual ? 1 : 2;
 
-  void _elegirGrupo(Grupo? g) {
-    _grupo = g;
-    _jl = [null, null];
-    _jv = [null, null];
-    _miembros = g == null ? null : widget.gruposRepo.miembros(g.id);
-  }
+  void _elegirGrupo(Grupo? g) => _grupo = g;
 
   void _elegirLiga(_LigaActiva? l) {
     setState(() {
@@ -139,7 +128,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
   }
 
   bool get _listo => _modo == _Modo.amistoso
-      ? _grupo != null && _elegidos.every((x) => x != null) && !_hayRepetidos
+      ? _elegidos.every((x) => x != null) && !_hayRepetidos
       : _liga != null &&
             _local != null &&
             _visitante != null &&
@@ -156,7 +145,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
     try {
       if (_modo == _Modo.amistoso) {
         await widget.amistosos.crear(
-          grupoId: _grupo!.id,
+          grupoId: _grupo?.id,
           deporte: _deporte,
           local: _jl.take(_porLado).cast<String>().toList(),
           visitante: _jv.take(_porLado).cast<String>().toList(),
@@ -174,7 +163,9 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
         );
       }
       if (mounted) {
-        Navigator.pop(context, _modo == _Modo.amistoso ? _grupo : _liga!.grupo);
+        Navigator.pop(context, (
+          grupo: _modo == _Modo.amistoso ? _grupo : _liga!.grupo,
+        ));
       }
     } on LigasException catch (e) {
       if (mounted) {
@@ -264,17 +255,19 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
     mainAxisSize: MainAxisSize.min,
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      if (widget.grupos.length > 1) ...[
-        const SizedBox(height: 14),
-        _desplegable(
-          etiqueta: 'Grupo',
-          valor: _grupo?.id,
-          opciones: [for (final g in widget.grupos) (g.id, g.nombre)],
-          alCambiar: (id) => setState(
-            () => _elegirGrupo(widget.grupos.firstWhere((g) => g.id == id)),
-          ),
+      const SizedBox(height: 14),
+      _desplegable(
+        etiqueta: 'Grupo (opcional)',
+        valor: _grupo?.id ?? '',
+        opciones: [
+          ('', 'Sin grupo (entre amigos)'),
+          for (final g in widget.grupos) (g.id, g.nombre),
+        ],
+        alCambiar: (id) => setState(
+          () =>
+              _elegirGrupo(widget.grupos.where((g) => g.id == id).firstOrNull),
         ),
-      ],
+      ),
       _chips<Deporte>(
         'Deporte',
         Deporte.values,
@@ -300,54 +293,53 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
         (s) => 'Al mejor de ${s * 2 - 1}',
         (s) => _sets = s,
       ),
-      if (_miembros != null)
-        FutureBuilder<List<Miembro>>(
-          future: _miembros,
-          builder: (context, snap) {
-            if (!snap.hasData) {
-              return const Padding(
-                padding: EdgeInsets.all(16),
-                child: CircularProgressIndicator(),
-              );
-            }
-            final ops = [
-              for (final m in snap.data!)
-                (m.id, m.esYo ? '${m.nombre} (tú)' : m.nombre),
-            ];
-            Widget lado(String titulo, List<String?> sel) => Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 16),
-                Text(titulo, style: Theme.of(context).textTheme.labelLarge),
-                for (var i = 0; i < _porLado; i++) ...[
-                  const SizedBox(height: 8),
-                  _desplegable(
-                    etiqueta: _porLado == 1 ? 'Jugador' : 'Jugador ${i + 1}',
-                    valor: sel[i],
-                    opciones: ops,
-                    alCambiar: (v) => setState(() => sel[i] = v),
-                  ),
-                ],
-              ],
+      FutureBuilder<List<Miembro>>(
+        future: _miembros,
+        builder: (context, snap) {
+          if (!snap.hasData) {
+            return const Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
             );
-            return Column(
-              children: [
-                lado('Local', _jl),
-                lado('Visitante', _jv),
-                if (_hayRepetidos)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Text(
-                      'Un jugador no puede aparecer dos veces.',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
+          }
+          final ops = [
+            for (final m in snap.data!)
+              (m.id, m.esYo ? '${m.nombre} (tú)' : m.nombre),
+          ];
+          Widget lado(String titulo, List<String?> sel) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16),
+              Text(titulo, style: Theme.of(context).textTheme.labelLarge),
+              for (var i = 0; i < _porLado; i++) ...[
+                const SizedBox(height: 8),
+                _desplegable(
+                  etiqueta: _porLado == 1 ? 'Jugador' : 'Jugador ${i + 1}',
+                  valor: sel[i],
+                  opciones: ops,
+                  alCambiar: (v) => setState(() => sel[i] = v),
+                ),
+              ],
+            ],
+          );
+          return Column(
+            children: [
+              lado('Local', _jl),
+              lado('Visitante', _jv),
+              if (_hayRepetidos)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Text(
+                    'Un jugador no puede aparecer dos veces.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.error,
                     ),
                   ),
-              ],
-            );
-          },
-        ),
+                ),
+            ],
+          );
+        },
+      ),
       _cuandoYDonde(),
     ],
   );
@@ -442,46 +434,40 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
     title: const Text('Nuevo partido'),
     content: SizedBox(
       width: 420,
-      child: widget.grupos.isEmpty
-          ? const Text(
-              'Primero crea un grupo, o únete a uno con un código, para poder organizar partidos.',
-            )
-          : SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      ChoiceChip(
-                        label: const Text('Amistoso'),
-                        selected: _modo == _Modo.amistoso,
-                        onSelected: (_) =>
-                            setState(() => _modo = _Modo.amistoso),
-                      ),
-                      ChoiceChip(
-                        label: const Text('De liga'),
-                        selected: _modo == _Modo.liga,
-                        onSelected: (_) => setState(() => _modo = _Modo.liga),
-                      ),
-                    ],
-                  ),
-                  if (_modo == _Modo.amistoso) _formAmistoso() else _formLiga(),
-                ],
-              ),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
+              spacing: 8,
+              children: [
+                ChoiceChip(
+                  label: const Text('Amistoso'),
+                  selected: _modo == _Modo.amistoso,
+                  onSelected: (_) => setState(() => _modo = _Modo.amistoso),
+                ),
+                ChoiceChip(
+                  label: const Text('De liga'),
+                  selected: _modo == _Modo.liga,
+                  onSelected: (_) => setState(() => _modo = _Modo.liga),
+                ),
+              ],
             ),
+            if (_modo == _Modo.amistoso) _formAmistoso() else _formLiga(),
+          ],
+        ),
+      ),
     ),
     actions: [
       TextButton(
         onPressed: _guardando ? null : () => Navigator.pop(context),
         child: const Text('Cancelar'),
       ),
-      if (widget.grupos.isNotEmpty)
-        FilledButton(
-          onPressed: _listo && !_guardando ? _crear : null,
-          child: const Text('Crear partido'),
-        ),
+      FilledButton(
+        onPressed: _listo && !_guardando ? _crear : null,
+        child: const Text('Crear partido'),
+      ),
     ],
   );
 }

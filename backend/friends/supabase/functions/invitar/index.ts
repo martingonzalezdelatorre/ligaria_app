@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
 
     const { data: perfil } = await usuario.from("perfil").select("nombre").eq("id", user.id).maybeSingle();
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-    const destino = `${String(redirect_to ?? "").replace(/\/$/, "")}/?codigo=${grupo.codigo_invitacion}`;
+    const destino = `${String(redirect_to ?? "").replace(/\/$/, "")}/?codigo=${grupo.codigo_invitacion}&por=${user.id}`;
     const { error } = await admin.auth.admin.inviteUserByEmail(correo, {
       redirectTo: destino,
       data: {

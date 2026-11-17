@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import '../amistosos/amistosos_repositorio.dart';
+import '../amistosos/amistosos_seccion.dart';
 import '../ligas/ligas_repositorio.dart';
 import '../ligas/nuevo_partido.dart';
 import 'grupo_page.dart';
@@ -24,11 +25,13 @@ class GruposPage extends StatefulWidget {
 
 class _GruposPageState extends State<GruposPage> {
   late Future<List<Grupo>> _grupos = widget.repo.misGrupos();
+  int _version = 0; // fuerza a recargar los amistosos sin grupo
 
   void _recargar() {
     final nuevos = widget.repo.misGrupos();
     setState(() {
       _grupos = nuevos;
+      _version++;
     });
   }
 
@@ -42,7 +45,12 @@ class _GruposPageState extends State<GruposPage> {
     );
     if (creado == null || !mounted) return;
     avisar(context, 'Partido creado');
-    await _abrir(creado); // se abre el grupo para verlo y poner el tanteador
+    final g = creado.grupo;
+    if (g == null) {
+      _recargar(); // sin grupo: aparece en «Amistosos con amigos»
+    } else {
+      await _abrir(g); // se abre el grupo para verlo y poner el tanteador
+    }
   }
 
   Future<void> _abrir(Grupo g) async {
@@ -163,6 +171,10 @@ class _GruposPageState extends State<GruposPage> {
             ),
             const SizedBox(height: 24),
             _Rejilla(grupos: grupos, onAbrir: _abrir),
+            AmistososSeccion(
+              key: ValueKey('sin-grupo-$_version'),
+              repo: widget.amistosos,
+            ),
           ],
         ],
       );

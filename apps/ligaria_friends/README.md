@@ -15,3 +15,12 @@ A few resources to get you started if this is your first Flutter project:
 For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
+
+## Modos de ejecución
+
+| Modo | Comando | Qué hace |
+|---|---|---|
+| **Desde cero** | `flutter run --dart-define-from-file=env.json` | Supabase real, sin datos de ejemplo: cuentas, grupos y ranking salen de tu base de datos. |
+| **Demo** | `flutter run --dart-define-from-file=env.json --dart-define=MODO=demo` | Todo en memoria con datos de ejemplo (`demo@ligaria.es` / `demo1234`). No toca Supabase. |
+
+Sin `env.json` la app arranca siempre en modo demo.

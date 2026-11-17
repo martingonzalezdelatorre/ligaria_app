@@ -20,7 +20,7 @@ abstract class MarcadorRepositorio {
   Stream<Tanteo?> ver({String? amistosoId, String? partidoId});
 
   /// Ids de los partidos del grupo que se están jugando ahora mismo.
-  Stream<Set<String>> enDirecto(String grupoId);
+  Stream<Set<String>> enDirecto(String? grupoId);
 }
 
 class MarcadorSupabase implements MarcadorRepositorio {
@@ -57,16 +57,18 @@ class MarcadorSupabase implements MarcadorRepositorio {
       );
 
   @override
-  Stream<Set<String>> enDirecto(String grupoId) {
+  Stream<Set<String>> enDirecto(String? grupoId) {
     final limite = DateTime.now().toUtc().subtract(const Duration(hours: 3));
-    return _c
-        .from('marcador_vivo')
-        .stream(primaryKey: ['id'])
-        .eq('grupo_id', grupoId)
+    final tabla = _c.from('marcador_vivo');
+    // El stream no admite `is null`: sin grupo se filtra en cliente.
+    return (grupoId == null
+            ? tabla.stream(primaryKey: ['id'])
+            : tabla.stream(primaryKey: ['id']).eq('grupo_id', grupoId))
         .map(
           (filas) => {
             for (final f in filas)
-              if (DateTime.parse(f['updated_at'] as String).isAfter(limite))
+              if (f['grupo_id'] == grupoId &&
+                  DateTime.parse(f['updated_at'] as String).isAfter(limite))
                 (f['amistoso_id'] ?? f['partido_id']) as String,
           },
         );
@@ -103,6 +105,6 @@ class MarcadorDemo implements MarcadorRepositorio {
       _con(() => _estados[_clave(amistosoId, partidoId)]);
 
   @override
-  Stream<Set<String>> enDirecto(String grupoId) =>
+  Stream<Set<String>> enDirecto(String? grupoId) =>
       _con(() => {for (final k in _estados.keys) k.substring(2)});
 }
