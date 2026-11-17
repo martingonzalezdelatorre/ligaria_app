@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ligariaia/data/liga_repository.dart';
 import 'package:ligariaia/data/models.dart';
 import 'package:ligariaia/features/organizador/crear_liga_page.dart';
+import 'package:ligariaia/features/organizador/liga_detalle_page.dart';
 import 'package:ligariaia/features/organizador/ligas_tab.dart';
 import 'package:ligariaia/features/organizador/organizador_home.dart';
 import 'package:ligariaia/features/organizador/resultado_page.dart';
@@ -163,6 +164,30 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Registrar resultado'), findsOneWidget);
     expect(find.byKey(const Key('editar-resultado')), findsOneWidget);
+  });
+
+  testWidgets('el organizador acepta o rechaza las solicitudes pendientes de inscripción', (tester) async {
+    _alto(tester);
+    const liga = Liga(id: 'l1', nombre: 'Liga', estado: 'publicada', deporte: 'Tenis', deporteId: 'TENIS', tipo: 'ENTRE_ESCUELAS');
+    InscripcionVista insc(String id, String estado) => InscripcionVista(
+        id: id, ligaId: 'l1', equipoId: 'eq$id', equipo: 'Equipo $id', escuelaId: 'eB', escuela: 'Escuela B', estado: estado);
+    when(() => repo.encuentros('l1')).thenAnswer((_) async => const []);
+    when(() => repo.clasificacion('l1')).thenAnswer((_) async => const []);
+    when(() => repo.inscripciones('l1')).thenAnswer((_) async => [insc('i1', 'pendiente'), insc('i2', 'pendiente'), insc('i3', 'aceptada')]);
+    when(() => repo.resolverInscripcion(any(), aceptar: any(named: 'aceptar'))).thenAnswer((_) async {});
+
+    await tester.pumpWidget(_app(repo, const LigaDetallePage(liga: liga, escuelaId: 'e1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Solicitudes (2)'), findsOneWidget);
+    await tester.tap(find.text('Solicitudes (2)'));
+    await tester.pumpAndSettle();
+    expect(find.text('Equipo i3'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('aceptar-i1')));
+    await tester.pumpAndSettle();
+    verify(() => repo.resolverInscripcion('i1', aceptar: true)).called(1);
+    await tester.tap(find.byKey(const Key('rechazar-i2')));
+    await tester.pumpAndSettle();
+    verify(() => repo.resolverInscripcion('i2', aceptar: false)).called(1);
   });
 
   testWidgets('el área organizador muestra solo las ligas', (tester) async {

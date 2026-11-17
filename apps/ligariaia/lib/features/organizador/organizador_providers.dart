@@ -17,6 +17,9 @@ final orgEncuentrosProvider = FutureProvider.autoDispose.family<List<EncuentroVi
 final orgClasificacionProvider = FutureProvider.autoDispose.family<List<FilaClasificacion>, String>(
     (ref, ligaId) => ref.watch(ligaRepositoryProvider).clasificacion(ligaId));
 
+final orgInscripcionesProvider = FutureProvider.autoDispose.family<List<InscripcionVista>, String>(
+    (ref, ligaId) => ref.watch(ligaRepositoryProvider).inscripciones(ligaId));
+
 final orgDetalleProvider = FutureProvider.autoDispose.family<DetalleEncuentro, String>(
     (ref, encuentroId) => ref.watch(ligaRepositoryProvider).detalleEncuentro(encuentroId));
 
@@ -36,6 +39,8 @@ String mensajeError(Object e, {String defecto = 'No se pudo completar la operaci
   if (t.contains('no se puede regenerar') || t.contains('resultados registrados')) {
     return 'Ya hay resultados registrados: no se puede regenerar el calendario.';
   }
+  if (t.contains('ya está resuelta')) return 'Esta solicitud ya estaba resuelta.';
+  if (t.contains('calendario ya está generado')) return 'La liga ya tiene calendario; no admite más equipos.';
   if (t.contains('al menos 2 equipos')) return 'Se necesitan al menos 2 equipos inscritos.';
   if (t.contains('no admite') || t.contains('ya no admite')) return 'La competición ya no admite cambios.';
   if (t.contains('sin permiso') || t.contains('row-level security') || t.contains('42501')) {

@@ -43,6 +43,8 @@ before(async () => {
   await rpc(U.orgA, `update competicion set estado='INSCRIPCION_ABIERTA' where id='${comp}'`);
   await rpc(U.admA, `select inscribir_equipo('${comp}','${EQ.A}')`);
   await rpc(U.admB, `select inscribir_equipo('${comp}','${EQ.B}')`);
+  const i = (await rows(U.orgA, `select inscripcion_id from v_inscripciones_competicion where equipo_id='${EQ.B}'`))[0].inscripcion_id;
+  await rpc(U.orgA, `select resolver_inscripcion('${i}', true)`);
 });
 
 test('generar_calendario avisa a jugadores, tutores y entrenadores de los equipos (no a ajenos ni al autor)', async () => {

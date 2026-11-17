@@ -60,6 +60,28 @@ class LigaAbierta {
       );
 }
 
+/// Solicitud de un equipo para participar en una liga.
+class InscripcionVista {
+  const InscripcionVista({required this.id, required this.ligaId, required this.equipoId, required this.equipo,
+      required this.escuelaId, required this.escuela, required this.estado});
+  final String id, ligaId, equipoId, equipo, escuelaId, escuela;
+  final String estado; // pendiente | aceptada | rechazada | retirada
+  bool get pendiente => estado == 'pendiente';
+  factory InscripcionVista.fromRow(Map<String, dynamic> r) => InscripcionVista(
+        id: r['inscripcion_id'] as String, ligaId: r['competicion_id'] as String,
+        equipoId: r['equipo_id'] as String, equipo: r['equipo'] as String,
+        escuelaId: r['organizacion_id'] as String, escuela: r['escuela'] as String, estado: r['estado'] as String,
+      );
+}
+
+String etiquetaEstadoInscripcion(String estado) => switch (estado) {
+      'pendiente' => 'Pendiente',
+      'aceptada' => 'Aceptada',
+      'rechazada' => 'Rechazada',
+      'retirada' => 'Retirada',
+      _ => estado,
+    };
+
 class EncuentroVista {
   const EncuentroVista({
     required this.id,

@@ -102,13 +102,43 @@ test('inscripción: solo con la liga abierta, mismo deporte y por la organizaci�
   await falla(U.admB, `select inscribir_equipo('${comp}','${EQ.A}')`, /sin permiso/);
   const padel = (await rpc(U.admB, `insert into equipo(organizacion_id, nombre, deporte) values ('${O.B}','Pádel B','PADEL') returning id`)).rows[0].id;
   await falla(U.admB, `select inscribir_equipo('${comp}','${padel}')`, /deporte/);
-  await rpc(U.admA, `select inscribir_equipo('${comp}','${EQ.A}')`);
-  await rpc(U.admB, `select inscribir_equipo('${comp}','${EQ.B}')`);
-  await rpc(U.admB, `select inscribir_equipo('${comp}','${EQ.C}')`);
+  // quien organiza la liga inscribe a su equipo directamente; otra escuela queda pendiente
+  assert.equal((await rpc(U.admA, `select inscribir_equipo('${comp}','${EQ.A}') as e`)).rows[0].e, 'aceptada');
+  assert.equal((await rpc(U.admB, `select inscribir_equipo('${comp}','${EQ.B}') as e`)).rows[0].e, 'pendiente');
+  assert.equal((await rpc(U.admB, `select inscribir_equipo('${comp}','${EQ.C}') as e`)).rows[0].e, 'pendiente');
   await falla(U.admB, `select inscribir_equipo('${comp}','${EQ.C}')`, /duplicate|unique/);
-  // ahora B ve la liga organizada por A
+  // B ve la liga, pero sus equipos aún no participan ni puntúan
   assert.equal(await n(U.admB, `select 1 from v_ligas where id='${comp}'`), 1);
+  assert.equal(await n(U.entB, `select 1 from v_mis_equipos where competicion_id='${comp}'`), 0);
+  assert.equal(await n(U.orgA, `select 1 from v_clasificacion_competicion where competicion_id='${comp}'`), 1);
+});
+
+test('aprobación: solo el organizador resuelve las pendientes; aceptar suma al equipo', async () => {
+  const pend = await rows(U.orgA, `select inscripcion_id, equipo_id from v_inscripciones_competicion
+                                   where competicion_id='${comp}' and estado='pendiente'`);
+  assert.equal(pend.length, 2);
+  // la escuela ve sus solicitudes; quien no tiene relación no ve nada
+  assert.equal(await n(U.admB, `select 1 from v_inscripciones_competicion where competicion_id='${comp}'`), 2);
+  assert.equal(await n(U.ajeno, `select 1 from v_inscripciones_competicion`), 0);
+  const insc = (eq) => pend.find((p) => p.equipo_id === eq).inscripcion_id;
+  await falla(U.admB, `select resolver_inscripcion('${insc(EQ.B)}', true)`, /sin permiso/);
+  await falla(U.ajeno, `select resolver_inscripcion('${insc(EQ.B)}', true)`, /sin permiso/);
+  await rpc(U.orgA, `select resolver_inscripcion('${insc(EQ.B)}', true)`);
+  await rpc(U.orgA, `select resolver_inscripcion('${insc(EQ.C)}', true)`);
+  await falla(U.orgA, `select resolver_inscripcion('${insc(EQ.C)}', false)`, /ya está resuelta/);
   assert.equal(await n(U.entB, `select 1 from v_mis_equipos where competicion_id='${comp}'`), 1);
+  assert.equal(await n(U.orgA, `select 1 from v_clasificacion_competicion where competicion_id='${comp}'`), 3);
+});
+
+test('aprobación: un equipo rechazado no puntúa ni se vuelve a inscribir', async () => {
+  const c = (await rpc(U.orgA, `select crear_competicion('${O.A}','Liga rechazos','TENIS','ENTRE_ESCUELAS') as id`)).rows[0].id;
+  await rpc(U.orgA, `update competicion set estado='INSCRIPCION_ABIERTA' where id='${c}'`);
+  await rpc(U.admB, `select inscribir_equipo('${c}','${EQ.B}')`);
+  const i = (await rows(U.orgA, `select inscripcion_id from v_inscripciones_competicion where competicion_id='${c}'`))[0].inscripcion_id;
+  await rpc(U.orgA, `select resolver_inscripcion('${i}', false)`);
+  assert.equal((await rows(U.admB, `select estado from v_inscripciones_competicion where competicion_id='${c}'`))[0].estado, 'rechazada');
+  assert.equal(await n(U.entB, `select 1 from v_mis_equipos where competicion_id='${c}'`), 0);
+  await falla(U.admB, `select inscribir_equipo('${c}','${EQ.B}')`, /duplicate|unique/);
 });
 
 test('generar_calendario: 3 equipos → 3 jornadas, 3 encuentros y un descanso por jornada', async () => {
@@ -258,8 +288,11 @@ test('ayuntamiento: crea ligas municipales y las escuelas las ven al inscribirse
   await rpc(U.ayto, `update competicion set estado='INSCRIPCION_ABIERTA' where id='${c}'`);
   assert.equal(await n(U.admA, `select 1 from v_ligas_abiertas where competicion_id='${c}'`), 1);
   assert.equal(await n(U.admA, `select 1 from v_ligas where id='${c}'`), 0);
-  await rpc(U.admA, `select inscribir_equipo('${c}','${EQ.A}')`);
+  assert.equal((await rpc(U.admA, `select inscribir_equipo('${c}','${EQ.A}') as e`)).rows[0].e, 'pendiente');
   assert.equal(await n(U.admA, `select 1 from v_ligas where id='${c}'`), 1);
+  assert.equal(await n(U.entA, `select 1 from v_mis_equipos where competicion_id='${c}'`), 0);
+  const i = (await rows(U.ayto, `select inscripcion_id from v_inscripciones_competicion where competicion_id='${c}'`))[0].inscripcion_id;
+  await rpc(U.ayto, `select resolver_inscripcion('${i}', true)`);
   assert.equal(await n(U.entA, `select 1 from v_mis_equipos where competicion_id='${c}'`), 1);
   // una liga privada de escuela no se ofrece a otras escuelas
   const p = (await rpc(U.orgA, `select crear_competicion('${O.A}','Interna A','TENIS','ESCUELA') as id`)).rows[0].id;

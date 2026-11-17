@@ -34,7 +34,9 @@ abstract class LigaRepository {
   Future<List<UsuarioEscuela>> usuarios(String orgId);
   Future<void> invitar(String orgId, String email, Rol rol, {String? jugadorId});
   Future<List<LigaAbierta>> ligasAbiertas();
-  Future<void> inscribirEquipo(String ligaId, String equipoId);
+  /// Devuelve el estado resultante: 'aceptada' (organiza la propia escuela) o 'pendiente'
+  /// (el organizador de la liga debe aprobarla).
+  Future<String> inscribirEquipo(String ligaId, String equipoId);
   Future<List<Deporte>> deportes();
 
   // ── Organizador ──
@@ -48,6 +50,10 @@ abstract class LigaRepository {
   /// Abre la liga a la inscripción de equipos.
   Future<void> publicarLiga(String ligaId);
   Future<int> generarCalendario(String ligaId, {DateTime? inicio, int diasEntreJornadas = 7, int vueltas = 1});
+  /// Solicitudes de inscripción de una liga (pendientes y resueltas).
+  Future<List<InscripcionVista>> inscripciones(String ligaId);
+  /// Acepta o rechaza una inscripción pendiente.
+  Future<void> resolverInscripcion(String inscripcionId, {required bool aceptar});
 
   // ── Administrador de la plataforma ──
   Future<List<OrganizacionAdmin>> organizaciones();
@@ -202,8 +208,21 @@ class SupabaseLigaRepository implements LigaRepository {
       _rows(await _c.from('v_ligas_abiertas').select()).map(LigaAbierta.fromRow).toList();
 
   @override
-  Future<void> inscribirEquipo(String ligaId, String equipoId) =>
-      _c.rpc('inscribir_equipo', params: {'p_competicion': ligaId, 'p_equipo': equipoId});
+  Future<String> inscribirEquipo(String ligaId, String equipoId) async =>
+      (await _c.rpc('inscribir_equipo', params: {'p_competicion': ligaId, 'p_equipo': equipoId})) as String;
+
+  @override
+  Future<List<InscripcionVista>> inscripciones(String ligaId) async => _rows(await _c
+          .from('v_inscripciones_competicion')
+          .select()
+          .eq('competicion_id', ligaId)
+          .order('fecha'))
+      .map(InscripcionVista.fromRow)
+      .toList();
+
+  @override
+  Future<void> resolverInscripcion(String inscripcionId, {required bool aceptar}) =>
+      _c.rpc('resolver_inscripcion', params: {'p_inscripcion': inscripcionId, 'p_aceptar': aceptar});
 
   @override
   Future<List<Deporte>> deportes() async => deportesDisponibles;

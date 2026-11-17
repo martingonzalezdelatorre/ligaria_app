@@ -144,7 +144,7 @@ void main() {
           EquipoLite(id: 'eqT', nombre: 'Tenis Sub12', deporteId: 'tenis'),
           EquipoLite(id: 'eqP', nombre: 'Pádel Sub12', deporteId: 'padel'),
         ]);
-    when(() => repo.inscribirEquipo('L1', 'eqT')).thenAnswer((_) async {});
+    when(() => repo.inscribirEquipo('L1', 'eqT')).thenAnswer((_) async => 'pendiente');
     await abrir(tester, repo);
 
     await tester.tap(find.text('Ligas'));

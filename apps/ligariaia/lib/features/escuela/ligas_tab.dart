@@ -55,8 +55,14 @@ class LigasTab extends ConsumerWidget {
         vacio: 'No tienes equipos de ${liga.deporte}. Crea uno en «Equipos».',
       );
       if (id == null) return;
-      await repo.inscribirEquipo(liga.id, id);
-      if (context.mounted) avisar(context, 'Equipo inscrito en ${liga.nombre}.');
+      final estado = await repo.inscribirEquipo(liga.id, id);
+      if (context.mounted) {
+        avisar(
+            context,
+            estado == 'pendiente'
+                ? 'Solicitud enviada a ${liga.organizadora}. Te avisaremos cuando la acepte o la rechace.'
+                : 'Equipo inscrito en ${liga.nombre}.');
+      }
     } catch (e) {
       if (context.mounted) avisar(context, mensajeErrorEscuela(e));
     }
