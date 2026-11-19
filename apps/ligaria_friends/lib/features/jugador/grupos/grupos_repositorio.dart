@@ -34,11 +34,15 @@ class Miembro {
     required this.nombre,
     required this.esAdmin,
     required this.esYo,
+    this.esCreador = false,
   });
   final String id;
   final String nombre;
   final bool esAdmin;
   final bool esYo;
+
+  /// Quien creó el grupo: siempre administrador y no se le puede quitar el rol.
+  final bool esCreador;
 }
 
 /// Amigo al que el usuario invitó alguna vez a un grupo (vista `v_mis_contactos`).
@@ -75,6 +79,9 @@ abstract class GruposRepositorio {
 
   /// Añade a un amigo a este grupo (solo administradores).
   Future<void> anadirContacto(String grupoId, String usuarioId);
+
+  /// Nombra (o quita) a un miembro como administrador del grupo (solo administradores).
+  Future<void> cambiarAdmin(String grupoId, String usuarioId, bool admin);
 
   /// Genera un código de invitación nuevo (solo administradores) y lo devuelve.
   Future<String> regenerarCodigo(String grupoId);
@@ -171,6 +178,13 @@ class GruposSupabase implements GruposRepositorio {
   @override
   Future<List<Miembro>> miembros(String grupoId) => _traducir(() async {
     final yo = _c.auth.currentUser?.id;
+    final creador =
+        (await _c
+                .from('grupo')
+                .select('creado_por')
+                .eq('id', grupoId)
+                .maybeSingle())?['creado_por']
+            as String?;
     final filas = await _c
         .from('grupo_miembro')
         .select('usuario_id, rol, alias, perfil(nombre, apodo)')
@@ -187,6 +201,7 @@ class GruposSupabase implements GruposRepositorio {
         nombre: nombre,
         esAdmin: f['rol'] == 'ADMIN',
         esYo: f['usuario_id'] == yo,
+        esCreador: f['usuario_id'] == creador,
       );
     }).toList();
     lista.sort(
@@ -196,6 +211,16 @@ class GruposSupabase implements GruposRepositorio {
     );
     return lista;
   });
+
+  @override
+  Future<void> cambiarAdmin(String grupoId, String usuarioId, bool admin) =>
+      _traducir(
+        () => _c
+            .from('grupo_miembro')
+            .update({'rol': admin ? 'ADMIN' : 'MIEMBRO'})
+            .eq('grupo_id', grupoId)
+            .eq('usuario_id', usuarioId),
+      );
 
   @override
   Future<String> regenerarCodigo(String grupoId) => _traducir(
@@ -266,11 +291,24 @@ class GruposDemo implements GruposRepositorio {
   Future<List<Miembro>> miembros(String grupoId) async {
     final g = _grupos.firstWhere((g) => g.id == grupoId);
     return [
-      Miembro(id: 'u0', nombre: 'Demo', esAdmin: g.esAdmin, esYo: true),
+      Miembro(
+        id: 'u0',
+        nombre: 'Demo',
+        esAdmin: g.esAdmin,
+        esYo: true,
+        esCreador: g.esAdmin,
+      ),
       for (var i = 1; i < g.miembros; i++)
         Miembro(id: 'u$i', nombre: 'Amigo $i', esAdmin: false, esYo: false),
     ];
   }
+
+  @override
+  Future<void> cambiarAdmin(
+    String grupoId,
+    String usuarioId,
+    bool admin,
+  ) async {}
 
   @override
   Future<void> invitarPorEmail({

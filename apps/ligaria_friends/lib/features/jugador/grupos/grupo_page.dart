@@ -114,6 +114,24 @@ class _GrupoPageState extends State<GrupoPage> {
     }
   }
 
+  /// Nombra o quita a un miembro como administrador.
+  Future<void> _cambiarAdmin(Miembro m) async {
+    final hacer = !m.esAdmin;
+    try {
+      await widget.repo.cambiarAdmin(widget.grupo.id, m.id, hacer);
+      if (!mounted) return;
+      setState(() => _miembros = widget.repo.miembros(widget.grupo.id));
+      avisar(
+        context,
+        hacer
+            ? '${m.nombre} ahora es administrador'
+            : '${m.nombre} ya no es administrador',
+      );
+    } on GruposException catch (e) {
+      if (mounted) avisar(context, e.mensaje);
+    }
+  }
+
   Future<void> _regenerar() async {
     final ok = await showDialog<bool>(
       context: context,
@@ -246,7 +264,15 @@ class _GrupoPageState extends State<GrupoPage> {
                       );
                     }
                     return Column(
-                      children: [for (final m in snap.data!) _FilaMiembro(m)],
+                      children: [
+                        for (final m in snap.data!)
+                          _FilaMiembro(
+                            m,
+                            onCambiarAdmin: g.esAdmin && !m.esYo && !m.esCreador
+                                ? () => _cambiarAdmin(m)
+                                : null,
+                          ),
+                      ],
                     );
                   },
                 ),
@@ -374,8 +400,11 @@ class _TarjetaInvitar extends StatelessWidget {
 }
 
 class _FilaMiembro extends StatelessWidget {
-  const _FilaMiembro(this.m);
+  const _FilaMiembro(this.m, {this.onCambiarAdmin});
   final Miembro m;
+
+  /// Solo para administradores sobre otros miembros: nombrar o quitar administrador.
+  final VoidCallback? onCambiarAdmin;
 
   @override
   Widget build(BuildContext context) {
@@ -401,6 +430,19 @@ class _FilaMiembro extends StatelessWidget {
           ),
           if (m.esAdmin)
             Insignia('Admin', color: cs.primary, icono: Icons.shield_outlined),
+          if (onCambiarAdmin != null)
+            PopupMenuButton<void>(
+              tooltip: 'Opciones',
+              icon: const Icon(Icons.more_vert),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  onTap: onCambiarAdmin,
+                  child: Text(
+                    m.esAdmin ? 'Quitar administrador' : 'Hacer administrador',
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

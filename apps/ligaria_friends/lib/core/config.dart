@@ -1,5 +1,6 @@
 /// Configuración inyectada en compilación:
-/// flutter run -d chrome --dart-define-from-file=env.json
+/// flutter run   (usa por defecto el Supabase de Friends; se puede sobrescribir con
+/// --dart-define-from-file=env.json)
 /// (copia `env.example.json` a `env.json` y rellena la clave publicable).
 ///
 /// Dos modos:
@@ -13,8 +14,15 @@ class AppConfig {
   /// Si la app habla con Supabase (modo «desde cero»).
   static bool get usaSupabase => configurada && !demo;
 
-  static const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-  static const supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
+  static const supabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: 'https://vzfgmodarizrnjewbeiy.supabase.co',
+  );
+  static const supabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    // Clave publishable: pública por diseño (la seguridad la da RLS).
+    defaultValue: 'sb_publishable_rAVjP_DsvQTPAiqVeAu21Q_375OFQbq',
+  );
   static bool get configurada =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 }
