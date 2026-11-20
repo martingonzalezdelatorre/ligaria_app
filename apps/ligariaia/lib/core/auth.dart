@@ -37,11 +37,13 @@ String etiquetaRol(Rol r) => switch (r) {
 /// Un rol del usuario en una organización (escuela, ayuntamiento o grupo de amigos).
 /// `escuelaId`/`escuela` son el id y el nombre de la organización, sea del tipo que sea.
 class Pertenencia {
-  const Pertenencia({required this.escuelaId, required this.escuela, required this.rol, this.orgTipo});
+  const Pertenencia({required this.escuelaId, required this.escuela, required this.rol, this.orgTipo, this.coorganizador = false});
   final String? escuelaId; // null solo para el administrador de la plataforma
   final String? escuela;
   final Rol rol;
   final String? orgTipo; // ESCUELA | AYUNTAMIENTO | GRUPO_AMIGOS
+  /// Solo gestiona algunas ligas de la organización (co-organizador): no crea ligas ni asigna organizadores.
+  final bool coorganizador;
   bool get esAyuntamiento => orgTipo == 'AYUNTAMIENTO';
 }
 
@@ -90,6 +92,14 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<List<Pertenencia>> misPertenencias() async {
     final filas = await _c.from('v_mis_pertenencias').select('organizacion_id, organizacion, org_tipo, rol');
+    // Organizaciones cuyas ligas co-organizo; si la vista aún no existe no se rompe el inicio de sesión.
+    List<Map<String, dynamic>> coorg;
+    try {
+      coorg = (await _c.from('v_mis_coorganizaciones').select('organizacion_id, organizacion, org_tipo') as List)
+          .cast<Map<String, dynamic>>();
+    } catch (_) {
+      coorg = const [];
+    }
     return [
       for (final f in filas)
         Pertenencia(
@@ -97,6 +107,14 @@ class SupabaseAuthRepository implements AuthRepository {
           escuela: f['organizacion'] as String?,
           rol: rolDesdeDb(f['rol'] as String),
           orgTipo: f['org_tipo'] as String?,
+        ),
+      for (final f in coorg)
+        Pertenencia(
+          escuelaId: f['organizacion_id'] as String?,
+          escuela: f['organizacion'] as String?,
+          rol: Rol.organizadorLiga,
+          orgTipo: f['org_tipo'] as String?,
+          coorganizador: true,
         ),
     ];
   }

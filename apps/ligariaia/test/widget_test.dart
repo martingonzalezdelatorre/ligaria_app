@@ -134,6 +134,14 @@ void main() {
     expect(varias.map((a) => a.id), ['familia', 'entrenador', 'escuela-a', 'org-a', 'plataforma']);
   });
 
+  test('un co-organizador tiene su propia área, distinta de la de organizador de la organización', () {
+    final areas = areasDe(const [
+      Pertenencia(escuelaId: 'ay', escuela: 'Ayuntamiento', rol: Rol.organizadorLiga, orgTipo: 'AYUNTAMIENTO', coorganizador: true),
+    ]);
+    expect(areas.map((a) => a.id), ['coorg-ay']);
+    expect(areas.single.titulo, 'Co-organizo');
+  });
+
   testWidgets('inicio sin escuela explica qué hacer', (tester) async {
     await tester.pumpWidget(ProviderScope(
       overrides: [

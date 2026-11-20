@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets.dart';
@@ -23,6 +24,12 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
   late final _nombre = TextEditingController(text: widget.liga?.nombre ?? '');
   late String _deporteId = widget.liga?.deporteId ?? deportesDisponibles.first.id;
   late String _tipo = widget.liga?.tipo ?? tiposCompeticionDe(widget.orgTipo).first.codigo;
+  late String _formato = widget.liga?.formato ?? 'LIGA';
+  late String _visibilidad = widget.liga?.visibilidad ?? 'PUBLICA';
+  late final _pVictoria = TextEditingController(text: '${(widget.liga?.puntuacion ?? puntuacionPorDefecto).victoria}');
+  late final _pEmpate = TextEditingController(text: '${(widget.liga?.puntuacion ?? puntuacionPorDefecto).empate}');
+  late final _pDerrota = TextEditingController(text: '${(widget.liga?.puntuacion ?? puntuacionPorDefecto).derrota}');
+  String? _errorPuntos;
   late DateTime? _inicio = widget.liga?.fechaInicio;
   late DateTime? _fin = widget.liga?.fechaFin;
   String? _errorFechas;
@@ -30,10 +37,32 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
 
   bool get _edita => widget.liga != null;
 
+  /// La visibilidad solo aplica a ligas que admiten escuelas de fuera.
+  bool get _admiteExternas => _tipo == 'MUNICIPAL' || _tipo == 'ENTRE_ESCUELAS';
+
   @override
   void dispose() {
     _nombre.dispose();
+    _pVictoria.dispose();
+    _pEmpate.dispose();
+    _pDerrota.dispose();
     super.dispose();
+  }
+
+  /// Puntuación escrita en el formulario, o null (con el error ya mostrado) si no es válida.
+  Puntuacion? _leerPuntuacion() {
+    if (_formato == 'ELIMINATORIA') return widget.liga?.puntuacion ?? puntuacionPorDefecto; // no puntúa
+    final v = int.tryParse(_pVictoria.text.trim());
+    final e = int.tryParse(_pEmpate.text.trim());
+    final d = int.tryParse(_pDerrota.text.trim());
+    String? error;
+    if (v == null || e == null || d == null) {
+      error = 'Escribe un número en los tres campos.';
+    } else if (v > 20 || e < 0 || d < 0 || !(v >= e && e >= d)) {
+      error = 'Debe cumplirse victoria ≥ empate ≥ derrota ≥ 0 (máximo 20).';
+    }
+    setState(() => _errorPuntos = error);
+    return error != null ? null : (victoria: v!, empate: e!, derrota: d!);
   }
 
   Future<void> _elegir(bool inicio) async {
@@ -58,15 +87,21 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
       setState(() => _errorFechas = 'La fecha de fin no puede ser anterior a la de inicio.');
       return;
     }
+    final puntos = _leerPuntuacion();
+    if (puntos == null) return;
     setState(() => _enviando = true);
     final repo = ref.read(ligaRepositoryProvider);
     try {
       if (_edita) {
         await repo.editarLiga(widget.liga!.id, nombre: _nombre.text.trim(), fechaInicio: _inicio, fechaFin: _fin);
+        if (puntos != widget.liga!.puntuacion) await repo.configurarPuntuacion(widget.liga!.id, puntos);
       } else {
         await repo.crearLiga(
           orgId: widget.escuelaId, deporteId: _deporteId, nombre: _nombre.text.trim(), tipo: _tipo,
           fechaInicio: _inicio, fechaFin: _fin,
+          visibilidad: _admiteExternas ? _visibilidad : 'PUBLICA',
+          puntuacion: puntos,
+          formato: _formato,
         );
       }
       ref.invalidate(orgLigasProvider(widget.escuelaId));
@@ -194,8 +229,8 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
                 desplazamiento: 8,
                 child: _Seccion(
                   icono: Icons.sports_tennis_rounded,
-                  titulo: 'Deporte y tipo',
-                  nota: _edita ? 'El deporte y el tipo no se pueden cambiar una vez creada la liga.' : null,
+                  titulo: 'Deporte, formato y acceso',
+                  nota: _edita ? 'El deporte, el tipo, el formato y el acceso no se pueden cambiar una vez creada la liga.' : null,
                   hijo: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                     _bloqueable(SelectorTarjetas<String>(
                       key: const Key('liga-deporte'),
@@ -222,9 +257,88 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
                         ],
                       )),
                     ],
+                    const SizedBox(height: 20),
+                    _bloqueable(SelectorTarjetas<String>(
+                      key: const Key('liga-formato'),
+                      etiqueta: 'Formato de competición',
+                      valor: _formato,
+                      onCambio: (v) => setState(() {
+                        _formato = v;
+                        _errorPuntos = null;
+                      }),
+                      opciones: const [
+                        OpcionTarjeta<String>('LIGA', 'Liga', Icons.format_list_numbered_rounded,
+                            descripcion: 'Todos contra todos, por jornadas.'),
+                        OpcionTarjeta<String>('ELIMINATORIA', 'Eliminatoria', Icons.account_tree_outlined,
+                            descripcion: 'Cuadro por rondas: quien pierde queda fuera.'),
+                        OpcionTarjeta<String>('MIXTO', 'Grupos y playoff', Icons.view_module_outlined,
+                            descripcion: 'Liga por grupos y un cuadro final con los mejores.'),
+                      ],
+                    )),
+                    if (_admiteExternas) ...[
+                      const SizedBox(height: 20),
+                      _bloqueable(SelectorTarjetas<String>(
+                        key: const Key('liga-visibilidad'),
+                        etiqueta: 'Quién puede participar',
+                        valor: _visibilidad,
+                        onCambio: (v) => setState(() => _visibilidad = v),
+                        opciones: const [
+                          OpcionTarjeta<String>('PUBLICA', 'Abierta', Icons.lock_open_rounded,
+                              descripcion: 'Cualquier escuela la ve y solicita inscribir; tú apruebas.'),
+                          OpcionTarjeta<String>('PRIVADA', 'Por invitación', Icons.mark_email_read_outlined,
+                              descripcion: 'Solo participan las escuelas que invites y acepten.'),
+                        ],
+                      )),
+                    ],
                   ]),
                 ),
               ),
+              if (_formato != 'ELIMINATORIA') ...[
+              const SizedBox(height: 16),
+              Aparece(
+                retardo: 150,
+                desplazamiento: 8,
+                child: _Seccion(
+                  icono: Icons.scoreboard_outlined,
+                  titulo: 'Puntuación',
+                  nota: _formato == 'MIXTO'
+                      ? 'Puntos por encuentro en la fase de grupos. Lo habitual es 3, 1 y 0.'
+                      : 'Puntos que suma un equipo por cada encuentro. Lo habitual es 3, 1 y 0.',
+                  hijo: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      for (final (clave, etiqueta, ctrl) in [
+                        ('victoria', 'Victoria', _pVictoria),
+                        ('empate', 'Empate', _pEmpate),
+                        ('derrota', 'Derrota', _pDerrota),
+                      ]) ...[
+                        Expanded(
+                          child: TextFormField(
+                            key: Key('puntos-$clave'),
+                            controller: ctrl,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                            decoration: decoracionCampo(etiqueta, Icons.exposure_plus_1_rounded),
+                            onChanged: (_) {
+                              if (_errorPuntos != null) setState(() => _errorPuntos = null);
+                            },
+                          ),
+                        ),
+                        if (clave != 'derrota') const SizedBox(width: 12),
+                      ],
+                    ]),
+                    if (_errorPuntos != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 10),
+                        child: Row(children: [
+                          Icon(Icons.error_outline_rounded, size: 18, color: Theme.of(context).colorScheme.error),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(_errorPuntos!, style: TextStyle(color: Theme.of(context).colorScheme.error))),
+                        ]),
+                      ),
+                  ]),
+                ),
+              ),
+              ],
               const SizedBox(height: 16),
               Aparece(
                 retardo: 180,

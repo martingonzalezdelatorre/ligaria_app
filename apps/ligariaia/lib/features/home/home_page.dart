@@ -37,9 +37,12 @@ List<AreaApp> areasDe(List<Pertenencia> perts) {
   }
   for (final p in perts.where((p) => p.rol == Rol.organizadorLiga && p.escuelaId != null)) {
     areas.add(AreaApp(
-        id: 'org-${p.escuelaId}', titulo: p.esAyuntamiento ? 'Ayuntamiento' : 'Organización', subtitulo: p.escuela,
+        id: p.coorganizador ? 'coorg-${p.escuelaId}' : 'org-${p.escuelaId}',
+        titulo: p.coorganizador ? 'Co-organizo' : (p.esAyuntamiento ? 'Ayuntamiento' : 'Organización'),
+        subtitulo: p.escuela,
         icono: p.esAyuntamiento ? Icons.account_balance_outlined : Icons.emoji_events_outlined,
-        builder: () => OrganizadorHome(escuelaId: p.escuelaId!, escuelaNombre: p.escuela ?? '', orgTipo: p.orgTipo)));
+        builder: () => OrganizadorHome(
+            escuelaId: p.escuelaId!, escuelaNombre: p.escuela ?? '', orgTipo: p.orgTipo, coorganizador: p.coorganizador)));
   }
   if (perts.any((p) => p.rol == Rol.superadmin)) {
     areas.add(AreaApp(id: 'plataforma', titulo: 'Plataforma', icono: Icons.admin_panel_settings_outlined, builder: () => const SuperadminHome()));

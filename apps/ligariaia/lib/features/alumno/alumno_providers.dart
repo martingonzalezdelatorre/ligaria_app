@@ -10,5 +10,8 @@ final encuentrosProvider =
     FutureProvider.family<List<EncuentroVista>, String>((ref, ligaId) => ref.watch(ligaRepositoryProvider).encuentros(ligaId));
 final descansosProvider =
     FutureProvider.family<List<Descanso>, String>((ref, ligaId) => ref.watch(ligaRepositoryProvider).descansos(ligaId));
+/// Equipos que pasan directamente de ronda en un cuadro de eliminatoria.
+final pasanDirectoProvider =
+    FutureProvider.family<List<Descanso>, String>((ref, ligaId) => ref.watch(ligaRepositoryProvider).pasanDirecto(ligaId));
 final clasificacionProvider = FutureProvider.family<List<FilaClasificacion>, String>(
     (ref, ligaId) => ref.watch(ligaRepositoryProvider).clasificacion(ligaId));

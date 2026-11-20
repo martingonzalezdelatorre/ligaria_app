@@ -19,6 +19,8 @@ MockRepo repoBase() {
   when(() => repo.jugadoresOrg('esc1')).thenAnswer((_) async => [persona]);
   when(() => repo.equipos('esc1')).thenAnswer((_) async => const []);
   when(() => repo.ligasAbiertas()).thenAnswer((_) async => const []);
+  when(() => repo.misInvitaciones()).thenAnswer((_) async => const []);
+  when(() => repo.categorias(any())).thenAnswer((_) async => const []);
   when(() => repo.deportes()).thenAnswer((_) async => const []);
   return repo;
 }
@@ -175,5 +177,93 @@ void main() {
     await tester.tap(find.text('Eq'));
     await tester.pumpAndSettle();
     expect(find.text('La liga ya tiene calendario; no admite más inscripciones.'), findsOneWidget);
+  });
+
+  testWidgets('con varias categorías se pide elegir una al inscribir', (tester) async {
+    final repo = repoBase();
+    when(() => repo.ligasAbiertas()).thenAnswer((_) async => const [
+          LigaAbierta(id: 'L1', nombre: 'Liga por edades', deporteId: 'tenis', deporte: 'Tenis', organizadora: 'Ayto'),
+        ]);
+    when(() => repo.equipos('esc1')).thenAnswer((_) async => const [EquipoLite(id: 'eqT', nombre: 'Tenis Sub12', deporteId: 'tenis')]);
+    when(() => repo.categorias('L1')).thenAnswer((_) async => const [
+          CategoriaLiga(id: 'c1', ligaId: 'L1', nombre: 'General'),
+          CategoriaLiga(id: 'c2', ligaId: 'L1', nombre: 'Sub-12', genero: 'MIXTO', edadMax: 12),
+        ]);
+    when(() => repo.inscribirEquipo('L1', 'eqT', categoriaId: 'c2')).thenAnswer((_) async => 'pendiente');
+    await abrir(tester, repo);
+    await tester.tap(find.text('Ligas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('inscribir-L1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tenis Sub12'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Elige la categoría'), findsOneWidget);
+    expect(find.text('Mixto · hasta 12 años'), findsOneWidget); // detalle de la categoría
+    await tester.tap(find.text('Sub-12'));
+    await tester.pumpAndSettle();
+    verify(() => repo.inscribirEquipo('L1', 'eqT', categoriaId: 'c2')).called(1);
+  });
+
+  test('CategoriaLiga.detalle resume género, edades y nivel', () {
+    expect(const CategoriaLiga(id: 'c', ligaId: 'l', nombre: 'General').detalle, isNull);
+    expect(const CategoriaLiga(id: 'c', ligaId: 'l', nombre: 'X', genero: 'FEMENINO', edadMin: 10, edadMax: 12, nivel: 'Avanzado').detalle,
+        'Femenino · 10-12 años · Avanzado');
+    expect(const CategoriaLiga(id: 'c', ligaId: 'l', nombre: 'X', edadMin: 15).detalle, 'desde 15 años');
+  });
+
+  test('mensajeErrorEscuela traduce los errores de ligas privadas', () {
+    expect(mensajeErrorEscuela(Exception('la competición es privada: solo participan las escuelas invitadas')),
+        'Esta liga es privada: solo participan las escuelas invitadas.');
+  });
+
+  testWidgets('la escuela ve sus invitaciones y puede aceptarlas', (tester) async {
+    final repo = repoBase();
+    var respondida = false;
+    when(() => repo.misInvitaciones()).thenAnswer((_) async => respondida
+        ? const []
+        : const [
+            MiInvitacion(ligaId: 'L9', escuelaId: 'esc1', nombre: 'Copa Municipal', deporte: 'Tenis', organizadora: 'Ayuntamiento'),
+            MiInvitacion(ligaId: 'L8', escuelaId: 'otra', nombre: 'De otra escuela', deporte: 'Tenis', organizadora: 'X'),
+          ]);
+    when(() => repo.responderInvitacion('L9', 'esc1', aceptar: true)).thenAnswer((_) async {
+      respondida = true;
+    });
+    await abrir(tester, repo);
+    await tester.tap(find.text('Ligas'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Copa Municipal'), findsOneWidget);
+    expect(find.text('De otra escuela'), findsNothing); // solo las de esta escuela
+    await tester.tap(find.byKey(const Key('aceptar-invitacion-L9')));
+    await tester.pumpAndSettle();
+
+    verify(() => repo.responderInvitacion('L9', 'esc1', aceptar: true)).called(1);
+    expect(find.text('Copa Municipal'), findsNothing);
+  });
+
+  testWidgets('rechazar una invitación llama al repo con aceptar: false', (tester) async {
+    final repo = repoBase();
+    when(() => repo.misInvitaciones()).thenAnswer((_) async => const [
+          MiInvitacion(ligaId: 'L9', escuelaId: 'esc1', nombre: 'Copa Municipal', deporte: 'Tenis', organizadora: 'Ayuntamiento'),
+        ]);
+    when(() => repo.responderInvitacion('L9', 'esc1', aceptar: false)).thenAnswer((_) async {});
+    await abrir(tester, repo);
+    await tester.tap(find.text('Ligas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rechazar-invitacion-L9')));
+    await tester.pumpAndSettle();
+    verify(() => repo.responderInvitacion('L9', 'esc1', aceptar: false)).called(1);
+  });
+
+  testWidgets('una liga privada a la que fui invitada se marca «por invitación»', (tester) async {
+    final repo = repoBase();
+    when(() => repo.ligasAbiertas()).thenAnswer((_) async => const [
+          LigaAbierta(id: 'L1', nombre: 'Copa cerrada', deporteId: 'tenis', deporte: 'Tenis', organizadora: 'Ayto', visibilidad: 'PRIVADA'),
+        ]);
+    await abrir(tester, repo);
+    await tester.tap(find.text('Ligas'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('por invitación'), findsOneWidget);
   });
 }

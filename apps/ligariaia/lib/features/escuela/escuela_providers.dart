@@ -1,6 +1,26 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:ligaria_ui/ligaria_ui.dart';
 import '../../data/liga_repository.dart';
 import '../../data/models.dart';
+
+/// Pide la categoría cuando la liga tiene varias. `ok == false` si se cancela;
+/// `id == null` si no hace falta elegir (la liga tiene una sola categoría).
+Future<({bool ok, String? id})> elegirCategoria(
+    BuildContext context, LigaRepository repo, String ligaId, String ligaNombre) async {
+  final cats = await repo.categorias(ligaId);
+  if (cats.length <= 1) return (ok: true, id: null);
+  if (!context.mounted) return (ok: false, id: null);
+  final id = await elegirDeLista<String>(
+    context,
+    icono: Icons.category_outlined,
+    titulo: 'Elige la categoría',
+    subtitulo: ligaNombre,
+    opciones: [for (final c in cats) (c.id, c.nombre, c.detalle)],
+    vacio: 'La liga no tiene categorías.',
+  );
+  return (ok: id != null, id: id);
+}
 
 final usuariosEscuelaProvider = FutureProvider.family<List<UsuarioEscuela>, String>(
     (ref, escuelaId) => ref.watch(ligaRepositoryProvider).usuarios(escuelaId));
@@ -12,6 +32,8 @@ final jugadoresEquipoEscuelaProvider = FutureProvider.family<List<Jugador>, Stri
     (ref, equipoId) => ref.watch(ligaRepositoryProvider).jugadores(equipoId));
 final ligasAbiertasProvider =
     FutureProvider<List<LigaAbierta>>((ref) => ref.watch(ligaRepositoryProvider).ligasAbiertas());
+final misInvitacionesProvider = FutureProvider.autoDispose<List<MiInvitacion>>(
+    (ref) => ref.watch(ligaRepositoryProvider).misInvitaciones());
 final deportesProvider = FutureProvider<List<Deporte>>((ref) => ref.watch(ligaRepositoryProvider).deportes());
 
 int edadDe(DateTime nac, [DateTime? hoy]) {
@@ -33,6 +55,10 @@ String mensajeErrorEscuela(Object e) {
   }
   if (t.contains('calendario ya está generado')) return 'La liga ya tiene calendario; no admite más inscripciones.';
   if (t.contains('privada de su organización')) return 'Esta liga es privada de su organización.';
+  if (t.contains('elige una categoría')) return 'Elige una categoría.';
+  if (t.contains('categoría no pertenece')) return 'La categoría no pertenece a esa liga.';
+  if (t.contains('es privada'))return 'Esta liga es privada: solo participan las escuelas invitadas.';
+  if (t.contains('invitación ya está resuelta')) return 'Esta invitación ya estaba respondida.';
   if (t.contains('no pertenece a la organización')) return 'El jugador no pertenece a la organización del equipo.';
   if (t.contains('duplicate key') || t.contains('23505')) return 'Ya existe un registro igual.';
   if (t.contains('sin permiso') || t.contains('42501') || t.contains('row-level security')) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/cuadro.dart';
 import '../../core/widgets.dart';
 import '../../data/models.dart';
 import 'alumno_providers.dart';
@@ -80,21 +81,23 @@ class LigaDetalle extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Un cuadro de eliminatoria no tiene tabla de puntos: se llama «Cuadro» y no hay clasificación.
+    final eliminatoria = liga.esEliminatoria;
     return DefaultTabController(
-      length: 4,
+      length: eliminatoria ? 3 : 4,
       child: Column(children: [
-        const PestanasPildora(desplazable: true, tabs: [
-          Tab(text: 'Mi equipo'),
-          Tab(text: 'Calendario'),
-          Tab(text: 'Resultados'),
-          Tab(text: 'Clasificación'),
+        PestanasPildora(desplazable: true, tabs: [
+          const Tab(text: 'Mi equipo'),
+          Tab(text: eliminatoria ? 'Cuadro' : 'Calendario'),
+          const Tab(text: 'Resultados'),
+          if (!eliminatoria) const Tab(text: 'Clasificación'),
         ]),
         Expanded(
           child: TabBarView(children: [
             _MiEquipo(liga: liga),
             _Calendario(liga: liga),
             _Resultados(liga: liga),
-            _Clasificacion(liga: liga),
+            if (!eliminatoria) _Clasificacion(liga: liga),
           ]),
         ),
       ]),
@@ -146,37 +149,73 @@ String etiquetaRolEquipo(String rol) => switch (rol) {
       _ => rol,
     };
 
-class _Calendario extends ConsumerWidget {
+/// Calendario del alumno. Con eliminatoria se alterna entre el cuadro dibujado y la lista: en una eliminatoria
+/// pura el cuadro es la vista inicial; en grupos + playoff, la lista.
+class _Calendario extends ConsumerStatefulWidget {
   const _Calendario({required this.liga});
   final Liga liga;
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_Calendario> createState() => _CalendarioState();
+}
+
+class _CalendarioState extends ConsumerState<_Calendario> {
+  bool? _cuadro; // null = vista inicial según el formato
+
+  Liga get liga => widget.liga;
+
+  @override
+  Widget build(BuildContext context) {
     final mios = _misEquiposIds(ref, liga);
     final descansos = ref.watch(descansosProvider(liga.id)).value ?? const <Descanso>[];
+    // Pases directos de la primera ronda (eliminatoria o playoff); un fallo al cargarlos no oculta el cuadro.
+    final byes = liga.formato == 'LIGA'
+        ? const <Descanso>[]
+        : ref.watch(pasanDirectoProvider(liga.id)).maybeWhen(data: (l) => l, orElse: () => const <Descanso>[]);
     return AsyncView<List<EncuentroVista>>(
       value: ref.watch(encuentrosProvider(liga.id)),
       onRetry: () => ref.invalidate(encuentrosProvider(liga.id)),
       builder: (encs) {
-        final porJornada = <int, List<EncuentroVista>>{};
-        for (final e in encs) {
-          porJornada.putIfAbsent(e.jornada, () => []).add(e);
-        }
-        final jornadas = porJornada.keys.toList()..sort();
+        final jornadas = agruparEncuentros(encs);
+        final hayCuadro = encs.any((e) => e.esEliminatoria);
+        final cuadro = hayCuadro && (_cuadro ?? liga.esEliminatoria);
         return _Refrescable(
           onRefresh: () async {
             ref.invalidate(encuentrosProvider(liga.id));
             ref.invalidate(descansosProvider(liga.id));
+            ref.invalidate(pasanDirectoProvider(liga.id));
             await ref.read(encuentrosProvider(liga.id).future);
           },
           children: [
-            if (jornadas.isEmpty) _vacio(Icons.event_outlined, 'El calendario aún no está publicado.'),
+            if (jornadas.isEmpty)
+              _vacio(Icons.event_outlined,
+                  liga.esEliminatoria ? 'El cuadro aún no está publicado.' : 'El calendario aún no está publicado.'),
+            if (hayCuadro)
+              SelectorVistaCuadro(
+                cuadro: cuadro,
+                etiquetaCuadro: liga.esMixto ? 'Playoff' : 'Llaves',
+                onCambio: (v) => setState(() => _cuadro = v),
+              ),
+            if (cuadro)
+              CuadrosEliminatoria(encuentros: encs, byes: byes, destacados: mios)
+            else
             for (final j in jornadas) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-                child: Text('Jornada $j', style: Theme.of(context).textTheme.titleSmall),
+                child: Text(j.titulo, style: Theme.of(context).textTheme.titleSmall),
               ),
-              for (final e in porJornada[j]!) TarjetaEncuentro(encuentro: e, destacados: mios),
-              for (final d in descansos.where((d) => d.jornada == j))
+              for (final e in j.encuentros) TarjetaEncuentro(encuentro: e, destacados: mios),
+              if (j.esEliminatoria && j.jornada == 1)
+                for (final b in byes.where((b) => b.jornada == 1 && (b.categoria ?? '') == j.categoria))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+                    child: Text('Pasa directo: ${b.equipo}',
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontWeight: mios.contains(b.equipoId) ? FontWeight.bold : null)),
+                  ),
+              // los descansos son de la fase de liga y solo del grupo de esa jornada
+              if (!j.esEliminatoria)
+                for (final d in descansos.where((d) => d.jornada == j.jornada && j.equiposDelGrupo.contains(d.equipoId)))
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
                   child: Text('Descansa: ${d.equipo}',
@@ -239,7 +278,7 @@ class _Clasificacion extends ConsumerWidget {
           if (filas.isEmpty)
             _vacio(Icons.leaderboard_outlined, 'La clasificación aparecerá cuando haya equipos inscritos.')
           else
-            TablaClasificacion(filas: filas, destacados: mios),
+            ClasificacionPorCategoria(filas: filas, destacados: mios),
         ],
       ),
     );
@@ -256,12 +295,21 @@ class ResumenLiga extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mios = _misEquiposIds(ref, liga);
     final miEquipo = (ref.watch(misEquiposProvider).value ?? const <MiEquipo>[]).where((e) => e.ligaId == liga.id).firstOrNull;
-    final filas = ref.watch(clasificacionProvider(liga.id)).value ?? const <FilaClasificacion>[];
+    final filas = liga.esEliminatoria
+        ? const <FilaClasificacion>[] // un cuadro no tiene clasificación
+        : ref.watch(clasificacionProvider(liga.id)).value ?? const <FilaClasificacion>[];
     final fila = filas.where((f) => mios.contains(f.equipoId)).firstOrNull;
     final encs = ref.watch(encuentrosProvider(liga.id)).value ?? const <EncuentroVista>[];
     final proximo = encs.where((e) => !e.confirmado && (mios.contains(e.localId) || mios.contains(e.visitanteId))).firstOrNull;
     final rival = proximo == null ? null : (mios.contains(proximo.localId) ? proximo.visitante : proximo.local);
     final tema = Theme.of(context);
+    // En una eliminatoria no hay puesto ni puntos: se muestra la ronda y la situación de mi equipo.
+    final byes = liga.esEliminatoria
+        ? ref.watch(pasanDirectoProvider(liga.id)).maybeWhen(data: (l) => l, orElse: () => const <Descanso>[])
+        : const <Descanso>[];
+    final situacion = liga.esEliminatoria
+        ? situacionEliminatoria(encs, mios, pasoDirecto: byes.any((b) => mios.contains(b.equipoId)))
+        : null;
 
     Widget dato(String valor, String etiqueta, {IconData? icono}) => Expanded(
           child: Container(
@@ -317,9 +365,15 @@ class ResumenLiga extends ConsumerWidget {
               ),
             const SizedBox(height: 14),
             Row(children: [
-              dato(fila == null ? '—' : '${fila.posicion}º', 'PUESTO'),
-              const SizedBox(width: 8),
-              dato(fila == null ? '—' : '${fila.puntos}', 'PUNTOS'),
+              if (situacion != null) ...[
+                dato(situacion.ronda, 'RONDA'),
+                const SizedBox(width: 8),
+                dato(etiquetaSituacionEliminatoria(situacion.estado), 'SITUACIÓN'),
+              ] else ...[
+                dato(fila == null ? '—' : '${fila.posicion}º', 'PUESTO'),
+                const SizedBox(width: 8),
+                dato(fila == null ? '—' : '${fila.puntos}', 'PUNTOS'),
+              ],
               const SizedBox(width: 8),
               Expanded(
                 flex: 2,

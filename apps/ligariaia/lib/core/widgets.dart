@@ -137,6 +137,40 @@ class TablaClasificacion extends StatelessWidget {
   }
 }
 
+/// Clasificación agrupada por categoría y, en formato MIXTO, por grupo: con una sola tabla es la tabla
+/// sin más; con varias, un título por tabla (la posición se calcula dentro de cada una).
+class ClasificacionPorCategoria extends StatelessWidget {
+  const ClasificacionPorCategoria({super.key, required this.filas, this.destacados = const {}});
+  final List<FilaClasificacion> filas;
+  final Set<String> destacados;
+
+  @override
+  Widget build(BuildContext context) {
+    final categorias = filas.map((f) => f.categoria ?? '').toSet();
+    final grupos = <(String, int?), List<FilaClasificacion>>{};
+    for (final f in filas) {
+      grupos.putIfAbsent((f.categoria ?? '', f.grupo), () => []).add(f);
+    }
+    if (grupos.length <= 1) return TablaClasificacion(filas: filas, destacados: destacados);
+    final tema = Theme.of(context);
+    final claves = grupos.keys.toList()
+      ..sort((a, b) => a.$1 != b.$1 ? a.$1.compareTo(b.$1) : (a.$2 ?? 0).compareTo(b.$2 ?? 0));
+    String titulo((String, int?) k) => [
+          if (categorias.length > 1) k.$1.isEmpty ? 'General' : k.$1,
+          if (k.$2 != null) nombreGrupo(k.$2!),
+        ].join(' · ');
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      for (final k in claves) ...[
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Text(titulo(k), style: tema.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+        ),
+        TablaClasificacion(filas: grupos[k]!, destacados: destacados),
+      ],
+    ]);
+  }
+}
+
 /// Tarjeta de un encuentro: equipos con avatar, marcador (si es visible) o «vs», fecha y estado.
 class TarjetaEncuentro extends StatelessWidget {
   const TarjetaEncuentro({super.key, required this.encuentro, this.destacados = const {}, this.onTap, this.trailing});
@@ -172,7 +206,7 @@ class TarjetaEncuentro extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
           child: Column(children: [
             Row(children: [
-              Insignia('Jornada ${e.jornada}', color: cs.secondary),
+              Insignia(e.etiquetaJornada, color: cs.secondary),
               const SizedBox(width: 8),
               Icon(Icons.calendar_today_outlined, size: 14, color: cs.onSurfaceVariant),
               const SizedBox(width: 4),

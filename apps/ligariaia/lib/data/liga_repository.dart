@@ -36,20 +36,60 @@ abstract class LigaRepository {
   Future<List<LigaAbierta>> ligasAbiertas();
   /// Devuelve el estado resultante: 'aceptada' (organiza la propia escuela) o 'pendiente'
   /// (el organizador de la liga debe aprobarla).
-  Future<String> inscribirEquipo(String ligaId, String equipoId);
+  /// [categoriaId] solo hace falta si la liga tiene varias categorías.
+  Future<String> inscribirEquipo(String ligaId, String equipoId, {String? categoriaId});
+  /// Categorías de una liga (las de mis ligas y las de las ligas abiertas a mi escuela).
+  Future<List<CategoriaLiga>> categorias(String ligaId);
   Future<List<Deporte>> deportes();
+  /// Invitaciones de otras organizaciones pendientes de responder.
+  Future<List<MiInvitacion>> misInvitaciones();
+  /// Acepta o rechaza la invitación de [ligaId] en nombre de la escuela [escuelaId].
+  Future<void> responderInvitacion(String ligaId, String escuelaId, {required bool aceptar});
 
   // ── Organizador ──
   Future<List<Liga>> ligasOrganizadas(String orgId);
   /// [tipo]: código de competicion_tipo (MUNICIPAL | ENTRE_ESCUELAS | ESCUELA | AMIGOS).
+  /// [visibilidad]: PUBLICA (se ofrece a todas las escuelas) | PRIVADA (solo escuelas invitadas).
   Future<void> crearLiga({
     required String orgId, required String deporteId, required String nombre, required String tipo,
-    DateTime? fechaInicio, DateTime? fechaFin,
+    DateTime? fechaInicio, DateTime? fechaFin, String visibilidad = 'PUBLICA',
+    Puntuacion puntuacion = puntuacionPorDefecto,
+    /// competicion_formato: LIGA | ELIMINATORIA | MIXTO (grupos y playoff).
+    String formato = 'LIGA',
   });
+  /// Cambia los puntos por victoria, empate y derrota (solo mientras la liga está en borrador).
+  Future<void> configurarPuntuacion(String ligaId, Puntuacion puntuacion);
+  Future<void> crearCategoria(String ligaId, String nombre, {String? genero, int? edadMin, int? edadMax, String? nivel});
+  /// Solo se elimina una categoría sin equipos y nunca la última de la liga.
+  Future<void> eliminarCategoria(String categoriaId);
+  /// Organizadores de ligas de la organización (su equipo). Se invitan con [invitar] y el rol organizadorLiga.
+  Future<List<UsuarioEscuela>> organizadoresOrg(String orgId);
+  /// Co-organizadores de la liga.
+  Future<List<OrganizadorLiga>> organizadores(String ligaId);
+  /// Da a una persona la gestión de esta liga. Devuelve 'asignado' si ya tenía cuenta o 'invitado' si se
+  /// activará cuando se registre con ese correo.
+  Future<String> asignarOrganizador(String ligaId, String email);
+  /// Retira una invitación de co-organizador que aún no se ha activado.
+  Future<void> retirarInvitacionOrganizador(String ligaId, String email);
+  Future<void> quitarOrganizador(String ligaId, String usuarioId);
+  /// Escuelas invitadas a una liga y su respuesta.
+  Future<List<InvitacionLiga>> invitacionesLiga(String ligaId);
+  /// Escuelas a las que se puede invitar.
+  Future<List<EscuelaInvitable>> escuelasInvitables();
+  Future<void> invitarEscuela(String ligaId, String escuelaId);
+  /// Retira una invitación mientras la escuela no tenga equipos inscritos.
+  Future<void> retirarInvitacion(String ligaId, String escuelaId);
   Future<void> editarLiga(String ligaId, {required String nombre, DateTime? fechaInicio, DateTime? fechaFin});
   /// Abre la liga a la inscripción de equipos.
   Future<void> publicarLiga(String ligaId);
-  Future<int> generarCalendario(String ligaId, {DateTime? inicio, int diasEntreJornadas = 7, int vueltas = 1});
+  /// En una liga de formato MIXTO, [grupos] es el número de grupos (2 por defecto).
+  Future<int> generarCalendario(String ligaId, {DateTime? inicio, int diasEntreJornadas = 7, int vueltas = 1, int? grupos});
+  /// Genera el cuadro de una eliminatoria (la primera ronda; las siguientes se crean solas).
+  Future<int> generarEliminatoria(String ligaId, {DateTime? inicio});
+  /// Con la fase de grupos terminada, crea el playoff con los [clasifican] primeros de cada grupo.
+  Future<int> generarPlayoff(String ligaId, {int clasifican = 2, DateTime? inicio});
+  /// Equipos que pasan directamente de ronda en una eliminatoria.
+  Future<List<Descanso>> pasanDirecto(String ligaId);
   /// Solicitudes de inscripción de una liga (pendientes y resueltas).
   Future<List<InscripcionVista>> inscripciones(String ligaId);
   /// Acepta o rechaza una inscripción pendiente.
@@ -208,8 +248,19 @@ class SupabaseLigaRepository implements LigaRepository {
       _rows(await _c.from('v_ligas_abiertas').select()).map(LigaAbierta.fromRow).toList();
 
   @override
-  Future<String> inscribirEquipo(String ligaId, String equipoId) async =>
-      (await _c.rpc('inscribir_equipo', params: {'p_competicion': ligaId, 'p_equipo': equipoId})) as String;
+  Future<String> inscribirEquipo(String ligaId, String equipoId, {String? categoriaId}) async =>
+      (await _c.rpc('inscribir_equipo', params: {
+        'p_competicion': ligaId, 'p_equipo': equipoId, 'p_categoria': ?categoriaId,
+      })) as String;
+
+  @override
+  Future<List<CategoriaLiga>> categorias(String ligaId) async => _rows(await _c
+          .from('v_categorias_competicion')
+          .select()
+          .eq('competicion_id', ligaId)
+          .order('nombre'))
+      .map(CategoriaLiga.fromRow)
+      .toList();
 
   @override
   Future<List<InscripcionVista>> inscripciones(String ligaId) async => _rows(await _c
@@ -234,15 +285,94 @@ class SupabaseLigaRepository implements LigaRepository {
           .toList();
 
   @override
+  Future<List<MiInvitacion>> misInvitaciones() async =>
+      _rows(await _c.from('v_mis_invitaciones').select().order('nombre')).map(MiInvitacion.fromRow).toList();
+
+  @override
+  Future<void> responderInvitacion(String ligaId, String escuelaId, {required bool aceptar}) =>
+      _c.rpc('responder_invitacion_org',
+          params: {'p_competicion': ligaId, 'p_organizacion': escuelaId, 'p_aceptar': aceptar});
+
+  @override
   Future<void> crearLiga({
     required String orgId, required String deporteId, required String nombre, required String tipo,
-    DateTime? fechaInicio, DateTime? fechaFin,
+    DateTime? fechaInicio, DateTime? fechaFin, String visibilidad = 'PUBLICA',
+    Puntuacion puntuacion = puntuacionPorDefecto, String formato = 'LIGA',
   }) =>
       _c.rpc('crear_competicion', params: {
+        'p_formato': formato,
         'p_organizacion': orgId, 'p_nombre': nombre, 'p_deporte': deporteId, 'p_tipo': tipo,
         'p_fecha_inicio': fechaInicio == null ? null : _iso(fechaInicio),
         'p_fecha_fin': fechaFin == null ? null : _iso(fechaFin),
+        'p_visibilidad': visibilidad,
+        'p_puntos_victoria': puntuacion.victoria,
+        'p_puntos_empate': puntuacion.empate,
+        'p_puntos_derrota': puntuacion.derrota,
       });
+
+  @override
+  Future<void> configurarPuntuacion(String ligaId, Puntuacion puntuacion) => _c.from('competicion').update({
+        'puntos_victoria': puntuacion.victoria,
+        'puntos_empate': puntuacion.empate,
+        'puntos_derrota': puntuacion.derrota,
+      }).eq('id', ligaId).eq('estado', 'BORRADOR');
+
+  @override
+  Future<void> crearCategoria(String ligaId, String nombre, {String? genero, int? edadMin, int? edadMax, String? nivel}) =>
+      _c.rpc('crear_categoria', params: {
+        'p_competicion': ligaId, 'p_nombre': nombre, 'p_genero': genero,
+        'p_edad_min': edadMin, 'p_edad_max': edadMax, 'p_nivel': nivel,
+      });
+
+  @override
+  Future<void> eliminarCategoria(String categoriaId) => _c.rpc('eliminar_categoria', params: {'p_categoria': categoriaId});
+
+  @override
+  Future<List<UsuarioEscuela>> organizadoresOrg(String orgId) async =>
+      _rows(await _c.from('v_organizadores_org').select().eq('organizacion_id', orgId).order('email'))
+          .map((r) => UsuarioEscuela(
+              usuarioId: r['usuario_id'] as String, email: (r['email'] as String?) ?? '',
+              nombre: r['nombre'] as String?, rol: 'ORGANIZADOR_LIGAS'))
+          .toList();
+
+  @override
+  Future<List<OrganizadorLiga>> organizadores(String ligaId) async =>
+      _rows(await _c.from('v_organizadores_liga').select().eq('competicion_id', ligaId).order('email'))
+          .map(OrganizadorLiga.fromRow)
+          .toList();
+
+  @override
+  Future<String> asignarOrganizador(String ligaId, String email) async =>
+      (await _c.rpc('asignar_organizador_liga', params: {'p_competicion': ligaId, 'p_email': email.trim()})) as String;
+
+  @override
+  Future<void> retirarInvitacionOrganizador(String ligaId, String email) =>
+      _c.rpc('retirar_invitacion_organizador', params: {'p_competicion': ligaId, 'p_email': email.trim()});
+
+  @override
+  Future<void> quitarOrganizador(String ligaId, String usuarioId) =>
+      _c.rpc('quitar_organizador_liga', params: {'p_competicion': ligaId, 'p_usuario': usuarioId});
+
+  @override
+  Future<List<InvitacionLiga>> invitacionesLiga(String ligaId) async => _rows(await _c
+          .from('v_invitaciones_liga')
+          .select()
+          .eq('competicion_id', ligaId)
+          .order('escuela'))
+      .map(InvitacionLiga.fromRow)
+      .toList();
+
+  @override
+  Future<List<EscuelaInvitable>> escuelasInvitables() async =>
+      _rows(await _c.from('v_escuelas_invitables').select().order('nombre')).map(EscuelaInvitable.fromRow).toList();
+
+  @override
+  Future<void> invitarEscuela(String ligaId, String escuelaId) =>
+      _c.rpc('invitar_org_a_competicion', params: {'p_competicion': ligaId, 'p_organizacion': escuelaId});
+
+  @override
+  Future<void> retirarInvitacion(String ligaId, String escuelaId) =>
+      _c.rpc('retirar_invitacion_org', params: {'p_competicion': ligaId, 'p_organizacion': escuelaId});
 
   @override
   Future<void> editarLiga(String ligaId, {required String nombre, DateTime? fechaInicio, DateTime? fechaFin}) =>
@@ -257,15 +387,42 @@ class SupabaseLigaRepository implements LigaRepository {
       _c.from('competicion').update({'estado': 'INSCRIPCION_ABIERTA'}).eq('id', ligaId).eq('estado', 'BORRADOR');
 
   @override
-  Future<int> generarCalendario(String ligaId, {DateTime? inicio, int diasEntreJornadas = 7, int vueltas = 1}) async {
+  Future<int> generarCalendario(String ligaId,
+      {DateTime? inicio, int diasEntreJornadas = 7, int vueltas = 1, int? grupos}) async {
     final r = await _c.rpc('generar_calendario', params: {
       'p_competicion': ligaId,
       'p_fecha_inicio': inicio == null ? null : _iso(inicio),
       'p_dias_entre_jornadas': diasEntreJornadas,
       'p_vueltas': vueltas,
+      'p_grupos': ?grupos,
     });
     return (r as num).toInt();
   }
+
+  @override
+  Future<int> generarEliminatoria(String ligaId, {DateTime? inicio}) async {
+    final r = await _c.rpc('generar_eliminatoria', params: {
+      'p_competicion': ligaId,
+      'p_fecha_inicio': inicio == null ? null : _iso(inicio),
+    });
+    return (r as num).toInt();
+  }
+
+  @override
+  Future<int> generarPlayoff(String ligaId, {int clasifican = 2, DateTime? inicio}) async {
+    final r = await _c.rpc('generar_playoff', params: {
+      'p_competicion': ligaId,
+      'p_clasifican': clasifican,
+      'p_fecha_inicio': inicio == null ? null : _iso(inicio),
+    });
+    return (r as num).toInt();
+  }
+
+  @override
+  Future<List<Descanso>> pasanDirecto(String ligaId) async => _rows(
+          await _c.from('v_byes_competicion').select().eq('competicion_id', ligaId).order('jornada'))
+      .map(Descanso.fromRow)
+      .toList();
 
   @override
   Future<List<OrganizacionAdmin>> organizaciones() async =>
