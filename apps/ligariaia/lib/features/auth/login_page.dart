@@ -154,7 +154,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Hola de nuevo 👋', style: t.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -.3)),
+            // Icono vectorial: el emoji 👋 no se pinta bien en Flutter web / sin fuente de emojis.
+            Text.rich(
+              TextSpan(children: [
+                const TextSpan(text: 'Hola de nuevo '),
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: Icon(Icons.waving_hand_rounded, size: t.headlineSmall?.fontSize, color: const Color(0xFFFFC857)),
+                ),
+              ]),
+              style: t.headlineSmall?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -.3),
+            ),
             const SizedBox(height: 6),
             Text('Entra para ver tus partidos y tu clasificación.',
                 style: t.bodyMedium?.copyWith(color: Colors.white60)),
