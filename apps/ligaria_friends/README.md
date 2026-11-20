@@ -20,7 +20,7 @@ samples, guidance on mobile development, and a full API reference.
 
 | Modo | Comando | Qué hace |
 |---|---|---|
-| **Desde cero** | `flutter run --dart-define-from-file=env.json` | Supabase real, sin datos de ejemplo: cuentas, grupos y ranking salen de tu base de datos. |
-| **Demo** | `flutter run --dart-define-from-file=env.json --dart-define=MODO=demo` | Todo en memoria con datos de ejemplo (`demo@ligaria.es` / `demo1234`). No toca Supabase. |
+| **Normal** | `flutter run` | Supabase real (config por defecto en `lib/core/config.dart`), sin datos de ejemplo. Es también lo que se compila para las tiendas. |
+| **Demo** | `flutter run --dart-define=MODO=demo` | Todo en memoria con datos de ejemplo (`demo@ligaria.es` / `demo1234`). No toca Supabase. |
 
-Sin `env.json` la app arranca siempre en modo demo.
+Para apuntar a otro proyecto Supabase (staging): `flutter run --dart-define-from-file=env.json`.

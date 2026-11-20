@@ -1,12 +1,12 @@
-/// Configuración inyectada en compilación:
-/// flutter run   (usa por defecto el Supabase de Friends; se puede sobrescribir con
-/// --dart-define-from-file=env.json)
-/// (copia `env.example.json` a `env.json` y rellena la clave publicable).
+/// Configuración de la app. `flutter run` / `flutter build` a secas ya apuntan al Supabase de
+/// Friends (valores por defecto de abajo); no hace falta ningún `--dart-define`.
+/// Solo para apuntar a otro proyecto: `--dart-define-from-file=env.json`
+/// (copia `env.example.json` a `env.json`).
 ///
 /// Dos modos:
-/// * **Desde cero** (por defecto con `env.json`): Supabase real, sin datos de ejemplo.
-/// * **Demo** (`--dart-define=MODO=demo`, o sin `env.json`): todo en memoria, con datos de ejemplo
-///   (usuario `demo@ligaria.es` / `demo1234`). No toca Supabase aunque haya claves.
+/// * **Normal** (por defecto): Supabase real, sin datos de ejemplo.
+/// * **Demo** (`--dart-define=MODO=demo`): todo en memoria, con datos de ejemplo
+///   (usuario `demo@ligaria.es` / `demo1234`). No toca Supabase.
 class AppConfig {
   static const modo = String.fromEnvironment('MODO');
   static bool get demo => modo == 'demo' || !configurada;

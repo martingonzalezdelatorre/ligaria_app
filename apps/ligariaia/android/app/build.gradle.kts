@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "es.ligaria.ia"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
