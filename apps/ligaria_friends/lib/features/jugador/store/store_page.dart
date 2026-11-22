@@ -4,6 +4,7 @@ import 'pedidos_page.dart';
 import 'producto_page.dart';
 import 'reserva_page.dart';
 import 'store_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Sección Store: tiendas de material y clubs con pistas para alquilar.
 class StorePage extends StatefulWidget {
@@ -53,7 +54,7 @@ class _StorePageState extends State<StorePage> {
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
             children: [
               Text(
-                'Store',
+                context.l10n.store,
                 style: t.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.5,
@@ -61,7 +62,7 @@ class _StorePageState extends State<StorePage> {
               ),
               const SizedBox(height: 4),
               Text(
-                'Material de pádel y alquiler de pistas.',
+                context.l10n.storeSub,
                 style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               ),
               const SizedBox(height: 16),
@@ -88,8 +89,8 @@ class _StorePageState extends State<StorePage> {
                 EstadoVacio(
                   icono: Icons.storefront_outlined,
                   texto: _tipo == TipoComercio.tienda
-                      ? 'Aún no hay tiendas.'
-                      : 'Aún no hay clubs.',
+                      ? context.l10n.aunNoTiendas
+                      : context.l10n.aunNoClubs,
                 )
               else
                 for (var i = 0; i < lista.length; i++)
@@ -193,7 +194,7 @@ class ComercioPage extends StatelessWidget {
             child: esClub
                 ? _Lista<Pista>(
                     futuro: repo.pistas(comercio.id),
-                    vacio: 'Este club aún no ha publicado pistas.',
+                    vacio: context.l10n.clubSinPistas,
                     fila: (p) => _Fila(
                       onTap: () => Navigator.of(context).push(
                         MaterialPageRoute<void>(
@@ -205,14 +206,14 @@ class ComercioPage extends StatelessWidget {
                           : Icons.wb_sunny_outlined,
                       titulo: p.nombre,
                       subtitulo:
-                          '${p.deporte}${p.cubierta ? ' · Cubierta' : ''}',
+                          '${p.deporte}${p.cubierta ? ' · ${context.l10n.cubierta}' : ''}',
                       precio: '${euros(p.precioHora)}/h',
                     ),
                   )
                 : _Cuadricula(
                     repo: repo,
                     futuro: repo.productos(comercio.id),
-                    vacio: 'Esta tienda aún no ha publicado productos.',
+                    vacio: context.l10n.tiendaSinProductos,
                   ),
           ),
         ),
@@ -432,7 +433,7 @@ class _TarjetaProducto extends StatelessWidget {
                       ),
                     ),
                     icon: const Icon(Icons.info_outline, size: 18),
-                    label: const Text('Detalle'),
+                    label: Text(context.l10n.detalle),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -441,7 +442,7 @@ class _TarjetaProducto extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: () => solicitarProducto(context, repo, producto),
                     icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-                    label: const Text('Solicitar'),
+                    label: Text(context.l10n.solicitar),
                   ),
                 ),
               ],
@@ -470,12 +471,12 @@ class _Atajos extends StatelessWidget {
       OutlinedButton.icon(
         onPressed: () => _ir(context, MisReservasPage(repo: repo)),
         icon: const Icon(Icons.event_available_outlined),
-        label: const Text('Mis reservas'),
+        label: Text(context.l10n.misReservas),
       ),
       OutlinedButton.icon(
         onPressed: () => _ir(context, MisPedidosPage(repo: repo)),
         icon: const Icon(Icons.receipt_long_outlined),
-        label: const Text('Mis pedidos'),
+        label: Text(context.l10n.misPedidos),
       ),
     ],
   );

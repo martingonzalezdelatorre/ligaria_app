@@ -1,0 +1,1113 @@
+{
+  "@@locale": "es",
+  "idioma": "Idioma",
+  "loginHola": "Hola de nuevo ",
+  "loginSubtitulo": "Entra para ver tus partidos y tu clasificación.",
+  "correoElectronico": "Correo electrónico",
+  "contrasena": "Contraseña",
+  "mostrarContrasena": "Mostrar contraseña",
+  "ocultarContrasena": "Ocultar contraseña",
+  "correoInvalido": "Introduce un correo válido",
+  "introduceContrasena": "Introduce tu contraseña",
+  "loginError": "Correo o contraseña incorrectos.",
+  "olvidoContrasena": "¿Has olvidado tu contraseña?",
+  "entrar": "Entrar",
+  "portadaTitular": "Tu liga,\nen una sola pista.",
+  "portadaSub": "Calendarios, resultados y clasificación siempre a mano.",
+  "calendarios": "Calendarios",
+  "resultados": "Resultados",
+  "clasificacion": "Clasificación",
+  "nuevoJugador": "Nuevo jugador",
+  "pasoTutoresTitulo": "Padres o tutores",
+  "pasoJugadoresTitulo": "Jugadores",
+  "paso1Subtitulo": "Paso 1 de 2 · Primero, la familia",
+  "paso2Subtitulo": "Paso 2 de 2 · Ahora, los jugadores",
+  "siguiente": "Siguiente",
+  "guardarJugador": "Guardar jugador",
+  "guardarJugadores": "Guardar {n} jugadores",
+  "@guardarJugadores": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tutoresPregunta": "¿Quiénes son sus padres o tutores?",
+  "tutoresAyuda": "Añade a uno o dos. Recibirán una invitación por email y verán la ficha y los partidos de sus hijos.",
+  "sinTutor": "Sin tutor: pensado para jugadores mayores de edad.",
+  "tutorN": "Tutor {n}",
+  "@tutorN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "anadirTutor": "Añadir padre, madre o tutor",
+  "anadirSegundoTutor": "Añadir segundo tutor",
+  "hijosDe": "Hijos de {nombres}",
+  "@hijosDe": {
+    "placeholders": {
+      "nombres": {
+        "type": "String"
+      }
+    }
+  },
+  "jugadoresPregunta": "¿Qué jugadores añadimos?",
+  "jugadoresAyuda": "Con la fecha de nacimiento se calcula su categoría. Puedes añadir a varios hermanos.",
+  "jugadorN": "Jugador {n}",
+  "@jugadorN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "anadirOtroJugador": "Añadir otro jugador",
+  "volverTutores": "Volver a los tutores",
+  "quitar": "Quitar",
+  "parentesco": "Parentesco",
+  "parMadre": "Madre",
+  "parPadre": "Padre",
+  "parTutorLegal": "Tutor legal",
+  "parOtroFamiliar": "Otro familiar",
+  "nombreCompleto": "Nombre completo",
+  "telefonoOpc": "Teléfono (opcional)",
+  "nombre": "Nombre",
+  "apellidos": "Apellidos",
+  "fechaNacimiento": "Fecha de nacimiento",
+  "formatoFecha": "dd/mm/aaaa",
+  "elegirCalendario": "Elegir en el calendario",
+  "introduceNombre": "Introduce el nombre",
+  "fechaNoValida": "Fecha no válida",
+  "fechaFutura": "No puede ser futura",
+  "edadAnios": "{n} años",
+  "@edadAnios": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "categoriaX": "Categoría {c}",
+  "@categoriaX": {
+    "placeholders": {
+      "c": {
+        "type": "String"
+      }
+    }
+  },
+  "emailValido": "Introduce un email válido",
+  "nuevaPersona": "Nueva persona",
+  "sinJugadores": "Todavía no hay jugadores. Añade el primero.",
+  "sinFechaNac": "Sin fecha de nacimiento",
+  "edadYFecha": "{edad} años · {fecha}",
+  "@edadYFecha": {
+    "placeholders": {
+      "edad": {
+        "type": "int"
+      },
+      "fecha": {
+        "type": "String"
+      }
+    }
+  },
+  "pendiente": "pendiente",
+  "mas": "Más",
+  "invitarTutor": "Invitar a su tutor",
+  "invitarAlumno": "Invitar como alumno",
+  "padreMadreTutor": "Padre, madre o tutor",
+  "tutorDeJugador": "De {jugador}. Recibirá una invitación por email.",
+  "@tutorDeJugador": {
+    "placeholders": {
+      "jugador": {
+        "type": "String"
+      }
+    }
+  },
+  "asociar": "Asociar",
+  "tutorAsociado": "{tutor} asociado/a a {jugador}.",
+  "@tutorAsociado": {
+    "placeholders": {
+      "tutor": {
+        "type": "String"
+      },
+      "jugador": {
+        "type": "String"
+      }
+    }
+  },
+  "tutorPendiente": "Invitación pendiente: se vinculará cuando {tutor} se registre con {email}.",
+  "@tutorPendiente": {
+    "placeholders": {
+      "tutor": {
+        "type": "String"
+      },
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "personaAnadida": "Persona añadida.",
+  "errTutorDuplicado": "Ese tutor ya está asociado al jugador.",
+  "errTutorEmail": "El email de un tutor no es válido.",
+  "errSinPermiso": "No tienes permiso para hacer esto.",
+  "errMigracion": "Falta aplicar la migración 0012 (tutores) en la base de datos.",
+  "mesesCortos": "ene,feb,mar,abr,may,jun,jul,ago,sep,oct,nov,dic",
+  "diasCortos": "lun,mar,mié,jue,vie,sáb,dom",
+  "sinFecha": "Sin fecha",
+  "cancelar": "Cancelar",
+  "volver": "Volver",
+  "anadir": "Añadir",
+  "escuela": "Escuela",
+  "errEnviarCorreo": "No se pudo enviar el correo. Inténtalo de nuevo en unos minutos.",
+  "revisaCorreo": "Revisa tu correo",
+  "revisaCorreoTexto": "Si existe una cuenta con {email}, te hemos enviado un enlace para elegir una contraseña nueva. Caduca en poco tiempo; mira también la carpeta de spam.",
+  "@revisaCorreoTexto": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "volverIniciarSesion": "Volver a iniciar sesión",
+  "recuperarContrasena": "Recuperar contraseña",
+  "recuperarTexto": "Escribe tu correo y te enviaremos un enlace para elegir una contraseña nueva.",
+  "enviarEnlace": "Enviar enlace",
+  "errCambiarEnlace": "No se pudo cambiar la contraseña. El enlace puede haber caducado: pide uno nuevo.",
+  "eligeNuevaContrasena": "Elige tu nueva contraseña",
+  "nuevaContrasena": "Nueva contraseña",
+  "min8": "Mínimo 8 caracteres",
+  "repiteContrasena": "Repite la contraseña",
+  "contrasenasNoCoinciden": "Las contraseñas no coinciden",
+  "guardarContrasena": "Guardar contraseña",
+  "secLiga": "Liga",
+  "miFicha": "Mi ficha",
+  "hijoAnadido": "Hijo/a añadido/a.",
+  "errHijoYaAlta": "Ese alumno ya está dado de alta: pide a tu escuela que te asocie como tutor.",
+  "errHijoMax": "Has alcanzado el máximo de hijos que se pueden añadir.",
+  "errMigr13": "Falta aplicar la migración 0013 en la base de datos.",
+  "errSoloTutores": "Solo los tutores de esta escuela pueden añadir hijos.",
+  "anadirHijoTitulo": "Añadir hijo o hija",
+  "anadirHijoAyuda": "Con su fecha de nacimiento se calcula su categoría. Tu escuela verá su ficha.",
+  "introduceApellidos": "Introduce los apellidos",
+  "tuParentesco": "Tu parentesco",
+  "anadirHijoBtn": "Añadir hijo/a",
+  "sinFichas": "No hay fichas asociadas a tu cuenta.",
+  "sinHijos": "Aún no has añadido a ningún hijo o hija.\nPulsa «Añadir hijo/a» para dar de alta al primero.",
+  "sinOrganizacion": "Sin organización",
+  "tutelado": "Tutelado/a",
+  "ficha": "Ficha",
+  "fichaNoDisp": "Ficha no disponible.",
+  "edad": "Edad",
+  "nivel": "Nivel",
+  "manoDominante": "Mano dominante",
+  "genero": "Género",
+  "equipos": "Equipos",
+  "privacidadAjena": "Otras escuelas que compiten contra tu equipo solo ven tu nombre y la inicial del apellido junto a los resultados.",
+  "sinParticipacion": "Aún no participas en ninguna liga.",
+  "tabMiEquipo": "Mi equipo",
+  "tabCuadro": "Cuadro",
+  "tabCalendario": "Calendario",
+  "sinEquipoLiga": "No tienes equipo en esta liga.",
+  "rolEntrenador": "Entrenador",
+  "rolJugador": "Jugador",
+  "rolFamilia": "Familia",
+  "cuadroNoPublicado": "El cuadro aún no está publicado.",
+  "calendarioNoPublicado": "El calendario aún no está publicado.",
+  "playoff": "Playoff",
+  "llaves": "Llaves",
+  "pasaDirecto": "Pasa directo: {equipo}",
+  "@pasaDirecto": {
+    "placeholders": {
+      "equipo": {
+        "type": "String"
+      }
+    }
+  },
+  "descansa": "Descansa: {equipo}",
+  "@descansa": {
+    "placeholders": {
+      "equipo": {
+        "type": "String"
+      }
+    }
+  },
+  "sinResultadosConfirmados": "Todavía no hay resultados confirmados.",
+  "clasifPendiente": "La clasificación aparecerá cuando haya equipos inscritos.",
+  "rondaMay": "RONDA",
+  "situacionMay": "SITUACIÓN",
+  "puestoMay": "PUESTO",
+  "puntosMay": "PUNTOS",
+  "proximoPartidoMay": "PRÓXIMO PARTIDO",
+  "vsRival": "vs {rival}",
+  "@vsRival": {
+    "placeholders": {
+      "rival": {
+        "type": "String"
+      }
+    }
+  },
+  "tutorial": "Tutorial",
+  "entendido": "Entendido",
+  "tut1T": "Bienvenido a Ligaria",
+  "tut1D": "Aquí sigues las ligas entre escuelas: calendario, resultados y clasificación, desde el móvil.",
+  "tut2T": "Tu liga",
+  "tut2D": "Elige tu liga arriba para ver tu equipo, el calendario, los resultados y la clasificación.",
+  "tut3T": "Tu privacidad",
+  "tut3D": "Otras escuelas solo ven tu nombre y la inicial de tu apellido junto a los resultados. En «Mi ficha» ves tus datos.",
+  "tut4T": "Familias",
+  "tut4D": "En «Mi ficha» pulsa «Añadir hijo/a» para dar de alta a tus hijos y consultar sus datos; en «Liga» sigues su equipo, calendario y resultados.",
+  "tut5T": "Resultados en un minuto",
+  "tut5D": "En «Próxima jornada» abre el encuentro, marca quién ganó cada partido y guarda. Si hay un error, la organización puede corregirlo.",
+  "tut6T": "Tu escuela",
+  "tut6D": "Da de alta jugadores y tutores, crea equipos e inscríbelos en las ligas abiertas.",
+  "tut7T": "Organizar una liga",
+  "tut7D": "Crea la liga, ábrela a la inscripción, genera el calendario y registra o corrige los resultados desde «Ver liga».",
+  "tut8T": "Plataforma",
+  "tut8D": "Crea organizaciones (escuelas, ayuntamientos, grupos) y asígnales su administrador por correo.",
+  "homeMiLiga": "Mi liga",
+  "homeEntrenador": "Entrenador",
+  "homeEscuela": "Escuela",
+  "homeCoorganizo": "Co-organizo",
+  "homeAyuntamiento": "Ayuntamiento",
+  "homeOrganizacion": "Organización",
+  "homePlataforma": "Plataforma",
+  "homeSinOrg": "Tu cuenta aún no está asociada a ninguna organización.\nPide a tu administrador que te invite.",
+  "miCuenta": "Mi cuenta",
+  "tuCuenta": "Tu cuenta",
+  "contrasenaActualizada": "Contraseña actualizada.",
+  "errCambiarPass": "No se pudo cambiar la contraseña.",
+  "cambiarContrasena": "Cambiar contraseña",
+  "alMenos8": "Al menos 8 caracteres",
+  "actualizar": "Actualizar",
+  "cerrarSesion": "Cerrar sesión",
+  "datosAdministrador": "Datos del administrador",
+  "errCargarDatosTuyos": "No se pudieron cargar tus datos.",
+  "datosOrgEscuela": "Datos de la escuela",
+  "datosOrgAyuntamiento": "Datos del ayuntamiento",
+  "datosOrgOrganizacion": "Datos de la organización",
+  "errCargarDatos": "No se pudieron cargar los datos.",
+  "errEntidadExiste": "Ya existe otra entidad con ese nombre.",
+  "errPermisoEditar": "No tienes permiso para editar estos datos.",
+  "errGuardarCambios": "No se pudieron guardar los cambios.",
+  "datosGuardados": "Datos guardados.",
+  "introduceTuNombre": "Introduce tu nombre",
+  "telefono": "Teléfono",
+  "esTuUsuario": "Es tu usuario de acceso",
+  "guardar": "Guardar",
+  "nombreEscuela": "Nombre de la escuela",
+  "nombreAyuntamiento": "Nombre del ayuntamiento",
+  "nombreOrganizacion": "Nombre de la organización",
+  "cifNif": "CIF / NIF",
+  "direccion": "Dirección",
+  "ciudad": "Ciudad",
+  "cpostal": "C. postal",
+  "provincia": "Provincia",
+  "telefonoContacto": "Teléfono de contacto",
+  "emailContacto": "Email de contacto",
+  "web": "Web",
+  "rolSuperadmin": "Administrador de la plataforma",
+  "rolOrganizador": "Organizador de ligas",
+  "rolAdminEscuela": "Administrador de escuela",
+  "rolTutor": "Tutor",
+  "tabUsuarios": "Usuarios",
+  "tabJugadoresTutores": "Jugadores y tutores",
+  "tabEquipos": "Equipos",
+  "tabLigas": "Ligas",
+  "tabMisLigas": "Mis ligas",
+  "nuevoEquipo": "Nuevo equipo",
+  "sinEquipos": "Aún no hay equipos. Crea el primero.",
+  "equipoCreado": "Equipo creado.",
+  "eligeNombreDeporte": "Elige el nombre y el deporte en el que competirá.",
+  "crearEquipo": "Crear equipo",
+  "nombreEquipo": "Nombre del equipo",
+  "ejInfantil": "Ej. Infantil A",
+  "introduceUnNombre": "Introduce un nombre",
+  "eligeDeporte": "Elige un deporte",
+  "deporte": "Deporte",
+  "anadirJugador": "Añadir jugador",
+  "plantilla": "Plantilla",
+  "errPlantilla": "No se pudo cargar la plantilla.",
+  "sinJugadoresTodavia": "Sin jugadores todavía.",
+  "jugadorAnadido": "Jugador añadido.",
+  "noQuedanPersonas": "No quedan personas por añadir.",
+  "asignarEntrenador": "Asignar entrenador",
+  "sinEntrenadores": "No hay usuarios con rol entrenador. Invítalos desde «Usuarios».",
+  "entrenadorAsignado": "Entrenador asignado.",
+  "sinLigasAbiertas": "No hay ligas abiertas a inscripción ahora mismo.",
+  "invitacionesN": "Invitaciones ({n})",
+  "@invitacionesN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ligasAbiertas": "Ligas abiertas",
+  "organizaPor": "{deporte} · organiza {org}",
+  "@organizaPor": {
+    "placeholders": {
+      "deporte": {
+        "type": "String"
+      },
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "porInvitacion": "por invitación",
+  "inscribir": "Inscribir",
+  "inscribirEquipo": "Inscribir equipo",
+  "sinEquiposDeporte": "No tienes equipos de {deporte}. Crea uno en «Equipos».",
+  "@sinEquiposDeporte": {
+    "placeholders": {
+      "deporte": {
+        "type": "String"
+      }
+    }
+  },
+  "solicitudEnviada": "Solicitud enviada a {org}. Te avisaremos cuando la acepte o la rechace.",
+  "@solicitudEnviada": {
+    "placeholders": {
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "equipoInscrito": "Equipo inscrito en {liga}.",
+  "@equipoInscrito": {
+    "placeholders": {
+      "liga": {
+        "type": "String"
+      }
+    }
+  },
+  "invitacionAceptada": "Invitación aceptada. Ya puedes inscribir equipos en {liga} cuando esté abierta.",
+  "@invitacionAceptada": {
+    "placeholders": {
+      "liga": {
+        "type": "String"
+      }
+    }
+  },
+  "invitacionRechazada": "Invitación rechazada.",
+  "teInvita": "{deporte} · te invita {org}",
+  "@teInvita": {
+    "placeholders": {
+      "deporte": {
+        "type": "String"
+      },
+      "org": {
+        "type": "String"
+      }
+    }
+  },
+  "aceptar": "Aceptar",
+  "rechazar": "Rechazar",
+  "invitar": "Invitar",
+  "sinUsuarios": "Aún no hay usuarios en esta escuela.",
+  "invitacionEnviada": "Invitación enviada.",
+  "msgInvitSinCorreo": "Hola, te invitamos a Ligaria. Respóndeme con tu correo electrónico para dejar tu invitación lista y después regístrate en {url}.",
+  "@msgInvitSinCorreo": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "msgInvitConCorreo": "Hola, te invitamos a Ligaria. Regístrate con este mismo correo ({correo}) en {url} y podrás añadir a tus hijos y seguir sus ligas.",
+  "@msgInvitConCorreo": {
+    "placeholders": {
+      "correo": {
+        "type": "String"
+      },
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "mensajeCopiado": "Mensaje con el enlace de registro copiado.",
+  "errWhatsapp": "No se pudo abrir WhatsApp.",
+  "rolDescAdmin": "Gestiona la escuela",
+  "rolDescEntrenador": "Dirige equipos",
+  "rolDescJugador": "Juega y ve su liga",
+  "rolDescOrganizador": "Organiza ligas",
+  "invitarUsuario": "Invitar usuario",
+  "invitacionGuardada": "Queda guardada la invitación: la persona se registra con este correo.",
+  "paraComo": "Para {nombre} · como {rol}",
+  "@paraComo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      },
+      "rol": {
+        "type": "String"
+      }
+    }
+  },
+  "enviarWhatsapp": "Enviar por WhatsApp",
+  "enviarInvitacion": "Enviar invitación",
+  "introCorreoOWhats": "Introduce un correo o un WhatsApp",
+  "introWhatsOCorreo": "Introduce un WhatsApp o un correo",
+  "telNoValido": "Teléfono no válido",
+  "whatsapp": "WhatsApp",
+  "whatsappAyuda": "34600111222 (con prefijo del país)",
+  "rol": "Rol",
+  "sinCorreoAviso": "Sin correo no queda invitación guardada: pídele su correo y vuelve a invitarla con él para que pueda registrarse.",
+  "copiarEnlace": "Copiar enlace",
+  "sinAlumnoAviso": "Sin elegir alumno, el padre, madre o tutor se registra y añade él mismo a sus hijos.",
+  "tutorDeOpc": "Tutor de… (opcional)",
+  "fichaAlumno": "Ficha del alumno",
+  "eligePersona": "Elige una persona",
+  "sinLigas": "Todavía no hay ligas.",
+  "orgCreada": "Organización creada. Asígnale un administrador.",
+  "errCrearOrg": "No se pudo crear la organización.",
+  "nuevaOrganizacion": "Nueva organización",
+  "sinOrganizaciones": "Todavía no hay organizaciones.",
+  "sinAdministrador": "sin administrador",
+  "nAdmin": "{n} admin.",
+  "@nAdmin": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "asignarAdministrador": "Asignar administrador",
+  "nombreObligatorio": "El nombre es obligatorio",
+  "orgSubtitulo": "Escuela, ayuntamiento o grupo de amigos.",
+  "crear": "Crear",
+  "tipo": "Tipo",
+  "ciudadOpc": "Ciudad (opcional)",
+  "tabOrganizaciones": "Organizaciones",
+  "tipoEscuela": "Escuela",
+  "tipoAyuntamiento": "Ayuntamiento",
+  "tipoGrupoAmigos": "Grupo de amigos",
+  "errPuntosNumero": "Escribe un número en los tres campos.",
+  "errPuntosOrden": "Debe cumplirse victoria ≥ empate ≥ derrota ≥ 0 (máximo 20).",
+  "errFechaFin": "La fecha de fin no puede ser anterior a la de inicio.",
+  "ligaActualizada": "Liga actualizada.",
+  "ligaCreada": "Liga creada. Publícala para abrir la inscripción.",
+  "errGuardarLiga": "No se pudo guardar la liga.",
+  "quitarFecha": "Quitar fecha",
+  "descEntreEscuelas": "Otras escuelas pueden inscribir equipos.",
+  "descSoloEscuela": "Solo participan equipos de tu escuela.",
+  "fechaInicio": "Fecha de inicio",
+  "fechaFin": "Fecha de fin",
+  "guardarCambios": "Guardar cambios",
+  "crearLiga": "Crear liga",
+  "editarLiga": "Editar liga",
+  "nuevaLiga": "Nueva liga",
+  "datosBasicos": "Datos básicos",
+  "nombreLiga": "Nombre de la liga",
+  "ejLiga": "Ej.: Liga infantil 2026",
+  "deporteFormatoAcceso": "Deporte, formato y acceso",
+  "noCambiarLiga": "El deporte, el tipo, el formato y el acceso no se pueden cambiar una vez creada la liga.",
+  "tipoLiga": "Tipo de liga",
+  "formatoCompeticion": "Formato de competición",
+  "fmtLiga": "Liga",
+  "fmtLigaDesc": "Todos contra todos, por jornadas.",
+  "fmtEliminatoria": "Eliminatoria",
+  "fmtEliminatoriaDesc": "Cuadro por rondas: quien pierde queda fuera.",
+  "fmtMixto": "Grupos y playoff",
+  "fmtMixtoDesc": "Liga por grupos y un cuadro final con los mejores.",
+  "quienParticipa": "Quién puede participar",
+  "visAbierta": "Abierta",
+  "visAbiertaDesc": "Cualquier escuela la ve y solicita inscribir; tú apruebas.",
+  "visPrivada": "Por invitación",
+  "visPrivadaDesc": "Solo participan las escuelas que invites y acepten.",
+  "puntuacion": "Puntuación",
+  "puntuacionNotaMixto": "Puntos por encuentro en la fase de grupos. Lo habitual es 3, 1 y 0.",
+  "puntuacionNota": "Puntos que suma un equipo por cada encuentro. Lo habitual es 3, 1 y 0.",
+  "victoria": "Victoria",
+  "empate": "Empate",
+  "derrota": "Derrota",
+  "fechas": "Fechas",
+  "opcionalesFechas": "Opcionales. Puedes definirlas más tarde.",
+  "ajustaLiga": "Ajusta tu liga",
+  "creaLiga": "Crea tu liga",
+  "ajustaLigaAyuda": "Mientras esté en borrador puedes cambiar el nombre y las fechas.",
+  "creaLigaAyuda": "Define lo básico. El calendario se genera cuando haya equipos inscritos.",
+  "sinLigasAsignadas": "Aún no tienes ligas asignadas.",
+  "sinLigasCreadas": "Aún no has creado ninguna liga.\nPulsa «Nueva liga» para empezar.",
+  "ligaPublicada": "Liga publicada: ya admite inscripciones de equipos.",
+  "errPublicarLiga": "No se pudo publicar la liga.",
+  "agregarEquipo": "Agregar equipo",
+  "sinEquiposDeporteLiga": "No hay equipos de este deporte. Crea uno en «Equipos».",
+  "equipoAgregado": "{equipo} agregado a {liga}.",
+  "@equipoAgregado": {
+    "placeholders": {
+      "equipo": {
+        "type": "String"
+      },
+      "liga": {
+        "type": "String"
+      }
+    }
+  },
+  "errAgregarEquipo": "No se pudo agregar el equipo.",
+  "cuadroGenerado": "Cuadro generado: {n} encuentros en la primera ronda.",
+  "@cuadroGenerado": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "gruposGenerados": "Fase de grupos generada: {n} encuentros.",
+  "@gruposGenerados": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "calendarioGenerado": "Calendario generado: {n} encuentros.",
+  "@calendarioGenerado": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "errGenerarCuadro": "No se pudo generar el cuadro.",
+  "errGenerarCalendario": "No se pudo generar el calendario.",
+  "playoffGenerado": "Playoff generado: {n} encuentros en la primera ronda.",
+  "@playoffGenerado": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "errGenerarPlayoff": "No se pudo generar el playoff.",
+  "editar": "Editar",
+  "publicar": "Publicar",
+  "generarCuadro": "Generar cuadro",
+  "generarGrupos": "Generar grupos",
+  "generarCalendario": "Generar calendario",
+  "generarPlayoff": "Generar playoff",
+  "verLiga": "Ver liga",
+  "generarFaseGrupos": "Generar fase de grupos",
+  "generarCuadroAyuda": "Se emparejan los equipos por orden de inscripción; las siguientes rondas se crean al terminar cada una.",
+  "generarGruposAyuda": "Los equipos se reparten en grupos y cada grupo juega una liga. Después podrás generar el playoff.",
+  "generarCalendarioAyuda": "Se emparejan los equipos inscritos y se reparten las jornadas en fechas.",
+  "generar": "Generar",
+  "primeraRonda": "Primera ronda",
+  "primeraJornada": "Primera jornada",
+  "numeroGrupos": "Número de grupos",
+  "diasEntreJornadas": "Días entre jornadas",
+  "idaYVuelta": "Ida y vuelta",
+  "idaYVueltaAyuda": "Cada pareja de equipos se enfrenta dos veces",
+  "avisoCuadro": "Si el número de equipos no es potencia de 2, los primeros por orden de inscripción pasan directamente a la segunda ronda. Si ya había un cuadro sin resultados, se sustituirá.",
+  "avisoCalendario": "Si ya existía un calendario sin resultados, se sustituirá.",
+  "playoffAyuda": "Los mejores de cada grupo juegan un cuadro de eliminatoria. Requiere la fase de grupos terminada.",
+  "clasificadosGrupo": "Clasificados por grupo",
+  "categoriaCreada": "Categoría creada.",
+  "categoriaEliminada": "Categoría «{nombre}» eliminada.",
+  "@categoriaEliminada": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "errEliminarCategoria": "No se pudo eliminar la categoría.",
+  "organizadorInvitado": "Invitación guardada: tendrá acceso a esta liga cuando se registre con ese correo.",
+  "organizadorAnadido": "Organizador añadido.",
+  "invitacionRetirada": "Invitación a {email} retirada.",
+  "@invitacionRetirada": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "yaNoOrganiza": "Ya no organiza esta liga: {email}.",
+  "@yaNoOrganiza": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "errQuitarOrganizador": "No se pudo quitar al organizador.",
+  "victoriaEmpateDerrota": "Victoria {v} · Empate {e} · Derrota {d}",
+  "@victoriaEmpateDerrota": {
+    "placeholders": {
+      "v": {
+        "type": "int"
+      },
+      "e": {
+        "type": "int"
+      },
+      "d": {
+        "type": "int"
+      }
+    }
+  },
+  "puntuacionEditarAyuda": "Se puede cambiar con «Editar» mientras la liga está en borrador.",
+  "categorias": "Categorías",
+  "eliminarCategoria": "Eliminar categoría",
+  "categoriasAyuda": "Cada categoría tiene su propio calendario y clasificación. Las escuelas eligen categoría al inscribir un equipo.",
+  "coorganizadores": "Co-organizadores",
+  "coorganizadoresAyuda": "Personas que gestionan solo esta liga (calendario, resultados, solicitudes e invitaciones).",
+  "sinCoorganizadores": "Todavía no hay co-organizadores.",
+  "pendienteRegistro": "Pendiente de registrarse",
+  "retirarInvitacion": "Retirar invitación",
+  "quitarOrganizador": "Quitar organizador",
+  "errCrearCategoria": "No se pudo crear la categoría.",
+  "entre3y99": "Entre 3 y 99",
+  "nuevaCategoria": "Nueva categoría",
+  "nuevaCategoriaAyuda": "Cada categoría tiene su propio calendario y clasificación.",
+  "crearCategoria": "Crear categoría",
+  "ejSub12": "Ej.: Sub-12 femenino",
+  "generoOpc": "Género (opcional)",
+  "sinRestriccion": "Sin restricción",
+  "masculino": "Masculino",
+  "femenino": "Femenino",
+  "mixto": "Mixto",
+  "edadMin": "Edad mínima",
+  "edadMax": "Edad máxima",
+  "menorQueMinima": "Menor que la mínima",
+  "nivelOpc": "Nivel (opcional)",
+  "ejIniciacion": "Ej.: Iniciación",
+  "errAnadirOrganizador": "No se pudo añadir al organizador.",
+  "anadirCoorganizador": "Añadir co-organizador",
+  "anadirCoorganizadorAyuda": "Podrá gestionar esta liga. Si aún no tiene cuenta, el acceso se activará cuando se registre con ese correo.",
+  "tabSolicitudes": "Solicitudes",
+  "tabSolicitudesN": "Solicitudes ({n})",
+  "@tabSolicitudesN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "tabEscuelas": "Escuelas",
+  "tabAjustes": "Ajustes",
+  "sinEquiposInscritos": "Todavía no hay equipos inscritos.",
+  "sinCuadro": "Aún no hay cuadro.\nGénéralo desde la lista de ligas.",
+  "sinCalendario": "Aún no hay calendario.\nGénéralo desde la lista de ligas.",
+  "invitarEscuela": "Invitar escuela",
+  "sinMasEscuelas": "No hay más escuelas a las que invitar.",
+  "invitacionEnviadaA": "Invitación enviada a {nombre}.",
+  "@invitacionEnviadaA": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "errEnviarInvitacion": "No se pudo enviar la invitación.",
+  "invitacionRetiradaDe": "Invitación a {escuela} retirada.",
+  "@invitacionRetiradaDe": {
+    "placeholders": {
+      "escuela": {
+        "type": "String"
+      }
+    }
+  },
+  "errRetirarInvitacion": "No se pudo retirar la invitación.",
+  "sinEscuelasInvitadas": "Aún no has invitado a ninguna escuela.",
+  "ligaPorInvitacion": "Liga por invitación",
+  "ligaAbierta": "Liga abierta",
+  "ligaAbiertaAyuda": "Cualquier escuela puede solicitar inscribirse. También puedes invitar escuelas concretas.",
+  "estAceptada": "Aceptada",
+  "estRechazada": "Rechazada",
+  "estPendiente": "Pendiente",
+  "equipoAceptado": "{equipo} aceptado en la liga.",
+  "@equipoAceptado": {
+    "placeholders": {
+      "equipo": {
+        "type": "String"
+      }
+    }
+  },
+  "solicitudRechazada": "Solicitud de {equipo} rechazada.",
+  "@solicitudRechazada": {
+    "placeholders": {
+      "equipo": {
+        "type": "String"
+      }
+    }
+  },
+  "errResolverSolicitud": "No se pudo resolver la solicitud.",
+  "sinSolicitudes": "Todavía no hay solicitudes de inscripción.",
+  "pendientesN": "Pendientes ({n})",
+  "@pendientesN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sinPendientes": "No hay solicitudes pendientes.",
+  "resueltas": "Resueltas",
+  "invitarOrganizador": "Invitar organizador",
+  "organizadoresAyuda": "Los organizadores crean y gestionan las ligas de la organización. Si la persona aún no tiene cuenta, el acceso se activará cuando se registre con ese correo.",
+  "sinOrganizadores": "Todavía no hay organizadores.",
+  "jornadaN": "Jornada {n}",
+  "@jornadaN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "resultadoGuardadoClasif": "Resultado guardado. La clasificación se ha actualizado.",
+  "incomparecenciaDetalle": "Incomparecencia: no se presentó {equipo}. Cuenta como derrota administrativa.",
+  "@incomparecenciaDetalle": {
+    "placeholders": {
+      "equipo": {
+        "type": "String"
+      }
+    }
+  },
+  "corregirResultado": "Corregir resultado",
+  "registrarResultado": "Registrar resultado",
+  "partidoTipo": "Partido {n} · {tipo}",
+  "@partidoTipo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "tipo": {
+        "type": "String"
+      }
+    }
+  },
+  "dobles": "Dobles",
+  "individual": "Individual",
+  "sinJugar": "Sin jugar",
+  "tabMisEquipos": "Mis equipos",
+  "tabProximaJornada": "Próxima jornada",
+  "sinEntrenar": "Aún no entrenas ningún equipo.",
+  "sinLiga": "Sin liga",
+  "sinEncuentros": "No hay encuentros de tus equipos todavía.",
+  "siguienteEncuentro": "Siguiente encuentro",
+  "yaRegistrado": "Este resultado ya está registrado. Si hay un error, pide una corrección a la organización.",
+  "resultadoGuardado": "Resultado guardado.",
+  "errEntJugadorEquipo": "Algún jugador no pertenece a su equipo.",
+  "errEntYaRegistrado": "El resultado ya está registrado; pide una corrección a la organización.",
+  "errEntPermiso": "No tienes permiso para registrar este resultado.",
+  "errEntSet": "Hay un marcador de set no válido.",
+  "errEntJugadores": "Hay demasiados jugadores en un partido.",
+  "errEntGuardar": "No se pudo guardar el resultado. Inténtalo de nuevo.",
+  "indicaAusente": "Indica qué equipo no se presentó.",
+  "completaMarcadores": "Completa los dos marcadores de cada set (partido {n}).",
+  "@completaMarcadores": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "marcadorEmpate": "Marcador de set no válido: no puede haber empate (partido {n}).",
+  "@marcadorEmpate": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "anadeUnSet": "Añade al menos un set para guardar el resultado.",
+  "resultadoYaTiene": "Este encuentro ya tiene resultado; al guardar se corregirá.",
+  "incomparecencia": "Incomparecencia",
+  "incomparecenciaAyuda": "Un equipo no se presentó (derrota administrativa)",
+  "noSePresenta": "No se presenta {equipo}",
+  "@noSePresenta": {
+    "placeholders": {
+      "equipo": {
+        "type": "String"
+      }
+    }
+  },
+  "guardarResultado": "Guardar resultado",
+  "doblesOIndividualN": "Individual {n}",
+  "@doblesOIndividualN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "setsAB": "Sets {a} - {b}",
+  "@setsAB": {
+    "placeholders": {
+      "a": {
+        "type": "int"
+      },
+      "b": {
+        "type": "int"
+      }
+    }
+  },
+  "setMin": "set",
+  "jugadorGen": "Jugador",
+  "setN": "Set {n}",
+  "@setN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "errCuentaExiste": "No se puede crear la cuenta, contacte con el departamento técnico en tecnico@ligaria.es",
+  "errRegenerar": "Ya hay resultados registrados: no se puede regenerar el calendario.",
+  "errEmpateElim": "En una eliminatoria no puede haber empate: debe haber un ganador.",
+  "errRondaGenerada": "La siguiente ronda ya está generada: no se puede cambiar el ganador.",
+  "errPaseDirecto": "Ese encuentro es un pase directo del cuadro: no tiene resultado.",
+  "errGruposNoTerminada": "La fase de grupos aún no ha terminado.",
+  "errPrimeroCalendario": "Primero genera el calendario de la fase de grupos.",
+  "errPlayoffResultados": "El playoff ya tiene resultados: no se puede regenerar.",
+  "errGeneraCuadro": "Esta liga es de eliminatoria: genera el cuadro.",
+  "errAccionFormato": "Esa acción no corresponde al formato de la liga.",
+  "errGrupos28": "El número de grupos debe estar entre 2 y 8.",
+  "errEquiposPlayoff": "No hay equipos suficientes para el playoff.",
+  "errSinCuenta": "No hay ninguna cuenta con ese correo. La persona debe registrarse primero.",
+  "errCorreoValido": "Introduce un correo válido.",
+  "errYaInvitadaLiga": "Esa persona ya está invitada a esta liga.",
+  "errInvNoEncontrada": "No se encontró la invitación: puede que ya se haya activado.",
+  "errYaOrgTodas": "Esa persona ya organiza las ligas de la organización.",
+  "errYaOrgLiga": "Esa persona ya organiza esta liga.",
+  "errCatEquipos": "La categoría tiene equipos inscritos: no se puede eliminar.",
+  "errCatMin": "La liga necesita al menos una categoría.",
+  "errEligeCat": "Elige una categoría.",
+  "errPuntuacion": "La puntuación no es válida: victoria ≥ empate ≥ derrota ≥ 0.",
+  "errCatDup": "Ya existe una categoría con ese nombre.",
+  "errSoloActivas": "Solo se puede invitar a escuelas activas.",
+  "errNoExternas": "Esta liga no admite escuelas de fuera.",
+  "errEscuelaYa": "Esa escuela ya participa, está invitada o tiene una solicitud.",
+  "errEscuelaEquipos": "La escuela ya tiene equipos inscritos: no se puede retirar la invitación.",
+  "errNoInvitaciones": "La liga ya no admite invitaciones.",
+  "errSolResuelta": "Esta solicitud ya estaba resuelta.",
+  "errCalendarioEquipos": "La liga ya tiene calendario; no admite más equipos.",
+  "errMin2": "Se necesitan al menos 2 equipos inscritos.",
+  "errNoCambios": "La competición ya no admite cambios.",
+  "errOperacion": "No se pudo completar la operación.",
+  "eligeCategoria": "Elige la categoría",
+  "ligaSinCategorias": "La liga no tiene categorías.",
+  "errDeporteNoCoincide": "El deporte del equipo no coincide con el de la liga.",
+  "errLigaCerrada": "La liga no está abierta a inscripción.",
+  "errCalendarioInscr": "La liga ya tiene calendario; no admite más inscripciones.",
+  "errPrivadaOrg": "Esta liga es privada de su organización.",
+  "errCatNoPertenece": "La categoría no pertenece a esa liga.",
+  "errPrivadaInv": "Esta liga es privada: solo participan las escuelas invitadas.",
+  "errInvRespondida": "Esta invitación ya estaba respondida.",
+  "errJugadorOrg": "El jugador no pertenece a la organización del equipo.",
+  "errRegistroDup": "Ya existe un registro igual.",
+  "errAccion": "No se pudo completar la acción. Inténtalo de nuevo.",
+  "rondaFinal": "Final",
+  "rondaSemis": "Semifinales",
+  "rondaCuartos": "Cuartos de final",
+  "rondaOctavos": "Octavos de final",
+  "rondaN": "Ronda {n}",
+  "@rondaN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "rondaDeN": "Ronda de {n}",
+  "@rondaDeN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "grupoX": "Grupo {g}",
+  "@grupoX": {
+    "placeholders": {
+      "g": {
+        "type": "String"
+      }
+    }
+  },
+  "tipoMunicipal": "Municipal",
+  "tipoAmigos": "Entre amigos",
+  "tipoEntreEscuelas": "Entre escuelas (abierta a inscripción)",
+  "tipoInterna": "Interna de la escuela",
+  "estInvPendiente": "Pendiente de respuesta",
+  "estRetirada": "Retirada",
+  "sitEnJuego": "En juego",
+  "sitClasificado": "Pasa de ronda",
+  "sitCampeon": "Campeón",
+  "sitEliminado": "Eliminado",
+  "sitPaseDirecto": "Pase directo",
+  "general": "General",
+  "manoDiestro": "Diestro/a",
+  "manoZurdo": "Zurdo/a",
+  "manoAmbidiestro": "Ambidiestro/a",
+  "edadRango": "{min}-{max} años",
+  "@edadRango": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "edadHasta": "hasta {max} años",
+  "@edadHasta": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "edadDesde": "desde {min} años",
+  "@edadDesde": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "encProgramado": "Programado",
+  "encEnJuego": "En juego",
+  "encFinalizado": "Finalizado",
+  "encAplazado": "Aplazado",
+  "encSuspendido": "Suspendido",
+  "ligaBorrador": "Borrador",
+  "ligaAbiertaInscr": "Abierta a inscripción",
+  "ligaEnCurso": "En curso",
+  "ligaFinalizada": "Finalizada",
+  "ligaCancelada": "Cancelada",
+  "reintentar": "Reintentar",
+  "lista": "Lista",
+  "paseDirecto": "Pase directo",
+  "porDeterminar": "Por determinar",
+  "catPrebenjamin": "Prebenjamín",
+  "catBenjamin": "Benjamín",
+  "catAlevin": "Alevín",
+  "catInfantil": "Infantil",
+  "catCadete": "Cadete",
+  "catJunior": "Júnior",
+  "catAbsoluta": "Absoluta",
+  "colEquipo": "EQUIPO",
+  "colPts": "PTS",
+  "colPJ": "PJ",
+  "colG": "G",
+  "colE": "E",
+  "colP": "P",
+  "notifResultados": "Resultados de encuentros",
+  "notifCalendario": "Calendario disponible",
+  "notifInscripciones": "Inscripciones aceptadas o rechazadas",
+  "ntVer": "Ver",
+  "ntNotificaciones": "Notificaciones",
+  "ntMarcarLeidas": "Marcar todas como leídas",
+  "ntPreferencias": "Preferencias",
+  "ntErrorCargar": "No se pudieron cargar. Reintentar",
+  "ntSinNotificaciones": "No tienes notificaciones.",
+  "ntErrorGuardar": "No se pudo guardar el cambio.",
+  "ntPreferenciasAvisos": "Preferencias de avisos",
+  "ntErrorPreferencias": "No se pudieron cargar las preferencias.",
+  "ntEnLaApp": "En la app",
+  "ntPorEmail": "Por email",
+  "ntAhora": "ahora",
+  "ntHaceMin": "hace {x} min",
+  "@ntHaceMin": {
+    "placeholders": {
+      "x": {
+        "type": "String"
+      }
+    }
+  },
+  "ntHaceHoras": "hace {x} h",
+  "@ntHaceHoras": {
+    "placeholders": {
+      "x": {
+        "type": "String"
+      }
+    }
+  },
+  "ntHaceDias": "hace {x} d",
+  "@ntHaceDias": {
+    "placeholders": {
+      "x": {
+        "type": "String"
+      }
+    }
+  },
+  "deporteTenis": "Tenis",
+  "deportePadel": "Pádel",
+  "invitacionCorreoEnviada": "Se ha enviado por correo la invitación para crear la cuenta.",
+  "invitacionCorreoFallo": "No se pudo enviar el correo de invitación. Inténtalo de nuevo más tarde.",
+  "mayorEdadSinTutor": "Mayor de edad: no necesita la cuenta de un adulto; podrá tener la suya.",
+  "errTutorMayor": "Ese jugador es mayor de edad y no necesita tutor.",
+  "reenviarInvitacion": "Reenviar invitación por correo",
+  "editarTutorTitulo": "Editar datos del tutor",
+  "reenviar": "Reenviar",
+  "tutorActualizado": "Datos actualizados.",
+  "programarPartido": "Programar partido",
+  "fechaPartido": "Fecha",
+  "horaPartido": "Hora",
+  "sedeCampo": "Sede",
+  "pistaCampo": "Pista",
+  "estadoPartido": "Estado del partido",
+  "partidoProgramado": "Partido actualizado.",
+  "errProgramacionCerrada": "La liga está cerrada o el partido ya se ha jugado: no se puede programar.",
+  "errGuardarPartido": "No se pudo guardar el partido.",
+  "desempateTitulo": "Desempates",
+  "desempateAyuda": "Si dos equipos empatan a puntos, se ordenan por estos criterios, en este orden.",
+  "critEnfrentamiento": "Enfrentamiento directo",
+  "critDifPartidos": "Diferencia de partidos",
+  "critDifSets": "Diferencia de sets",
+  "critDifJuegos": "Diferencia de juegos",
+  "editarDesempate": "Editar desempates",
+  "desempateGuardado": "Desempates guardados.",
+  "desempateMinimo": "Elige al menos un criterio.",
+  "arrastraOrden": "Marca los que se usan y arrastra para cambiar el orden.",
+  "errGuardarDesempate": "No se pudieron guardar los desempates.",
+  "cierreLigaTitulo": "Cierre de la liga",
+  "finalizarLiga": "Finalizar liga",
+  "finalizarLigaPregunta": "Se cerrará la liga y no se podrán programar más partidos. Podrás reabrirla si hace falta.",
+  "reabrirLiga": "Reabrir liga",
+  "ligaReabierta": "Liga reabierta.",
+  "errFinalizarLiga": "No se pudo finalizar la liga. Solo se finalizan las ligas en curso.",
+  "errReabrirLiga": "No se pudo reabrir la liga.",
+  "resumenLiga": "Resumen de la liga",
+  "campeonTitulo": "Campeón",
+  "subcampeonTitulo": "Subcampeón",
+  "sinCampeonAun": "Aún sin campeón",
+  "partidosJugadosDe": "Partidos jugados: {a} de {b}",
+  "@partidosJugadosDe": {
+    "placeholders": {
+      "a": {
+        "type": "int"
+      },
+      "b": {
+        "type": "int"
+      }
+    }
+  },
+  "finalizarPendientes": "Aún quedan {n} partidos sin jugar.",
+  "@finalizarPendientes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "notifProgramacion": "Programación de partidos (fecha, aplazamientos)",
+  "avisoLigaFinalizada": "Liga finalizada.",
+  "verResumenCompleto": "Ver resumen completo",
+  "kpiEquipos": "Equipos",
+  "kpiCategorias": "Categorías",
+  "kpiPendientes": "Por jugar",
+  "kpiAplazados": "Aplazados o suspendidos",
+  "kpiIncomparecencias": "Incomparecencias",
+  "resCampeones": "Campeones",
+  "resClasificacion": "Clasificación (primeros)",
+  "resProximos": "Próximos partidos",
+  "resUltimos": "Últimos resultados",
+  "resSinProximos": "No quedan partidos por jugar.",
+  "resSinResultados": "Aún no hay resultados.",
+  "resAjustesCierre": "Para cerrar o reabrir la liga, usa los botones de abajo."
+}

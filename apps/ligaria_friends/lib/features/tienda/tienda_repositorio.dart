@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../compartido/store_modelos.dart';
+import '../../core/idioma.dart';
 
 export '../compartido/store_modelos.dart';
 
@@ -44,7 +45,7 @@ class TiendaSupabase implements TiendaRepositorio {
               .limit(1)
               .maybeSingle();
     if (fila == null) {
-      throw const StoreException('Tu cuenta no tiene una tienda asociada.');
+      throw StoreException(l10nActual.errSinTienda);
     }
     return Comercio.desdeFila(fila);
   });
@@ -192,7 +193,7 @@ class TiendaDemo implements TiendaRepositorio {
     final i = _pedidos.indexWhere((p) => p.id == pedidoId);
     final p = _pedidos[i];
     if (p.estado.cerrado) {
-      throw const StoreException('El pedido ya está cerrado.');
+      throw StoreException(l10nActual.errPedidoCerrado);
     }
     _pedidos[i] = Pedido(
       id: p.id,

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'pedidos_page.dart';
 import 'store_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Detalle de un producto: imagen grande, descripción, precio y botón para solicitarlo.
 class ProductoPage extends StatelessWidget {
@@ -62,14 +63,14 @@ class ProductoPage extends StatelessWidget {
                 Text(
                   producto.descripcion?.trim().isNotEmpty == true
                       ? producto.descripcion!
-                      : 'Sin descripción.',
+                      : context.l10n.sinDescripcion,
                   style: t.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
                 ),
                 const SizedBox(height: 28),
                 FilledButton.icon(
                   onPressed: () => solicitarProducto(context, repo, producto),
                   icon: const Icon(Icons.shopping_cart_outlined),
-                  label: const Text('Solicitar'),
+                  label: Text(context.l10n.solicitar),
                 ),
               ],
             ),

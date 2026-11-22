@@ -6,4 +6,5 @@ export 'src/notificacion.dart';
 export 'src/repositorio.dart';
 export 'src/repositorio_supabase.dart';
 export 'src/servicio.dart';
+export 'src/textos.dart';
 export 'src/ui.dart';

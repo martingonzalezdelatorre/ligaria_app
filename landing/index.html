@@ -152,14 +152,15 @@
 <section class="reg" id="registro">
  <div class="wrap">
   <h2>Crea tu cuenta en Ligaria</h2>
-  <p class="mut">Registro para escuelas y academias, ayuntamientos y organizadores de liga. Entrenadores, jugadores y familias reciben una invitación por correo de su escuela u organizador.</p>
+  <p class="mut">Registro para escuelas y academias, ayuntamientos y organizadores de liga. Entrenadores, jugadores y familias: pide a tu escuela u organizador que te invite y regístrate aquí con ese mismo correo, eligiendo «Familia, entrenador o jugador». Madres, padres y tutores pueden usar directamente <a href="familias.html">su página de registro</a>.</p>
   <form id="form" novalidate>
    <label>Nombre<input name="nombre" autocomplete="name" required></label>
    <label>Email<input name="email" type="email" autocomplete="email" required></label>
    <label>Contraseña (mín. 8 caracteres)<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
    <label>Soy…<select name="perfil" required>
-    <option value="escuela">Escuela o academia</option><option value="ayuntamiento">Ayuntamiento o entidad municipal</option><option value="organizador">Organizador de liga</option></select></label>
-   <label>Nombre de la escuela, ayuntamiento o liga<input name="escuela" autocomplete="organization"></label>
+    <option value="escuela">Escuela o academia</option><option value="ayuntamiento">Ayuntamiento o entidad municipal</option><option value="organizador">Organizador de liga</option><option value="invitado">Familia, entrenador o jugador (con invitación)</option></select></label>
+   <label id="lescuela">Nombre de la escuela, ayuntamiento o liga<input name="escuela" autocomplete="organization"></label>
+   <p class="mut" id="ayudaInvitado" hidden>Usa el mismo correo al que tu escuela te envió la invitación. Si eres padre, madre o tutor, después podrás añadir a tus hijos desde la app.</p>
    <label class="check"><input type="checkbox" name="ok" required><span>Acepto la política de privacidad y que Ligaria me contacte para completar mi alta.</span></label>
    <button class="btn" type="submit">Registrarme</button>
    <p class="msg" role="status" aria-live="polite"></p>

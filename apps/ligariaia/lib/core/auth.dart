@@ -1,43 +1,57 @@
+import 'idioma.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Roles de la app. Se corresponden con `rol.codigo` de la base de datos (asignacion_rol):
 /// ADMINISTRADOR → superadmin, ORGANIZADOR_LIGAS, ADMIN_ESCUELAS, ENTRENADOR, TUTOR, JUGADOR → alumno.
-enum Rol { superadmin, organizadorLiga, adminEscuela, entrenador, alumno, tutor }
+enum Rol {
+  superadmin,
+  organizadorLiga,
+  adminEscuela,
+  entrenador,
+  alumno,
+  tutor,
+}
 
 Rol rolDesdeDb(String v) => switch (v) {
-      'ADMINISTRADOR' => Rol.superadmin,
-      'ORGANIZADOR_LIGAS' => Rol.organizadorLiga,
-      'ADMIN_ESCUELAS' => Rol.adminEscuela,
-      'ENTRENADOR' => Rol.entrenador,
-      'JUGADOR' => Rol.alumno,
-      'TUTOR' => Rol.tutor,
-      _ => throw ArgumentError('rol desconocido: $v'),
-    };
+  'ADMINISTRADOR' => Rol.superadmin,
+  'ORGANIZADOR_LIGAS' => Rol.organizadorLiga,
+  'ADMIN_ESCUELAS' => Rol.adminEscuela,
+  'ENTRENADOR' => Rol.entrenador,
+  'JUGADOR' => Rol.alumno,
+  'TUTOR' => Rol.tutor,
+  _ => throw ArgumentError('rol desconocido: $v'),
+};
 
 String rolADb(Rol r) => switch (r) {
-      Rol.superadmin => 'ADMINISTRADOR',
-      Rol.organizadorLiga => 'ORGANIZADOR_LIGAS',
-      Rol.adminEscuela => 'ADMIN_ESCUELAS',
-      Rol.entrenador => 'ENTRENADOR',
-      Rol.alumno => 'JUGADOR',
-      Rol.tutor => 'TUTOR',
-    };
+  Rol.superadmin => 'ADMINISTRADOR',
+  Rol.organizadorLiga => 'ORGANIZADOR_LIGAS',
+  Rol.adminEscuela => 'ADMIN_ESCUELAS',
+  Rol.entrenador => 'ENTRENADOR',
+  Rol.alumno => 'JUGADOR',
+  Rol.tutor => 'TUTOR',
+};
 
 String etiquetaRol(Rol r) => switch (r) {
-      Rol.superadmin => 'Administrador de la plataforma',
-      Rol.organizadorLiga => 'Organizador de ligas',
-      Rol.adminEscuela => 'Administrador de escuela',
-      Rol.entrenador => 'Entrenador',
-      Rol.alumno => 'Jugador',
-      Rol.tutor => 'Tutor',
-    };
+  Rol.superadmin => l10nActual.rolSuperadmin,
+  Rol.organizadorLiga => l10nActual.rolOrganizador,
+  Rol.adminEscuela => l10nActual.rolAdminEscuela,
+  Rol.entrenador => l10nActual.rolEntrenador,
+  Rol.alumno => l10nActual.rolJugador,
+  Rol.tutor => l10nActual.rolTutor,
+};
 
 /// Un rol del usuario en una organización (escuela, ayuntamiento o grupo de amigos).
 /// `escuelaId`/`escuela` son el id y el nombre de la organización, sea del tipo que sea.
 class Pertenencia {
-  const Pertenencia({required this.escuelaId, required this.escuela, required this.rol, this.orgTipo, this.coorganizador = false});
+  const Pertenencia({
+    required this.escuelaId,
+    required this.escuela,
+    required this.rol,
+    this.orgTipo,
+    this.coorganizador = false,
+  });
   final String? escuelaId; // null solo para el administrador de la plataforma
   final String? escuela;
   final Rol rol;
@@ -52,7 +66,8 @@ abstract class AuthRepository {
   String? get userId;
   String? get email;
   Stream<String?> get cambios; // id de usuario o null
-  Stream<void> get recuperacion; // se emite al abrir el enlace de «recuperar contraseña»
+  Stream<void>
+  get recuperacion; // se emite al abrir el enlace de «recuperar contraseña»
   Future<void> iniciarSesion(String email, String password);
   Future<void> enviarRecuperacion(String email);
   Future<void> cerrarSesion();
@@ -68,11 +83,13 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   String? get email => _c.auth.currentUser?.email;
   @override
-  Stream<String?> get cambios => _c.auth.onAuthStateChange.map((e) => e.session?.user.id);
+  Stream<String?> get cambios =>
+      _c.auth.onAuthStateChange.map((e) => e.session?.user.id);
 
   @override
-  Stream<void> get recuperacion =>
-      _c.auth.onAuthStateChange.where((e) => e.event == AuthChangeEvent.passwordRecovery);
+  Stream<void> get recuperacion => _c.auth.onAuthStateChange.where(
+    (e) => e.event == AuthChangeEvent.passwordRecovery,
+  );
 
   @override
   Future<void> iniciarSesion(String email, String password) =>
@@ -81,22 +98,32 @@ class SupabaseAuthRepository implements AuthRepository {
   /// El enlace del correo vuelve a la propia app (debe estar en Redirect URLs de Supabase).
   @override
   Future<void> enviarRecuperacion(String email) =>
-      _c.auth.resetPasswordForEmail(email.trim(), redirectTo: kIsWeb ? Uri.base.origin : null);
+      _c.auth.resetPasswordForEmail(
+        email.trim(),
+        redirectTo: kIsWeb ? Uri.base.origin : null,
+      );
 
   @override
   Future<void> cerrarSesion() => _c.auth.signOut();
 
   @override
-  Future<void> cambiarPassword(String nueva) => _c.auth.updateUser(UserAttributes(password: nueva));
+  Future<void> cambiarPassword(String nueva) =>
+      _c.auth.updateUser(UserAttributes(password: nueva));
 
   @override
   Future<List<Pertenencia>> misPertenencias() async {
-    final filas = await _c.from('v_mis_pertenencias').select('organizacion_id, organizacion, org_tipo, rol');
+    final filas = await _c
+        .from('v_mis_pertenencias')
+        .select('organizacion_id, organizacion, org_tipo, rol');
     // Organizaciones cuyas ligas co-organizo; si la vista aún no existe no se rompe el inicio de sesión.
     List<Map<String, dynamic>> coorg;
     try {
-      coorg = (await _c.from('v_mis_coorganizaciones').select('organizacion_id, organizacion, org_tipo') as List)
-          .cast<Map<String, dynamic>>();
+      coorg =
+          (await _c
+                      .from('v_mis_coorganizaciones')
+                      .select('organizacion_id, organizacion, org_tipo')
+                  as List)
+              .cast<Map<String, dynamic>>();
     } catch (_) {
       coorg = const [];
     }
@@ -128,7 +155,10 @@ bool recuperacionInicial = false;
 class RecuperacionNotifier extends Notifier<bool> {
   @override
   bool build() {
-    final sub = ref.read(authRepositoryProvider).recuperacion.listen((_) => state = true);
+    final sub = ref
+        .read(authRepositoryProvider)
+        .recuperacion
+        .listen((_) => state = true);
     ref.onDispose(sub.cancel);
     return recuperacionInicial;
   }
@@ -139,9 +169,13 @@ class RecuperacionNotifier extends Notifier<bool> {
   }
 }
 
-final recuperacionProvider = NotifierProvider<RecuperacionNotifier, bool>(RecuperacionNotifier.new);
+final recuperacionProvider = NotifierProvider<RecuperacionNotifier, bool>(
+  RecuperacionNotifier.new,
+);
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) => SupabaseAuthRepository());
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => SupabaseAuthRepository(),
+);
 
 /// Id del usuario autenticado (null si no hay sesión).
 final sesionProvider = StreamProvider<String?>((ref) async* {

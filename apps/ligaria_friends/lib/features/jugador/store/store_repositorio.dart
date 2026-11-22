@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../compartido/store_modelos.dart';
+import '../../../core/idioma.dart';
 
 export '../../compartido/store_modelos.dart';
 
@@ -281,12 +282,10 @@ class StoreDemo implements StoreRepositorio {
   @override
   Future<void> reservar(String pistaId, DateTime inicio) async {
     if (!inicio.isAfter(DateTime.now())) {
-      throw const StoreException(
-        'No puedes reservar una hora que ya ha pasado.',
-      );
+      throw StoreException(l10nActual.errReservaPasada);
     }
     if (_reservas.any((r) => r.pistaId == pistaId && r.inicio == inicio)) {
-      throw const StoreException('Esa hora ya está reservada.');
+      throw StoreException(l10nActual.errHoraReservada);
     }
     _reservas.add((id: 'r${_n++}', pistaId: pistaId, inicio: inicio));
   }
@@ -349,7 +348,7 @@ class StoreDemo implements StoreRepositorio {
     final i = _pedidos.indexWhere((p) => p.id == pedidoId);
     final p = _pedidos[i];
     if (p.estado != EstadoPedido.pendiente) {
-      throw const StoreException('Solo puedes cancelar pedidos pendientes.');
+      throw StoreException(l10nActual.errSoloPendientes);
     }
     _pedidos[i] = Pedido(
       id: p.id,

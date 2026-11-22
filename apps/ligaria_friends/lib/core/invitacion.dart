@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../core/idioma.dart';
 
 /// Invitaciones por enlace: `<app>/?codigo=CODIGO`. Quien lo abre se registra (o inicia sesión)
 /// y entra solo al grupo. El código pendiente se recuerda por si hay que confirmar el email.
@@ -83,8 +84,7 @@ class Invitacion {
       '$base?codigo=$codigo${por == null ? '' : '&por=$por'}';
 
   static String mensaje(String grupo, String codigo, [String? por]) =>
-      '¡Únete a mi grupo «$grupo» en Ligaria Friends! Regístrate desde este enlace '
-      'y entrarás directamente: ${enlace(codigo, por)}';
+      l10nActual.mensajeInvitacion(grupo, enlace(codigo, por));
 
   /// Deja solo dígitos; un móvil español de 9 cifras recibe el prefijo 34.
   static String telefono(String entrada) {

@@ -4,6 +4,7 @@ import 'ligas_repositorio.dart';
 import 'marcador_repositorio.dart';
 import 'tablero_marcador.dart';
 import 'tanteo.dart';
+import '../../../core/idioma.dart';
 
 /// Vista en directo (solo lectura) del marcador que está publicando otro miembro del grupo.
 class MarcadorPage extends StatelessWidget {
@@ -25,7 +26,9 @@ class MarcadorPage extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: AppBar(title: Text('Marcador · ${deporte.etiqueta}')),
+      appBar: AppBar(
+        title: Text(context.l10n.marcadorDeporte(deporte.etiqueta)),
+      ),
       body: FondoBlobs(
         child: SafeArea(
           child: ContenidoCentrado(
@@ -52,14 +55,13 @@ class MarcadorPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'El partido no se está jugando ahora',
+                        context.l10n.partidoNoJugando,
                         style: t.titleLarge,
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Cuando alguien empiece a puntuar, verás aquí el marcador en directo. '
-                        'Si ya terminó, el resultado está en el grupo.',
+                        context.l10n.cuandoEmpieces,
                         style: t.bodyMedium?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),
@@ -74,7 +76,7 @@ class MarcadorPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
                       Text(
-                        'Se actualiza solo a medida que se anotan los puntos.',
+                        context.l10n.seActualizaSolo,
                         style: t.bodySmall?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),

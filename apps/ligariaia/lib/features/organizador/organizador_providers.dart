@@ -1,45 +1,70 @@
+import '../../core/idioma.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/liga_repository.dart';
 import '../../data/models.dart';
 
 final orgLigasProvider = FutureProvider.autoDispose.family<List<Liga>, String>(
-    (ref, escuelaId) => ref
-        .watch(ligaRepositoryProvider)
-        .ligasOrganizadas(escuelaId)
-        .timeout(const Duration(seconds: 20)));
+  (ref, escuelaId) => ref
+      .watch(ligaRepositoryProvider)
+      .ligasOrganizadas(escuelaId)
+      .timeout(const Duration(seconds: 20)),
+);
 
-final orgDeportesProvider =
-    FutureProvider.autoDispose<List<Deporte>>((ref) => ref.watch(ligaRepositoryProvider).deportes());
+final orgDeportesProvider = FutureProvider.autoDispose<List<Deporte>>(
+  (ref) => ref.watch(ligaRepositoryProvider).deportes(),
+);
 
-final orgEncuentrosProvider = FutureProvider.autoDispose.family<List<EncuentroVista>, String>(
-    (ref, ligaId) => ref.watch(ligaRepositoryProvider).encuentros(ligaId));
+final orgEncuentrosProvider = FutureProvider.autoDispose
+    .family<List<EncuentroVista>, String>(
+      (ref, ligaId) => ref.watch(ligaRepositoryProvider).encuentros(ligaId),
+    );
 
-final orgClasificacionProvider = FutureProvider.autoDispose.family<List<FilaClasificacion>, String>(
-    (ref, ligaId) => ref.watch(ligaRepositoryProvider).clasificacion(ligaId));
+final orgClasificacionProvider = FutureProvider.autoDispose
+    .family<List<FilaClasificacion>, String>(
+      (ref, ligaId) => ref.watch(ligaRepositoryProvider).clasificacion(ligaId),
+    );
 
-final orgInscripcionesProvider = FutureProvider.autoDispose.family<List<InscripcionVista>, String>(
-    (ref, ligaId) => ref.watch(ligaRepositoryProvider).inscripciones(ligaId));
+final orgInscripcionesProvider = FutureProvider.autoDispose
+    .family<List<InscripcionVista>, String>(
+      (ref, ligaId) => ref.watch(ligaRepositoryProvider).inscripciones(ligaId),
+    );
 
-final orgEquipoProvider = FutureProvider.autoDispose.family<List<UsuarioEscuela>, String>(
-    (ref, orgId) => ref.watch(ligaRepositoryProvider).organizadoresOrg(orgId));
+final orgEquipoProvider = FutureProvider.autoDispose
+    .family<List<UsuarioEscuela>, String>(
+      (ref, orgId) => ref.watch(ligaRepositoryProvider).organizadoresOrg(orgId),
+    );
 
-final orgByesProvider = FutureProvider.autoDispose.family<List<Descanso>, String>(
-    (ref, ligaId) => ref.watch(ligaRepositoryProvider).pasanDirecto(ligaId));
+final orgByesProvider = FutureProvider.autoDispose
+    .family<List<Descanso>, String>(
+      (ref, ligaId) => ref.watch(ligaRepositoryProvider).pasanDirecto(ligaId),
+    );
 
-final orgCategoriasProvider = FutureProvider.autoDispose.family<List<CategoriaLiga>, String>(
-    (ref, ligaId) => ref.watch(ligaRepositoryProvider).categorias(ligaId));
+final orgCategoriasProvider = FutureProvider.autoDispose
+    .family<List<CategoriaLiga>, String>(
+      (ref, ligaId) => ref.watch(ligaRepositoryProvider).categorias(ligaId),
+    );
 
-final orgOrganizadoresProvider = FutureProvider.autoDispose.family<List<OrganizadorLiga>, String>(
-    (ref, ligaId) => ref.watch(ligaRepositoryProvider).organizadores(ligaId));
+final orgOrganizadoresProvider = FutureProvider.autoDispose
+    .family<List<OrganizadorLiga>, String>(
+      (ref, ligaId) => ref.watch(ligaRepositoryProvider).organizadores(ligaId),
+    );
 
-final orgInvitacionesProvider = FutureProvider.autoDispose.family<List<InvitacionLiga>, String>(
-    (ref, ligaId) => ref.watch(ligaRepositoryProvider).invitacionesLiga(ligaId));
+final orgInvitacionesProvider = FutureProvider.autoDispose
+    .family<List<InvitacionLiga>, String>(
+      (ref, ligaId) =>
+          ref.watch(ligaRepositoryProvider).invitacionesLiga(ligaId),
+    );
 
-final orgEscuelasInvitablesProvider = FutureProvider.autoDispose<List<EscuelaInvitable>>(
-    (ref) => ref.watch(ligaRepositoryProvider).escuelasInvitables());
+final orgEscuelasInvitablesProvider =
+    FutureProvider.autoDispose<List<EscuelaInvitable>>(
+      (ref) => ref.watch(ligaRepositoryProvider).escuelasInvitables(),
+    );
 
-final orgDetalleProvider = FutureProvider.autoDispose.family<DetalleEncuentro, String>(
-    (ref, encuentroId) => ref.watch(ligaRepositoryProvider).detalleEncuentro(encuentroId));
+final orgDetalleProvider = FutureProvider.autoDispose
+    .family<DetalleEncuentro, String>(
+      (ref, encuentroId) =>
+          ref.watch(ligaRepositoryProvider).detalleEncuentro(encuentroId),
+    );
 
 /// Invalida todo lo que depende del resultado de un encuentro (listas, clasificación, detalle).
 void refrescarResultado(WidgetRef ref, EncuentroVista e) {
@@ -49,56 +74,70 @@ void refrescarResultado(WidgetRef ref, EncuentroVista e) {
 }
 
 /// Traduce errores del servidor a mensajes en español, sin detalles internos.
-String mensajeError(Object e, {String defecto = 'No se pudo completar la operación.'}) {
+String mensajeError(Object e, {String? defecto}) {
+  final l = l10nActual;
   final t = e.toString().toLowerCase();
   if (t.contains('escuela_existe') || t.contains('email_existe')) {
-    return 'No se puede crear la cuenta, contacte con el departamento técnico en tecnico@ligaria.es';
+    return l.errCuentaExiste;
   }
-  if ((t.contains('no se puede regenerar') || t.contains('resultados registrados')) && !t.contains('playoff')) {
-    return 'Ya hay resultados registrados: no se puede regenerar el calendario.';
+  if ((t.contains('no se puede regenerar') ||
+          t.contains('resultados registrados')) &&
+      !t.contains('playoff')) {
+    return l.errRegenerar;
   }
-  if (t.contains('no puede haber empate')) return 'En una eliminatoria no puede haber empate: debe haber un ganador.';
+  if (t.contains('la liga está cerrada') || t.contains('ya se ha jugado')) {
+    return l.errProgramacionCerrada;
+  }
+  if (t.contains('solo se puede finalizar')) return l.errFinalizarLiga;
+  if (t.contains('no puede haber empate')) return l.errEmpateElim;
   if (t.contains('siguiente ronda ya está generada')) {
-    return 'La siguiente ronda ya está generada: no se puede cambiar el ganador.';
+    return l.errRondaGenerada;
   }
-  if (t.contains('pase directo')) return 'Ese encuentro es un pase directo del cuadro: no tiene resultado.';
-  if (t.contains('fase de grupos no ha terminado')) return 'La fase de grupos aún no ha terminado.';
-  if (t.contains('primero hay que generar el calendario')) return 'Primero genera el calendario de la fase de grupos.';
-  if (t.contains('playoff ya tiene resultados')) return 'El playoff ya tiene resultados: no se puede regenerar.';
-  if (t.contains('genera el cuadro')) return 'Esta liga es de eliminatoria: genera el cuadro.';
-  if (t.contains('no es de eliminatoria') || t.contains('no tiene fase de grupos')) {
-    return 'Esa acción no corresponde al formato de la liga.';
+  if (t.contains('pase directo')) return l.errPaseDirecto;
+  if (t.contains('fase de grupos no ha terminado'))
+    return l.errGruposNoTerminada;
+  if (t.contains('primero hay que generar el calendario'))
+    return l.errPrimeroCalendario;
+  if (t.contains('playoff ya tiene resultados')) return l.errPlayoffResultados;
+  if (t.contains('genera el cuadro')) return l.errGeneraCuadro;
+  if (t.contains('no es de eliminatoria') ||
+      t.contains('no tiene fase de grupos')) {
+    return l.errAccionFormato;
   }
-  if (t.contains('entre 2 y 8')) return 'El número de grupos debe estar entre 2 y 8.';
-  if (t.contains('no hay equipos suficientes')) return 'No hay equipos suficientes para el playoff.';
-  if (t.contains('usuario no encontrado'))return 'No hay ninguna cuenta con ese correo. La persona debe registrarse primero.';
-  if (t.contains('correo no válido')) return 'Introduce un correo válido.';
-  if (t.contains('ya está invitado como organizador')) return 'Esa persona ya está invitada a esta liga.';
-  if (t.contains('invitación no encontrada')) return 'No se encontró la invitación: puede que ya se haya activado.';
-  if (t.contains('ya organiza las ligas')) return 'Esa persona ya organiza las ligas de la organización.';
-  if (t.contains('ya es organizador')) return 'Esa persona ya organiza esta liga.';
+  if (t.contains('entre 2 y 8')) return l.errGrupos28;
+  if (t.contains('no hay equipos suficientes')) return l.errEquiposPlayoff;
+  if (t.contains('usuario no encontrado')) return l.errSinCuenta;
+  if (t.contains('correo no válido')) return l.errCorreoValido;
+  if (t.contains('ya está invitado como organizador'))
+    return l.errYaInvitadaLiga;
+  if (t.contains('invitación no encontrada')) return l.errInvNoEncontrada;
+  if (t.contains('ya organiza las ligas')) return l.errYaOrgTodas;
+  if (t.contains('ya es organizador')) return l.errYaOrgLiga;
   if (t.contains('tiene equipos inscritos') && t.contains('categor')) {
-    return 'La categoría tiene equipos inscritos: no se puede eliminar.';
+    return l.errCatEquipos;
   }
-  if (t.contains('al menos una categoría')) return 'La liga necesita al menos una categoría.';
-  if (t.contains('elige una categoría')) return 'Elige una categoría.';
+  if (t.contains('al menos una categoría')) return l.errCatMin;
+  if (t.contains('elige una categoría')) return l.errEligeCat;
   if (t.contains('competicion_puntuacion_valida')) {
-    return 'La puntuación no es válida: victoria ≥ empate ≥ derrota ≥ 0.';
+    return l.errPuntuacion;
   }
-  if (t.contains('duplicate key')) return 'Ya existe una categoría con ese nombre.';
-  if (t.contains('solo se puede invitar a escuelas'))return 'Solo se puede invitar a escuelas activas.';
-  if (t.contains('no admite escuelas de fuera')) return 'Esta liga no admite escuelas de fuera.';
+  if (t.contains('duplicate key')) return l.errCatDup;
+  if (t.contains('solo se puede invitar a escuelas')) return l.errSoloActivas;
+  if (t.contains('no admite escuelas de fuera')) return l.errNoExternas;
   if (t.contains('ya participa') || t.contains('está invitada')) {
-    return 'Esa escuela ya participa, está invitada o tiene una solicitud.';
+    return l.errEscuelaYa;
   }
-  if (t.contains('ya tiene equipos inscritos')) return 'La escuela ya tiene equipos inscritos: no se puede retirar la invitación.';
-  if (t.contains('ya no admite invitaciones')) return 'La liga ya no admite invitaciones.';
-  if (t.contains('ya está resuelta')) return 'Esta solicitud ya estaba resuelta.';
-  if (t.contains('calendario ya está generado')) return 'La liga ya tiene calendario; no admite más equipos.';
-  if (t.contains('al menos 2 equipos')) return 'Se necesitan al menos 2 equipos inscritos.';
-  if (t.contains('no admite') || t.contains('ya no admite')) return 'La competición ya no admite cambios.';
-  if (t.contains('sin permiso') || t.contains('row-level security') || t.contains('42501')) {
-    return 'No tienes permiso para hacer esto.';
+  if (t.contains('ya tiene equipos inscritos')) return l.errEscuelaEquipos;
+  if (t.contains('ya no admite invitaciones')) return l.errNoInvitaciones;
+  if (t.contains('ya está resuelta')) return l.errSolResuelta;
+  if (t.contains('calendario ya está generado')) return l.errCalendarioEquipos;
+  if (t.contains('al menos 2 equipos')) return l.errMin2;
+  if (t.contains('no admite') || t.contains('ya no admite'))
+    return l.errNoCambios;
+  if (t.contains('sin permiso') ||
+      t.contains('row-level security') ||
+      t.contains('42501')) {
+    return l.errSinPermiso;
   }
-  return defecto;
+  return defecto ?? l.errOperacion;
 }

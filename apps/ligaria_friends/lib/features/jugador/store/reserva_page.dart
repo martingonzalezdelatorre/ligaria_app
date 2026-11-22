@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'store_repositorio.dart';
+import '../../../core/idioma.dart';
 
 const _horaApertura = 9, _horaCierre = 23; // última franja: 22:00-23:00
 const _diasVisibles = 14;
-const _diasSemana = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 String _hora(DateTime d) => '${d.hour.toString().padLeft(2, '0')}:00';
-String _dia(DateTime d) =>
-    '${_diasSemana[d.weekday - 1]} ${d.day}/${d.month.toString().padLeft(2, '0')}';
+String _dia(DateTime d) {
+  final n = l10nActual.diasCortos.split(',')[d.weekday - 1];
+  return '${n[0].toUpperCase()}${n.substring(1)} ${d.day}/${d.month.toString().padLeft(2, '0')}';
+}
 
 /// Elegir día y hora para reservar una pista.
 class ReservaPage extends StatefulWidget {
@@ -33,20 +35,24 @@ class _ReservaPageState extends State<ReservaPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Confirmar reserva'),
+        title: Text(c.l10n.confirmarReserva),
         content: Text(
-          '${widget.pista.nombre} · ${_dia(inicio)} de ${_hora(inicio)} a '
-          '${_hora(inicio.add(const Duration(hours: 1)))}\n'
-          'Precio: ${euros(widget.pista.precioHora)}',
+          c.l10n.reservaDeA(
+            widget.pista.nombre,
+            _dia(inicio),
+            _hora(inicio),
+            _hora(inicio.add(const Duration(hours: 1))),
+            euros(widget.pista.precioHora),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancelar'),
+            child: Text(c.l10n.cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Reservar'),
+            child: Text(c.l10n.reservar),
           ),
         ],
       ),
@@ -55,7 +61,7 @@ class _ReservaPageState extends State<ReservaPage> {
     try {
       await widget.repo.reservar(widget.pista.id, inicio);
       if (!mounted) return;
-      avisar(context, 'Reserva confirmada');
+      avisar(context, context.l10n.reservaConfirmada);
     } on StoreException catch (e) {
       if (!mounted) return;
       avisar(context, e.mensaje);
@@ -80,7 +86,7 @@ class _ReservaPageState extends State<ReservaPage> {
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
               children: [
                 Text(
-                  '${euros(widget.pista.precioHora)} por hora',
+                  context.l10n.precioPorHora(euros(widget.pista.precioHora)),
                   style: t.titleMedium?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 const SizedBox(height: 16),
@@ -144,7 +150,7 @@ class _ReservaPageState extends State<ReservaPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Las horas en gris están ocupadas o ya han pasado.',
+                  context.l10n.horasGris,
                   style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                 ),
               ],
@@ -191,18 +197,18 @@ class _MisReservasPageState extends State<MisReservasPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Cancelar reserva'),
+        title: Text(c.l10n.cancelarReserva),
         content: Text(
           '${r.club} · ${r.pista} · ${_dia(r.inicio)} ${_hora(r.inicio)}',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Mantener'),
+            child: Text(c.l10n.mantener),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Cancelar reserva'),
+            child: Text(c.l10n.cancelarReserva),
           ),
         ],
       ),
@@ -222,7 +228,7 @@ class _MisReservasPageState extends State<MisReservasPage> {
     final cs = Theme.of(context).colorScheme;
     final marca = Marca.de(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis reservas')),
+      appBar: AppBar(title: Text(context.l10n.misReservas)),
       body: FondoBlobs(
         child: SafeArea(
           child: ContenidoCentrado(
@@ -240,9 +246,9 @@ class _MisReservasPageState extends State<MisReservasPage> {
                 }
                 final lista = snap.data!;
                 if (lista.isEmpty) {
-                  return const EstadoVacio(
+                  return EstadoVacio(
                     icono: Icons.event_busy_outlined,
-                    texto: 'Aún no tienes reservas.',
+                    texto: context.l10n.aunNoReservas,
                   );
                 }
                 return ListView.separated(
@@ -286,7 +292,7 @@ class _MisReservasPageState extends State<MisReservasPage> {
                           ),
                           if (r.futura)
                             IconButton(
-                              tooltip: 'Cancelar',
+                              tooltip: context.l10n.cancelar,
                               onPressed: () => _cancelar(r),
                               icon: const Icon(Icons.close_rounded),
                             ),

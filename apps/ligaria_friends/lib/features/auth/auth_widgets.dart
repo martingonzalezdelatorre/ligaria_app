@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
+import '../../core/idioma.dart';
 
 /// Validadores compartidos.
 String? validarEmail(String? v) {
   final t = v?.trim() ?? '';
-  if (t.isEmpty) return 'Introduce tu email';
+  if (t.isEmpty) return l10nActual.introduceEmail;
   if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t)) {
-    return 'Email no válido';
+    return l10nActual.emailNoValido;
   }
   return null;
 }
 
 String? validarPassword(String? v) {
-  if (v == null || v.isEmpty) return 'Introduce tu contraseña';
-  if (v.length < 8) return 'Mínimo 8 caracteres';
+  if (v == null || v.isEmpty) return l10nActual.introduceContrasena;
+  if (v.length < 8) return l10nActual.minimo8;
   return null;
 }
 
@@ -41,12 +42,13 @@ class AuthScaffold extends StatelessWidget {
                 )
               else
                 _Formulario(cabecera: true, child: child),
+              const Positioned(right: 8, top: 8, child: SelectorIdioma()),
               if (atras)
                 Positioned(
                   left: 8,
                   top: 8,
                   child: IconButton.filledTonal(
-                    tooltip: 'Volver',
+                    tooltip: context.l10n.volver,
                     onPressed: () => Navigator.of(context).maybePop(),
                     icon: const Icon(Icons.arrow_back_rounded),
                   ),
@@ -163,22 +165,28 @@ class _PanelMarca extends StatelessWidget {
                   children: [
                     const _Marca(),
                     const Spacer(),
-                    const Wrap(
+                    Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
-                        Insignia('Tenis', icono: Icons.sports_tennis),
-                        Insignia('Pádel', icono: Icons.sports_baseball),
+                        Insignia(
+                          context.l10n.tenis,
+                          icono: Icons.sports_tennis,
+                        ),
+                        Insignia(
+                          context.l10n.padel,
+                          icono: Icons.sports_baseball,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Tu liga.\nTus amigos.\nTu pista.',
+                      context.l10n.tuLigaTusAmigos,
                       style: t.displaySmall?.copyWith(height: 1.02),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Organiza partidos de tenis y pádel, sube al ranking y presume de victorias.',
+                      context.l10n.organizaPartidos,
                       style: t.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
                     ),
                   ],
@@ -197,13 +205,13 @@ class CampoPassword extends StatefulWidget {
   const CampoPassword({
     super.key,
     required this.controller,
-    this.etiqueta = 'Contraseña',
+    this.etiqueta,
     this.validator = validarPassword,
     this.accion = TextInputAction.done,
     this.onEnviar,
   });
   final TextEditingController controller;
-  final String etiqueta;
+  final String? etiqueta;
   final String? Function(String?) validator;
   final TextInputAction accion;
   final VoidCallback? onEnviar;
@@ -223,10 +231,12 @@ class _CampoPasswordState extends State<CampoPassword> {
     validator: widget.validator,
     onFieldSubmitted: (_) => widget.onEnviar?.call(),
     decoration: decoracionCampo(
-      widget.etiqueta,
+      widget.etiqueta ?? context.l10n.contrasena,
       Icons.lock_outline_rounded,
       sufijo: IconButton(
-        tooltip: _oculta ? 'Mostrar contraseña' : 'Ocultar contraseña',
+        tooltip: _oculta
+            ? context.l10n.mostrarContrasena
+            : context.l10n.ocultarContrasena,
         onPressed: () => setState(() => _oculta = !_oculta),
         icon: Icon(
           _oculta ? Icons.visibility_outlined : Icons.visibility_off_outlined,

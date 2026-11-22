@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/idioma.dart';
 
 /// Grupo de amigos tal como lo expone la vista `v_mis_grupos`.
 class Grupo {
@@ -148,7 +149,7 @@ class GruposSupabase implements GruposRepositorio {
         nombre:
             (perfil?['apodo'] as String?) ??
             (perfil?['nombre'] as String?) ??
-            'Jugador',
+            l10nActual.jugador,
         esAdmin: false,
         esYo: id == yo,
       );
@@ -245,7 +246,7 @@ class GruposSupabase implements GruposRepositorio {
       throw GruposException(
         d is Map && d['error'] is String
             ? d['error'] as String
-            : 'No se pudo enviar la invitación.',
+            : l10nActual.errInvitacion,
       );
     }
   }
@@ -377,7 +378,7 @@ class GruposDemo implements GruposRepositorio {
   @override
   Future<void> unirse(String codigo, {String? invitador}) async {
     if (codigo.trim().toUpperCase() != 'DEMO000001') {
-      throw const GruposException('Código de invitación no válido.');
+      throw GruposException(l10nActual.errCodigoInvalido);
     }
     _grupos.add(
       Grupo(

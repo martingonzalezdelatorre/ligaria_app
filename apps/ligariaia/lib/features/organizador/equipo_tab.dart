@@ -1,3 +1,4 @@
+import '../../core/idioma.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
@@ -27,31 +28,46 @@ class EquipoTab extends ConsumerWidget {
         key: const Key('invitar-organizador'),
         onPressed: () => _invitar(context, ref),
         icon: const Icon(Icons.person_add_alt),
-        label: const Text('Invitar organizador'),
+        label: Text(context.l10n.invitarOrganizador),
       ),
       body: AsyncView<List<UsuarioEscuela>>(
         value: ref.watch(orgEquipoProvider(orgId)),
         onRetry: () => ref.invalidate(orgEquipoProvider(orgId)),
         builder: (lista) => RefreshIndicator(
           onRefresh: () async => ref.invalidate(orgEquipoProvider(orgId)),
-          child: ListView(padding: const EdgeInsets.only(bottom: 88), children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Text(
-                'Los organizadores crean y gestionan las ligas de la organización. '
-                'Si la persona aún no tiene cuenta, el acceso se activará cuando se registre con ese correo.',
-                style: tema.textTheme.bodySmall?.copyWith(color: tema.colorScheme.onSurfaceVariant),
+          child: ListView(
+            padding: const EdgeInsets.only(bottom: 88),
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Text(
+                  context.l10n.organizadoresAyuda,
+                  style: tema.textTheme.bodySmall?.copyWith(
+                    color: tema.colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
-            ),
-            if (lista.isEmpty)
-              const EstadoVacio(icono: Icons.groups_outlined, texto: 'Todavía no hay organizadores.'),
-            for (final u in lista)
-              ListTile(
-                leading: const CircleAvatar(child: Icon(Icons.manage_accounts_outlined)),
-                title: Text(u.nombre?.isNotEmpty == true ? u.nombre! : u.email),
-                subtitle: Text(u.nombre?.isNotEmpty == true ? u.email : etiquetaRol(Rol.organizadorLiga)),
-              ),
-          ]),
+              if (lista.isEmpty)
+                EstadoVacio(
+                  icono: Icons.groups_outlined,
+                  texto: context.l10n.sinOrganizadores,
+                ),
+              for (final u in lista)
+                ListTile(
+                  leading: const CircleAvatar(
+                    child: Icon(Icons.manage_accounts_outlined),
+                  ),
+                  title: Text(
+                    u.nombre?.isNotEmpty == true ? u.nombre! : u.email,
+                  ),
+                  subtitle: Text(
+                    u.nombre?.isNotEmpty == true
+                        ? u.email
+                        : etiquetaRol(Rol.organizadorLiga),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

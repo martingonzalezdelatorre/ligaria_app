@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'tienda_repositorio.dart';
+import '../../core/idioma.dart';
 
 String _fecha(DateTime d) =>
     '${d.day}/${d.month.toString().padLeft(2, '0')}/${d.year} '
@@ -40,9 +41,9 @@ class _PedidosRecibidosPageState extends State<PedidosRecibidosPage> {
       }
       final lista = snap.data!;
       if (lista.isEmpty) {
-        return const EstadoVacio(
+        return EstadoVacio(
           icono: Icons.inbox_outlined,
-          texto: 'Aún no has recibido pedidos.',
+          texto: context.l10n.aunNoPedidosRecibidos,
         );
       }
       return RefreshIndicator(
@@ -101,7 +102,7 @@ class _TarjetaPedido extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${p.solicitante ?? 'Jugador'}'
+            '${p.solicitante ?? context.l10n.jugador}'
             '${p.email == null ? '' : ' · ${p.email}'}',
             style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
           ),
@@ -122,17 +123,17 @@ class _TarjetaPedido extends StatelessWidget {
                 if (p.estado == EstadoPedido.pendiente) ...[
                   FilledButton(
                     onPressed: () => onEstado(EstadoPedido.confirmado),
-                    child: const Text('Confirmar'),
+                    child: Text(context.l10n.confirmar),
                   ),
                   OutlinedButton(
                     onPressed: () => onEstado(EstadoPedido.rechazado),
-                    child: const Text('Rechazar'),
+                    child: Text(context.l10n.rechazar),
                   ),
                 ],
                 if (p.estado == EstadoPedido.confirmado)
                   FilledButton(
                     onPressed: () => onEstado(EstadoPedido.entregado),
-                    child: const Text('Marcar entregado'),
+                    child: Text(context.l10n.marcarEntregado),
                   ),
               ],
             ),

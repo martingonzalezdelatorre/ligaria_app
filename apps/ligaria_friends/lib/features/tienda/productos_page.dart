@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'tienda_repositorio.dart';
+import '../../core/idioma.dart';
 
 /// Catálogo de la tienda: alta, edición y baja de productos.
 class ProductosPage extends StatefulWidget {
@@ -36,7 +37,7 @@ class _ProductosPageState extends State<ProductosPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: Text(p == null ? 'Nuevo producto' : 'Editar producto'),
+        title: Text(p == null ? c.l10n.nuevoProducto : c.l10n.editarProducto),
         content: SingleChildScrollView(
           child: Form(
             key: form,
@@ -46,9 +47,9 @@ class _ProductosPageState extends State<ProductosPage> {
                 TextFormField(
                   controller: nombre,
                   autofocus: true,
-                  decoration: const InputDecoration(labelText: 'Nombre'),
+                  decoration: InputDecoration(labelText: c.l10n.nombre),
                   validator: (v) => (v == null || v.trim().isEmpty)
-                      ? 'Introduce el nombre'
+                      ? c.l10n.introNombre
                       : null,
                 ),
                 const SizedBox(height: 12),
@@ -57,32 +58,26 @@ class _ProductosPageState extends State<ProductosPage> {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(labelText: 'Precio (€)'),
+                  decoration: InputDecoration(labelText: c.l10n.precioEur),
                   validator: (v) =>
-                      _parsear(v) == null ? 'Precio no válido' : null,
+                      _parsear(v) == null ? c.l10n.precioNoValido : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: categoria,
-                  decoration: const InputDecoration(
-                    labelText: 'Categoría (opcional)',
-                  ),
+                  decoration: InputDecoration(labelText: c.l10n.categoriaOpc),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: descripcion,
                   maxLines: 2,
-                  decoration: const InputDecoration(
-                    labelText: 'Descripción (opcional)',
-                  ),
+                  decoration: InputDecoration(labelText: c.l10n.descripcionOpc),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: imagen,
                   keyboardType: TextInputType.url,
-                  decoration: const InputDecoration(
-                    labelText: 'URL de la imagen (opcional)',
-                  ),
+                  decoration: InputDecoration(labelText: c.l10n.urlImagenOpc),
                 ),
               ],
             ),
@@ -91,13 +86,13 @@ class _ProductosPageState extends State<ProductosPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancelar'),
+            child: Text(c.l10n.cancelar),
           ),
           FilledButton(
             onPressed: () {
               if (form.currentState!.validate()) Navigator.pop(c, true);
             },
-            child: const Text('Guardar'),
+            child: Text(c.l10n.guardar),
           ),
         ],
       ),
@@ -124,16 +119,16 @@ class _ProductosPageState extends State<ProductosPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Eliminar producto'),
-        content: Text('¿Eliminar "${p.nombre}" del catálogo?'),
+        title: Text(c.l10n.eliminarProducto),
+        content: Text(c.l10n.eliminarDelCatalogo(p.nombre)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancelar'),
+            child: Text(c.l10n.cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Eliminar'),
+            child: Text(c.l10n.eliminar),
           ),
         ],
       ),
@@ -166,7 +161,7 @@ class _ProductosPageState extends State<ProductosPage> {
               children: [
                 Expanded(
                   child: Text(
-                    'Mis productos',
+                    context.l10n.misProductos,
                     style: t.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w900,
                       letterSpacing: -.5,
@@ -176,15 +171,15 @@ class _ProductosPageState extends State<ProductosPage> {
                 FilledButton.icon(
                   onPressed: _editar,
                   icon: const Icon(Icons.add),
-                  label: const Text('Añadir'),
+                  label: Text(context.l10n.anadir),
                 ),
               ],
             ),
             const SizedBox(height: 20),
             if (lista.isEmpty)
-              const EstadoVacio(
+              EstadoVacio(
                 icono: Icons.inventory_2_outlined,
-                texto: 'Aún no tienes productos. Añade el primero.',
+                texto: context.l10n.aunNoProductos,
               ),
             for (final p in lista)
               Padding(
@@ -247,12 +242,12 @@ class _ProductosPageState extends State<ProductosPage> {
                         ),
                       ),
                       IconButton(
-                        tooltip: 'Editar',
+                        tooltip: context.l10n.editar,
                         onPressed: () => _editar(p),
                         icon: const Icon(Icons.edit_outlined),
                       ),
                       IconButton(
-                        tooltip: 'Eliminar',
+                        tooltip: context.l10n.eliminar,
                         onPressed: () => _eliminar(p),
                         icon: const Icon(Icons.delete_outline),
                       ),

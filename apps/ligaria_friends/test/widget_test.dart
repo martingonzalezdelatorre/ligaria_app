@@ -7,6 +7,7 @@ import 'package:ligaria_friends/features/jugador/ligas/ligas_repositorio.dart';
 import 'package:ligaria_friends/features/auth/nueva_password_page.dart';
 import 'package:ligaria_friends/main.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
+import 'package:ligaria_friends/core/idioma.dart';
 
 /// El fondo aurora anima en bucle, así que `pumpAndSettle` nunca termina.
 Future<void> avanzar(WidgetTester tester) async {
@@ -144,6 +145,9 @@ void pruebasRecuperacion() {
     var terminado = false;
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
         theme: temaOscuro(),
         home: NuevaPasswordPage(
           auth: AuthDemo(),

@@ -24,3 +24,4 @@ Sitemap: https://ligaria.app/sitemap.xml
 # Enlaces de invitación personales: no indexar
 User-agent: *
 Disallow: /invitacion.html
+Disallow: /familias.html

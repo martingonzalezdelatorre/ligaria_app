@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/idioma.dart';
 
 /// Estado de confirmación del resultado de un partido: lo confirman todos sus jugadores.
 class Confirmacion {
@@ -105,13 +106,13 @@ class EstadoConfirmacion extends StatelessWidget {
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         ok
-            ? const Insignia(
-                'Resultado confirmado',
-                color: Color(0xFF22C55E),
+            ? Insignia(
+                context.l10n.resultadoConfirmado,
+                color: const Color(0xFF22C55E),
                 icono: Icons.verified_rounded,
               )
             : Insignia(
-                'Sin confirmar · ${c.confirmados}/${c.total}',
+                context.l10n.sinConfirmarN(c.confirmados, c.total),
                 color: const Color(0xFFF59E0B),
                 icono: Icons.hourglass_top_rounded,
               ),
@@ -119,7 +120,7 @@ class EstadoConfirmacion extends StatelessWidget {
           TextButton.icon(
             onPressed: onConfirmar,
             icon: const Icon(Icons.check_rounded, size: 18),
-            label: const Text('Confirmar'),
+            label: Text(context.l10n.confirmar),
           ),
       ],
     );

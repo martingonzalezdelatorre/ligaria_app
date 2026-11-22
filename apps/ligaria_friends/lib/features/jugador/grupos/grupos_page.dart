@@ -7,6 +7,7 @@ import '../ligas/ligas_repositorio.dart';
 import '../ligas/nuevo_partido.dart';
 import 'grupo_page.dart';
 import 'grupos_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Inicio: tus grupos de amigos, con acciones para crear uno o unirse con un código.
 class GruposPage extends StatefulWidget {
@@ -44,7 +45,7 @@ class _GruposPageState extends State<GruposPage> {
       amistosos: widget.amistosos,
     );
     if (creado == null || !mounted) return;
-    avisar(context, 'Partido creado');
+    avisar(context, context.l10n.partidoCreado);
     final g = creado.grupo;
     if (g == null) {
       _recargar(); // sin grupo: aparece en «Amistosos con amigos»
@@ -73,32 +74,30 @@ class _GruposPageState extends State<GruposPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Nuevo grupo'),
+        title: Text(context.l10n.nuevoGrupo),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nombre,
               autofocus: true,
-              decoration: const InputDecoration(labelText: 'Nombre'),
+              decoration: InputDecoration(labelText: c.l10n.nombre),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: desc,
-              decoration: const InputDecoration(
-                labelText: 'Descripción (opcional)',
-              ),
+              decoration: InputDecoration(labelText: c.l10n.descripcionOpc),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancelar'),
+            child: Text(c.l10n.cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Crear'),
+            child: Text(c.l10n.crear),
           ),
         ],
       ),
@@ -114,21 +113,21 @@ class _GruposPageState extends State<GruposPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Unirse con código'),
+        title: Text(context.l10n.unirseConCodigo),
         content: TextField(
           controller: codigo,
           autofocus: true,
           textCapitalization: TextCapitalization.characters,
-          decoration: const InputDecoration(labelText: 'Código de invitación'),
+          decoration: InputDecoration(labelText: c.l10n.codigoInvitacion),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancelar'),
+            child: Text(c.l10n.cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Unirme'),
+            child: Text(c.l10n.unirme),
           ),
         ],
       ),
@@ -201,7 +200,7 @@ class _Cabecera extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Tus grupos',
+          context.l10n.tusGrupos,
           style: t.headlineMedium?.copyWith(
             fontWeight: FontWeight.w900,
             letterSpacing: -.5,
@@ -209,7 +208,9 @@ class _Cabecera extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          total == 1 ? '1 grupo de amigos' : '$total grupos de amigos',
+          total == 1
+              ? context.l10n.unGrupoAmigos
+              : context.l10n.nGruposAmigos(total),
           style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
         ),
       ],
@@ -221,17 +222,17 @@ class _Cabecera extends StatelessWidget {
         FilledButton.icon(
           onPressed: onPartido,
           icon: const Icon(Icons.sports_tennis),
-          label: const Text('Crear partido'),
+          label: Text(context.l10n.crearPartido),
         ),
         OutlinedButton.icon(
           onPressed: onCrear,
           icon: const Icon(Icons.add),
-          label: const Text('Crear grupo'),
+          label: Text(context.l10n.crearGrupo),
         ),
         OutlinedButton.icon(
           onPressed: onUnirse,
           icon: const Icon(Icons.vpn_key_outlined),
-          label: const Text('Unirme con código'),
+          label: Text(context.l10n.unirmeConCodigo),
         ),
       ],
     );
@@ -270,7 +271,7 @@ class _Bienvenida extends StatelessWidget {
           const MedallonVacio(icono: Icons.groups),
           const SizedBox(height: 24),
           Text(
-            'Tu liga entre amigos empieza aquí',
+            context.l10n.ligaEntreAmigosEmpieza,
             textAlign: TextAlign.center,
             style: t.headlineSmall?.copyWith(
               fontWeight: FontWeight.w900,
@@ -281,7 +282,7 @@ class _Bienvenida extends StatelessWidget {
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
             child: Text(
-              'Aún no tienes grupos. Crea uno para empezar tu liga entre amigos.',
+              context.l10n.aunNoTienesGrupos,
               textAlign: TextAlign.center,
               style: t.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
             ),
@@ -295,17 +296,17 @@ class _Bienvenida extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onCrear,
                 icon: const Icon(Icons.add),
-                label: const Text('Crear grupo'),
+                label: Text(context.l10n.crearGrupo),
               ),
               OutlinedButton.icon(
                 onPressed: onUnirse,
                 icon: const Icon(Icons.vpn_key_outlined),
-                label: const Text('Unirme con código'),
+                label: Text(context.l10n.unirmeConCodigo),
               ),
             ],
           ),
           const SizedBox(height: 40),
-          const Wrap(
+          Wrap(
             alignment: WrapAlignment.center,
             spacing: 16,
             runSpacing: 16,
@@ -313,20 +314,20 @@ class _Bienvenida extends StatelessWidget {
               _Paso(
                 n: 1,
                 icono: Icons.group_add_outlined,
-                titulo: 'Crea tu grupo',
-                texto: 'Ponle nombre y tú serás el administrador.',
+                titulo: context.l10n.pasoCreaGrupo,
+                texto: context.l10n.pasoCreaGrupoTxt,
               ),
               _Paso(
                 n: 2,
                 icono: Icons.share_outlined,
-                titulo: 'Invita a tus amigos',
-                texto: 'Comparte el código de invitación del grupo.',
+                titulo: context.l10n.pasoInvita,
+                texto: context.l10n.pasoInvitaTxt,
               ),
               _Paso(
                 n: 3,
                 icono: Icons.emoji_events_outlined,
-                titulo: 'Jugad la liga',
-                texto: 'Calendario, resultados y clasificación.',
+                titulo: context.l10n.pasoJugad,
+                texto: context.l10n.pasoJugadTxt,
               ),
             ],
           ),
@@ -472,12 +473,14 @@ class _TarjetaGrupo extends StatelessWidget {
                           runSpacing: 6,
                           children: [
                             Insignia(
-                              '${grupo.miembros} ${grupo.miembros == 1 ? 'miembro' : 'miembros'}',
+                              grupo.miembros == 1
+                                  ? context.l10n.miembro1
+                                  : context.l10n.miembrosN(grupo.miembros),
                               icono: Icons.people_alt_outlined,
                             ),
                             if (grupo.esAdmin)
                               Insignia(
-                                'Admin',
+                                context.l10n.admin,
                                 color: cs.primary,
                                 icono: Icons.shield_outlined,
                               ),
@@ -520,7 +523,7 @@ class _CodigoInvitacion extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       onTap: () {
         Clipboard.setData(ClipboardData(text: codigo));
-        avisar(context, 'Código copiado');
+        avisar(context, context.l10n.codigoCopiado);
       },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -533,7 +536,7 @@ class _CodigoInvitacion extends StatelessWidget {
             Icon(Icons.vpn_key_outlined, size: 16, color: cs.onSurfaceVariant),
             const SizedBox(width: 8),
             Text(
-              'Código',
+              context.l10n.codigo,
               style: t.labelMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(width: 10),

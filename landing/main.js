@@ -12,6 +12,7 @@ f.addEventListener('submit', async (e) => {
   if (!f.checkValidity()) { f.reportValidity(); return; }
   if (!C.supabaseUrl || !C.supabaseKey) { msg.textContent = 'Registro no configurado todavía.'; return; }
   const d = Object.fromEntries(new FormData(f));
+  const invitado = d.perfil === 'invitado';
   if (['escuela', 'ayuntamiento'].includes(d.perfil) && !(d.escuela || '').trim()) {
     msg.textContent = 'Indica el nombre de tu escuela o ayuntamiento.'; return;
   }
@@ -22,7 +23,8 @@ f.addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json', apikey: C.supabaseKey },
       body: JSON.stringify({
         email: d.email.trim(), password: d.password,
-        data: { nombre: d.nombre.trim(), perfil: d.perfil, entidad: (d.escuela || '').trim() },
+        // Invitados (familias, entrenadores, jugadores): sin perfil; el alta solo prospera si hay una invitación para ese correo.
+        data: invitado ? { nombre: d.nombre.trim() } : { nombre: d.nombre.trim(), perfil: d.perfil, entidad: (d.escuela || '').trim() },
       }),
     });
     const j = await r.json().catch(() => ({}));
@@ -45,4 +47,12 @@ f.addEventListener('submit', async (e) => {
     }
   } catch { msg.textContent = 'Error de conexión. Inténtalo de nuevo.'; }
   finally { btn.disabled = false; }
+});
+
+// «Invitado»: no tiene escuela propia que nombrar.
+const sel = f.querySelector('[name=perfil]');
+sel.addEventListener('change', () => {
+  const inv = sel.value === 'invitado';
+  document.getElementById('lescuela').hidden = inv;
+  document.getElementById('ayudaInvitado').hidden = !inv;
 });

@@ -4,6 +4,7 @@ import '../amistosos/amistosos_repositorio.dart';
 import '../grupos/grupos_repositorio.dart';
 import 'formato.dart';
 import 'ligas_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Una liga en curso donde el usuario es administrador, con el nombre de su grupo.
 class _LigaActiva {
@@ -230,7 +231,9 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
             child: OutlinedButton.icon(
               onPressed: _elegirFecha,
               icon: const Icon(Icons.event_outlined),
-              label: Text(_fecha == null ? 'Fecha' : fechaCorta(_fecha!)),
+              label: Text(
+                _fecha == null ? context.l10n.fecha : fechaCorta(_fecha!),
+              ),
             ),
           ),
           const SizedBox(width: 10),
@@ -238,7 +241,9 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
             child: OutlinedButton.icon(
               onPressed: _elegirHora,
               icon: const Icon(Icons.schedule_outlined),
-              label: Text(_hora == null ? 'Hora' : _hora!.format(context)),
+              label: Text(
+                _hora == null ? context.l10n.hora : _hora!.format(context),
+              ),
             ),
           ),
         ],
@@ -246,7 +251,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
       const SizedBox(height: 14),
       TextField(
         controller: _lugar,
-        decoration: const InputDecoration(labelText: 'Lugar (opcional)'),
+        decoration: InputDecoration(labelText: context.l10n.lugarOpc),
       ),
     ],
   );
@@ -257,10 +262,10 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
     children: [
       const SizedBox(height: 14),
       _desplegable(
-        etiqueta: 'Grupo (opcional)',
+        etiqueta: context.l10n.grupoOpc,
         valor: _grupo?.id ?? '',
         opciones: [
-          ('', 'Sin grupo (entre amigos)'),
+          ('', context.l10n.sinGrupoAmigos),
           for (final g in widget.grupos) (g.id, g.nombre),
         ],
         alCambiar: (id) => setState(
@@ -269,14 +274,14 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
         ),
       ),
       _chips<Deporte>(
-        'Deporte',
+        context.l10n.deporte,
         Deporte.values,
         _deporte,
         (d) => d.etiqueta,
         (d) => _deporte = d,
       ),
       _chips<Modalidad>(
-        'Modalidad',
+        context.l10n.modalidad,
         Modalidad.values,
         _modalidad,
         (m) => m.etiqueta,
@@ -287,10 +292,10 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
         },
       ),
       _chips<int>(
-        'Formato',
+        context.l10n.formato,
         const [1, 2, 3],
         _sets,
-        (s) => 'Al mejor de ${s * 2 - 1}',
+        (s) => context.l10n.alMejorDe(s * 2 - 1),
         (s) => _sets = s,
       ),
       FutureBuilder<List<Miembro>>(
@@ -304,7 +309,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
           }
           final ops = [
             for (final m in snap.data!)
-              (m.id, m.esYo ? '${m.nombre} (tú)' : m.nombre),
+              (m.id, m.esYo ? '${m.nombre} ${context.l10n.tu}' : m.nombre),
           ];
           Widget lado(String titulo, List<String?> sel) => Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -314,7 +319,9 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
               for (var i = 0; i < _porLado; i++) ...[
                 const SizedBox(height: 8),
                 _desplegable(
-                  etiqueta: _porLado == 1 ? 'Jugador' : 'Jugador ${i + 1}',
+                  etiqueta: _porLado == 1
+                      ? context.l10n.jugador
+                      : context.l10n.jugadorN(i + 1),
                   valor: sel[i],
                   opciones: ops,
                   alCambiar: (v) => setState(() => sel[i] = v),
@@ -324,13 +331,13 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
           );
           return Column(
             children: [
-              lado('Local', _jl),
-              lado('Visitante', _jv),
+              lado(context.l10n.local, _jl),
+              lado(context.l10n.visitante, _jv),
               if (_hayRepetidos)
                 Padding(
                   padding: const EdgeInsets.only(top: 10),
                   child: Text(
-                    'Un jugador no puede aparecer dos veces.',
+                    context.l10n.jugadorRepetido,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.error,
                     ),
@@ -358,9 +365,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
         return Padding(
           padding: const EdgeInsets.only(top: 16),
           child: Text(
-            'No hay ligas en curso donde seas administrador. Crea una liga en tu '
-            'grupo, inscribe a los participantes y genera el calendario; o crea un '
-            'partido amistoso.',
+            context.l10n.sinLigasEnCurso,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
@@ -373,7 +378,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
           DropdownButtonFormField<_LigaActiva>(
             initialValue: _liga,
             isExpanded: true,
-            decoration: const InputDecoration(labelText: 'Liga'),
+            decoration: InputDecoration(labelText: context.l10n.liga),
             items: [
               for (final a in activas)
                 DropdownMenuItem(
@@ -398,14 +403,14 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
                 return Column(
                   children: [
                     _desplegable(
-                      etiqueta: 'Local',
+                      etiqueta: context.l10n.local,
                       valor: _local,
                       opciones: ops,
                       alCambiar: (v) => setState(() => _local = v),
                     ),
                     const SizedBox(height: 14),
                     _desplegable(
-                      etiqueta: 'Visitante',
+                      etiqueta: context.l10n.visitante,
                       valor: _visitante,
                       opciones: ops,
                       alCambiar: (v) => setState(() => _visitante = v),
@@ -419,7 +424,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
               Padding(
                 padding: const EdgeInsets.only(top: 10),
                 child: Text(
-                  'Elige dos participantes distintos.',
+                  context.l10n.errParticipantesDistintos,
                   style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
@@ -431,7 +436,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Nuevo partido'),
+    title: Text(context.l10n.nuevoPartido),
     content: SizedBox(
       width: 420,
       child: SingleChildScrollView(
@@ -443,12 +448,12 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
               spacing: 8,
               children: [
                 ChoiceChip(
-                  label: const Text('Amistoso'),
+                  label: Text(context.l10n.amistoso),
                   selected: _modo == _Modo.amistoso,
                   onSelected: (_) => setState(() => _modo = _Modo.amistoso),
                 ),
                 ChoiceChip(
-                  label: const Text('De liga'),
+                  label: Text(context.l10n.deLiga),
                   selected: _modo == _Modo.liga,
                   onSelected: (_) => setState(() => _modo = _Modo.liga),
                 ),
@@ -462,11 +467,11 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
     actions: [
       TextButton(
         onPressed: _guardando ? null : () => Navigator.pop(context),
-        child: const Text('Cancelar'),
+        child: Text(context.l10n.cancelar),
       ),
       FilledButton(
         onPressed: _listo && !_guardando ? _crear : null,
-        child: const Text('Crear partido'),
+        child: Text(context.l10n.crearPartido),
       ),
     ],
   );

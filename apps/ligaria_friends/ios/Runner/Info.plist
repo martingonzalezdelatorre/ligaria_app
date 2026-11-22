@@ -24,6 +24,10 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ligaria Friends usa el micrófono para que puedas cantar los puntos del partido.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Ligaria Friends reconoce tu voz para anotar los puntos que cantes durante el partido.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UIApplicationSceneManifest</key>

@@ -1,3 +1,4 @@
+import '../../core/idioma.dart';
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,19 +14,25 @@ class OrganizacionesTab extends ConsumerWidget {
   const OrganizacionesTab({super.key});
 
   Future<void> _crear(BuildContext context, WidgetRef ref) async {
-    final r = await mostrarFormulario<_NuevaOrg>(context, (_) => const _NuevaOrganizacionDialog());
+    final r = await mostrarFormulario<_NuevaOrg>(
+      context,
+      (_) => const _NuevaOrganizacionDialog(),
+    );
     if (r == null) return;
     try {
-      await ref.read(ligaRepositoryProvider).crearOrganizacion(r.nombre, r.tipo, ciudad: r.ciudad);
+      await ref
+          .read(ligaRepositoryProvider)
+          .crearOrganizacion(r.nombre, r.tipo, ciudad: r.ciudad);
       ref.invalidate(saOrganizacionesProvider);
-      if (context.mounted) avisar(context, 'Organización creada. Asígnale un administrador.');
+      if (context.mounted) avisar(context, context.l10n.orgCreada);
     } catch (_) {
-      if (context.mounted) avisar(context, 'No se pudo crear la organización.');
+      if (context.mounted) avisar(context, context.l10n.errCrearOrg);
     }
   }
 
   /// Escuelas y grupos los administra ADMIN_ESCUELAS; un ayuntamiento lo gestiona un ORGANIZADOR_LIGAS.
-  Rol _rolAdmin(OrganizacionAdmin o) => o.tipo == 'AYUNTAMIENTO' ? Rol.organizadorLiga : Rol.adminEscuela;
+  Rol _rolAdmin(OrganizacionAdmin o) =>
+      o.tipo == 'AYUNTAMIENTO' ? Rol.organizadorLiga : Rol.adminEscuela;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -35,13 +42,16 @@ class OrganizacionesTab extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _crear(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('Nueva organización'),
+        label: Text(context.l10n.nuevaOrganizacion),
       ),
       body: AsyncView<List<OrganizacionAdmin>>(
         value: ref.watch(saOrganizacionesProvider),
         onRetry: () => ref.invalidate(saOrganizacionesProvider),
         builder: (lista) => lista.isEmpty
-            ? const EstadoVacio(icono: Icons.apartment_outlined, texto: 'Todavía no hay organizaciones.')
+            ? EstadoVacio(
+                icono: Icons.apartment_outlined,
+                texto: context.l10n.sinOrganizaciones,
+              )
             : RefreshIndicator(
                 onRefresh: () => ref.refresh(saOrganizacionesProvider.future),
                 child: ListView(
@@ -49,7 +59,10 @@ class OrganizacionesTab extends ConsumerWidget {
                   children: [
                     for (final o in lista)
                       Card(
-                        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        margin: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
                         child: ListTile(
                           leading: Icon(switch (o.tipo) {
                             'AYUNTAMIENTO' => Icons.account_balance_outlined,
@@ -57,14 +70,24 @@ class OrganizacionesTab extends ConsumerWidget {
                             _ => Icons.school_outlined,
                           }),
                           title: Text(o.nombre),
-                          subtitle: Text('${etiquetaTipoOrg(o.tipo)}${o.ciudad == null ? '' : ' · ${o.ciudad}'}'
-                              ' · ${o.administradores == 0 ? 'sin administrador' : '${o.administradores} admin.'}'),
+                          subtitle: Text(
+                            '${etiquetaTipoOrg(o.tipo)}${o.ciudad == null ? '' : ' · ${o.ciudad}'}'
+                            ' · ${o.administradores == 0 ? context.l10n.sinAdministrador : context.l10n.nAdmin(o.administradores)}',
+                          ),
                           trailing: IconButton(
                             key: Key('admin-${o.id}'),
-                            tooltip: 'Asignar administrador',
-                            icon: Icon(Icons.person_add_alt, color: o.administradores == 0 ? cs.primary : null),
+                            tooltip: context.l10n.asignarAdministrador,
+                            icon: Icon(
+                              Icons.person_add_alt,
+                              color: o.administradores == 0 ? cs.primary : null,
+                            ),
                             onPressed: () async {
-                              await mostrarInvitar(context, ref, o.id, rolFijo: _rolAdmin(o));
+                              await mostrarInvitar(
+                                context,
+                                ref,
+                                o.id,
+                                rolFijo: _rolAdmin(o),
+                              );
                               ref.invalidate(saOrganizacionesProvider);
                             },
                           ),
@@ -87,7 +110,8 @@ class _NuevaOrg {
 class _NuevaOrganizacionDialog extends StatefulWidget {
   const _NuevaOrganizacionDialog();
   @override
-  State<_NuevaOrganizacionDialog> createState() => _NuevaOrganizacionDialogState();
+  State<_NuevaOrganizacionDialog> createState() =>
+      _NuevaOrganizacionDialogState();
 }
 
 class _NuevaOrganizacionDialogState extends State<_NuevaOrganizacionDialog> {
@@ -106,44 +130,59 @@ class _NuevaOrganizacionDialogState extends State<_NuevaOrganizacionDialog> {
   void _crear() {
     final n = _nombre.text.trim();
     if (n.isEmpty) {
-      setState(() => _error = 'El nombre es obligatorio');
+      setState(() => _error = context.l10n.nombreObligatorio);
     } else {
-      Navigator.of(context).pop(_NuevaOrg(n, _tipo, _ciudad.text.trim().isEmpty ? null : _ciudad.text.trim()));
+      Navigator.of(context).pop(
+        _NuevaOrg(
+          n,
+          _tipo,
+          _ciudad.text.trim().isEmpty ? null : _ciudad.text.trim(),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) => HojaFormulario(
-        icono: Icons.apartment_rounded,
-        titulo: 'Nueva organización',
-        subtitulo: 'Escuela, ayuntamiento o grupo de amigos.',
-        etiquetaAccion: 'Crear',
-        iconoAccion: Icons.check_rounded,
-        onAccion: _crear,
-        children: [
-          DropdownButtonFormField<String>(
-            key: const Key('org-tipo'),
-            initialValue: _tipo,
-            decoration: decoracionCampo('Tipo', Icons.category_outlined),
-            items: [for (final t in const ['ESCUELA', 'AYUNTAMIENTO', 'GRUPO_AMIGOS']) DropdownMenuItem(value: t, child: Text(etiquetaTipoOrg(t)))],
-            onChanged: (v) => setState(() => _tipo = v ?? 'ESCUELA'),
-          ),
-          espacioCampo,
-          TextField(
-            controller: _nombre,
-            autofocus: true,
-            textCapitalization: TextCapitalization.words,
-            textInputAction: TextInputAction.next,
-            decoration: decoracionCampo('Nombre', Icons.badge_outlined).copyWith(errorText: _error),
-          ),
-          espacioCampo,
-          TextField(
-            controller: _ciudad,
-            textCapitalization: TextCapitalization.words,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _crear(),
-            decoration: decoracionCampo('Ciudad (opcional)', Icons.location_city_outlined),
-          ),
+    icono: Icons.apartment_rounded,
+    titulo: context.l10n.nuevaOrganizacion,
+    subtitulo: context.l10n.orgSubtitulo,
+    etiquetaAccion: context.l10n.crear,
+    iconoAccion: Icons.check_rounded,
+    onAccion: _crear,
+    children: [
+      DropdownButtonFormField<String>(
+        key: const Key('org-tipo'),
+        initialValue: _tipo,
+        decoration: decoracionCampo(context.l10n.tipo, Icons.category_outlined),
+        items: [
+          for (final t in const ['ESCUELA', 'AYUNTAMIENTO', 'GRUPO_AMIGOS'])
+            DropdownMenuItem(value: t, child: Text(etiquetaTipoOrg(t))),
         ],
-      );
+        onChanged: (v) => setState(() => _tipo = v ?? 'ESCUELA'),
+      ),
+      espacioCampo,
+      TextField(
+        controller: _nombre,
+        autofocus: true,
+        textCapitalization: TextCapitalization.words,
+        textInputAction: TextInputAction.next,
+        decoration: decoracionCampo(
+          context.l10n.nombre,
+          Icons.badge_outlined,
+        ).copyWith(errorText: _error),
+      ),
+      espacioCampo,
+      TextField(
+        controller: _ciudad,
+        textCapitalization: TextCapitalization.words,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => _crear(),
+        decoration: decoracionCampo(
+          context.l10n.ciudadOpc,
+          Icons.location_city_outlined,
+        ),
+      ),
+    ],
+  );
 }

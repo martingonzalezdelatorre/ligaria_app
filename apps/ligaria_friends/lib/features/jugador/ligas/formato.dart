@@ -1,18 +1,7 @@
-const _dias = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
-const _meses = [
-  'ene',
-  'feb',
-  'mar',
-  'abr',
-  'may',
-  'jun',
-  'jul',
-  'ago',
-  'sep',
-  'oct',
-  'nov',
-  'dic',
-];
+import '../../../core/idioma.dart';
+
+List<String> get _dias => l10nActual.diasCortos.split(',');
+List<String> get _meses => l10nActual.mesesCortos.split(',');
 
 String _dos(int n) => n.toString().padLeft(2, '0');
 

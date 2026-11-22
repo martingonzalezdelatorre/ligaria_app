@@ -10,5 +10,12 @@ class AppConfig {
     'SUPABASE_ANON_KEY',
     defaultValue: 'sb_publishable_MmnoMReAd62-_66OR8dqyQ_sESfwFGk',
   );
-  static bool get configurada => supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
+
+  /// Página de registro de madres, padres y tutores (landing); es el enlace que la escuela les envía.
+  static const familiasUrl = String.fromEnvironment(
+    'FAMILIAS_URL',
+    defaultValue: 'https://ligaria.app/familias.html',
+  );
+  static bool get configurada =>
+      supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 }

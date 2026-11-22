@@ -6,6 +6,7 @@ import 'package:ligaria_friends/features/jugador/ajustes/ajustes_repositorio.dar
 import 'package:ligaria_friends/features/jugador/grupos/grupos_repositorio.dart';
 import 'package:ligaria_friends/features/jugador/ranking/ranking_page.dart';
 import 'package:ligaria_friends/features/jugador/ranking/ranking_repositorio.dart';
+import 'package:ligaria_friends/core/idioma.dart';
 
 /// Varios pasos: los `Future` y las animaciones de entrada necesitan más de un frame.
 Future<void> _pump(WidgetTester tester) async {
@@ -15,8 +16,8 @@ Future<void> _pump(WidgetTester tester) async {
 }
 
 /// Ventana alta para que la lista construya todos los elementos.
-void _ventanaAlta(WidgetTester tester) {
-  tester.view.physicalSize = const Size(800, 3000);
+void _ventanaAlta(WidgetTester tester, {double ancho = 800}) {
+  tester.view.physicalSize = Size(ancho, 3000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.reset);
 }
@@ -25,10 +26,13 @@ void main() {
   testWidgets(
     'Ajustes: muestra los datos, el email está bloqueado y se guardan',
     (tester) async {
-      _ventanaAlta(tester);
+      _ventanaAlta(tester, ancho: 400);
       final repo = AjustesDemo();
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('es'),
+          localizationsDelegates: AppL10n.localizationsDelegates,
+          supportedLocales: AppL10n.supportedLocales,
           home: AjustesPage(repo: repo, auth: AuthDemo()),
         ),
       );
@@ -57,9 +61,16 @@ void main() {
   testWidgets('Ajustes: los interruptores guardan cada preferencia', (
     tester,
   ) async {
-    _ventanaAlta(tester);
+    _ventanaAlta(tester, ancho: 400);
     final repo = AjustesDemo();
-    await tester.pumpWidget(MaterialApp(home: AjustesPage(repo: repo)));
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        home: AjustesPage(repo: repo),
+      ),
+    );
     await _pump(tester);
     expect((await repo.perfil()).rankingGlobal, isFalse);
     expect((await repo.perfil()).notificaciones, isTrue);
@@ -75,6 +86,26 @@ void main() {
     expect((await repo.perfil()).notificaciones, isFalse);
   });
 
+  testWidgets('Ajustes: en pantallas anchas se muestran en pestañas', (
+    tester,
+  ) async {
+    _ventanaAlta(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
+        home: AjustesPage(repo: AjustesDemo(), auth: AuthDemo()),
+      ),
+    );
+    await _pump(tester);
+    expect(find.byType(TabBar), findsOneWidget);
+    expect(find.text('Cambiar contraseña'), findsNothing);
+    await tester.tap(find.widgetWithText(Tab, 'Seguridad'));
+    await _pump(tester);
+    expect(find.text('Cambiar contraseña'), findsOneWidget);
+  });
+
   testWidgets('Ranking: Global, Provincia, Localidad y Mis grupos', (
     tester,
   ) async {
@@ -84,6 +115,9 @@ void main() {
     AjustesRepositorio.instancia = AjustesDemo();
     await tester.pumpWidget(
       MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
         home: Scaffold(
           body: RankingPage(repo: RankingDemo(), grupos: grupos),
         ),

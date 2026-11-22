@@ -3,6 +3,7 @@ import 'package:ligaria_ui/ligaria_ui.dart';
 import '../../core/invitacion.dart';
 import 'auth_repositorio.dart';
 import 'auth_widgets.dart';
+import '../../core/idioma.dart';
 
 class RegistroPage extends StatefulWidget {
   const RegistroPage({super.key, required this.auth, this.invitado = false});
@@ -40,7 +41,7 @@ class _RegistroPageState extends State<RegistroPage> {
   Future<void> _registrar() async {
     if (!_form.currentState!.validate()) return;
     if (!_acepto) {
-      setState(() => _error = 'Debes aceptar las condiciones de uso.');
+      setState(() => _error = context.l10n.debesAceptar);
       return;
     }
     setState(() {
@@ -89,19 +90,19 @@ class _RegistroPageState extends State<RegistroPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Confirma tu email',
+                  context.l10n.confirmaEmail,
                   style: t.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Te hemos enviado un enlace a ${_email.text.trim()}. Ábrelo para activar tu cuenta y luego inicia sesión.',
+                  context.l10n.enlaceEnviadoA(_email.text.trim()),
                   style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
                 BotonPrincipal(
-                  texto: 'Ir a iniciar sesión',
+                  texto: context.l10n.irAIniciarSesion,
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
               ],
@@ -112,12 +113,12 @@ class _RegistroPageState extends State<RegistroPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('Crea tu cuenta', style: t.headlineSmall),
+                    Text(context.l10n.creaTuCuenta, style: t.headlineSmall),
                     const SizedBox(height: 6),
                     Text(
                       widget.invitado
-                          ? 'Te han invitado a un grupo. Crea tu cuenta y entrarás directamente.'
-                          : 'Únete a la liga y reta a tus amigos.',
+                          ? context.l10n.teInvitaronGrupo
+                          : context.l10n.unetePlayLiga,
                       style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                     ),
                     const SizedBox(height: 24),
@@ -126,16 +127,16 @@ class _RegistroPageState extends State<RegistroPage> {
                       const SizedBox(height: 16),
                     ],
                     SegmentedButton<bool>(
-                      segments: const [
+                      segments: [
                         ButtonSegment(
                           value: false,
-                          label: Text('Jugador'),
-                          icon: Icon(Icons.sports_tennis),
+                          label: Text(context.l10n.jugador),
+                          icon: const Icon(Icons.sports_tennis),
                         ),
                         ButtonSegment(
                           value: true,
-                          label: Text('Tienda'),
-                          icon: Icon(Icons.storefront_outlined),
+                          label: Text(context.l10n.tienda),
+                          icon: const Icon(Icons.storefront_outlined),
                         ),
                       ],
                       selected: {_esTienda},
@@ -149,10 +150,10 @@ class _RegistroPageState extends State<RegistroPage> {
                         textCapitalization: TextCapitalization.words,
                         textInputAction: TextInputAction.next,
                         validator: (v) => (v == null || v.trim().length < 2)
-                            ? 'Introduce el nombre de la tienda'
+                            ? context.l10n.introNombreTienda
                             : null,
                         decoration: decoracionCampo(
-                          'Nombre de la tienda',
+                          context.l10n.nombreTienda,
                           Icons.storefront_outlined,
                         ),
                       ),
@@ -164,10 +165,12 @@ class _RegistroPageState extends State<RegistroPage> {
                       autofillHints: const [AutofillHints.name],
                       textInputAction: TextInputAction.next,
                       validator: (v) => (v == null || v.trim().length < 2)
-                          ? 'Introduce tu nombre'
+                          ? context.l10n.introTuNombre
                           : null,
                       decoration: decoracionCampo(
-                        _esTienda ? 'Tu nombre (responsable)' : 'Nombre',
+                        _esTienda
+                            ? context.l10n.tuNombreResp
+                            : context.l10n.nombre,
                         Icons.person_outline_rounded,
                       ),
                     ),
@@ -179,7 +182,7 @@ class _RegistroPageState extends State<RegistroPage> {
                       textInputAction: TextInputAction.next,
                       validator: validarEmail,
                       decoration: decoracionCampo(
-                        'Email',
+                        context.l10n.email,
                         Icons.alternate_email_rounded,
                       ),
                     ),
@@ -191,9 +194,9 @@ class _RegistroPageState extends State<RegistroPage> {
                     espacioCampo,
                     CampoPassword(
                       controller: _pass2,
-                      etiqueta: 'Repite la contraseña',
+                      etiqueta: context.l10n.repiteContrasena,
                       validator: (v) => v != _pass.text
-                          ? 'Las contraseñas no coinciden'
+                          ? context.l10n.contrasenasNoCoinciden
                           : null,
                       onEnviar: _registrar,
                     ),
@@ -204,14 +207,14 @@ class _RegistroPageState extends State<RegistroPage> {
                         textCapitalization: TextCapitalization.characters,
                         textInputAction: TextInputAction.done,
                         decoration: decoracionCampo(
-                          'Código de invitación (opcional)',
+                          context.l10n.codigoInvitacionOpc,
                           Icons.group_add_outlined,
                         ),
                       ),
                       Padding(
                         padding: const EdgeInsets.only(top: 6, left: 4),
                         child: Text(
-                          'Si un amigo te invitó, escribe su código y entrarás en su grupo.',
+                          context.l10n.siAmigoInvito,
                           style: t.bodySmall?.copyWith(
                             color: cs.onSurfaceVariant,
                           ),
@@ -224,21 +227,18 @@ class _RegistroPageState extends State<RegistroPage> {
                       controlAffinity: ListTileControlAffinity.leading,
                       value: _acepto,
                       onChanged: (v) => setState(() => _acepto = v ?? false),
-                      title: Text(
-                        'Acepto las condiciones de uso y la política de privacidad',
-                        style: t.bodySmall,
-                      ),
+                      title: Text(context.l10n.acepto, style: t.bodySmall),
                     ),
                     const SizedBox(height: 8),
                     BotonPrincipal(
-                      texto: 'Registrarme',
+                      texto: context.l10n.registrarme,
                       cargando: _cargando,
                       onPressed: _registrar,
                     ),
                     const SizedBox(height: 8),
                     TextButton(
                       onPressed: () => Navigator.of(context).maybePop(),
-                      child: const Text('Ya tengo cuenta'),
+                      child: Text(context.l10n.yaTengoCuenta),
                     ),
                   ],
                 ),

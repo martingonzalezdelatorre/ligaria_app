@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Registro de familias | Ligaria</title>
+<meta name="description" content="Registro para madres, padres y tutores de jugadores de una escuela que usa Ligaria.">
+<link rel="canonical" href="https://ligaria.app/familias.html">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#06110e">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+ <div class="wrap nav">
+  <a class="logo" href="/" aria-label="Ligaria, inicio"><img src="assets/logo.png" alt="" width="40" height="40">Ligaria</a>
+ </div>
+</header>
+
+<main id="main">
+<section class="reg" id="registro">
+ <div class="wrap">
+  <h2>Registro de madres, padres y tutores</h2>
+  <p class="mut">Tu escuela te ha invitado a Ligaria. Regístrate con <strong>el mismo correo al que te escribió</strong> y, al entrar en la app, podrás añadir a tus hijos y seguir sus equipos, calendario y resultados.</p>
+  <form id="form" novalidate>
+   <label>Nombre completo<input name="nombre" autocomplete="name" required></label>
+   <label>Email<input name="email" type="email" autocomplete="email" required></label>
+   <label>Contraseña (mín. 8 caracteres)<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+   <div class="hp" aria-hidden="true"><label>No rellenar<input name="web" tabindex="-1" autocomplete="off"></label></div>
+   <label class="check"><input type="checkbox" name="ok" required><span>Acepto la política de privacidad y que Ligaria trate los datos de mis hijos para gestionar su participación en las ligas de su escuela.</span></label>
+   <button class="btn" type="submit">Crear mi cuenta</button>
+   <p class="msg" role="status" aria-live="polite"></p>
+  </form>
+  <p class="mut" style="margin-top:20px">¿Ya tienes cuenta? <a id="app" href="/">Entra en la app</a>. ¿No recibiste invitación? Pídesela a tu escuela.</p>
+ </div>
+</section>
+</main>
+
+<footer>
+ <div class="wrap"><span>© <span id="y">2026</span> Ligaria</span></div>
+</footer>
+<script src="config.js"></script>
+<script src="familias.js"></script>
+</body>
+</html>

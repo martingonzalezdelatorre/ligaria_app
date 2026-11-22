@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
+import '../../../core/idioma.dart';
 
 /// Introduce los sets de un partido (juegos de cada lado).
 class DialogoResultado extends StatefulWidget {
@@ -54,7 +55,7 @@ class _DialogoResultadoState extends State<DialogoResultado> {
       ),
     );
     return AlertDialog(
-      title: const Text('Resultado'),
+      title: Text(context.l10n.resultado),
       content: SizedBox(
         width: 380,
         child: SingleChildScrollView(
@@ -89,7 +90,7 @@ class _DialogoResultadoState extends State<DialogoResultado> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Set ${i + 1}'),
+                      Text(context.l10n.setN(i + 1)),
                       const SizedBox(width: 12),
                       campo(_sets[i].$1),
                       const Padding(
@@ -109,7 +110,7 @@ class _DialogoResultadoState extends State<DialogoResultado> {
                     )),
                   ),
                   icon: const Icon(Icons.add),
-                  label: const Text('Añadir set'),
+                  label: Text(context.l10n.anadirSet),
                 ),
             ],
           ),
@@ -118,18 +119,18 @@ class _DialogoResultadoState extends State<DialogoResultado> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancelar'),
+          child: Text(context.l10n.cancelar),
         ),
         FilledButton(
           onPressed: () {
             final sets = _leer();
             if (sets == null) {
-              avisar(context, 'Rellena los juegos de todos los sets.');
+              avisar(context, context.l10n.rellenaJuegos);
             } else {
               Navigator.pop(context, sets);
             }
           },
-          child: const Text('Guardar'),
+          child: Text(context.l10n.guardar),
         ),
       ],
     );

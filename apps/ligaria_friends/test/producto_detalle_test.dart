@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ligaria_friends/features/jugador/store/producto_page.dart';
 import 'package:ligaria_friends/features/jugador/store/store_repositorio.dart';
+import 'package:ligaria_friends/core/idioma.dart';
 
 void main() {
   testWidgets('el detalle muestra nombre, descripción y precio', (t) async {
@@ -17,6 +18,9 @@ void main() {
     addTearDown(() => t.binding.setSurfaceSize(null));
     await t.pumpWidget(
       MaterialApp(
+        locale: const Locale('es'),
+        localizationsDelegates: AppL10n.localizationsDelegates,
+        supportedLocales: AppL10n.supportedLocales,
         home: ProductoPage(producto: p, repo: StoreDemo()),
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../grupos/grupos_repositorio.dart';
 import '../ligas/ligas_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Partido de un grupo que no pertenece a ninguna liga.
 class Amistoso {
@@ -60,8 +61,13 @@ abstract class AmistososRepositorio {
     String? lugar,
   });
 
-  /// [sets]: pares [juegosLocal, juegosVisitante] por set.
-  Future<void> registrarResultado(String amistosoId, List<List<int>> sets);
+  /// [sets]: pares [juegosLocal, juegosVisitante] por set. [puntos]: secuencia de «L» / «V» del
+  /// tanteador, si se puntuó el partido en directo (para las estadísticas).
+  Future<void> registrarResultado(
+    String amistosoId,
+    List<List<int>> sets, {
+    String? puntos,
+  });
 }
 
 class AmistososSupabase implements AmistososRepositorio {
@@ -103,18 +109,36 @@ class AmistososSupabase implements AmistososRepositorio {
   );
 
   @override
-  Future<void> registrarResultado(String amistosoId, List<List<int>> sets) =>
-      _traducir(
-        () => _c.rpc(
-          'registrar_resultado_amistoso',
-          params: {
-            'p_amistoso': amistosoId,
-            'p_sets': [
-              for (final s in sets) {'local': s[0], 'visitante': s[1]},
-            ],
-          },
-        ),
+  Future<void> registrarResultado(
+    String amistosoId,
+    List<List<int>> sets, {
+    String? puntos,
+  }) async {
+    await _traducir(
+      () => _c.rpc(
+        'registrar_resultado_amistoso',
+        params: {
+          'p_amistoso': amistosoId,
+          'p_sets': [
+            for (final s in sets) {'local': s[0], 'visitante': s[1]},
+          ],
+        },
+      ),
+    );
+    if (puntos == null || puntos.isEmpty) return;
+    try {
+      await _c.rpc(
+        'guardar_puntos',
+        params: {
+          'p_amistoso': amistosoId,
+          'p_partido': null,
+          'p_puntos': puntos,
+        },
       );
+    } on PostgrestException {
+      // El resultado ya está guardado; sin los puntos solo faltan las estadísticas de puntos.
+    }
+  }
 
   Future<T> _traducir<T>(Future<T> Function() accion) async {
     try {
@@ -169,26 +193,23 @@ class AmistososDemo implements AmistososRepositorio {
   @override
   Future<void> registrarResultado(
     String amistosoId,
-    List<List<int>> sets,
-  ) async {
+    List<List<int>> sets, {
+    String? puntos,
+  }) async {
     final i = _lista.indexWhere((a) => a.id == amistosoId);
     final a = _lista[i];
     var sl = 0, sv = 0;
     for (final s in sets) {
       if (s[0] == s[1]) {
-        throw const LigasException('Un set no puede acabar en empate.');
+        throw LigasException(l10nActual.errSetEmpate);
       }
       if (sl == a.setsParaGanar || sv == a.setsParaGanar) {
-        throw const LigasException(
-          'El partido ya estaba decidido antes de ese set.',
-        );
+        throw LigasException(l10nActual.errPartidoDecidido);
       }
       s[0] > s[1] ? sl++ : sv++;
     }
     if (sl != a.setsParaGanar && sv != a.setsParaGanar) {
-      throw LigasException(
-        'Ningún lado llega a ${a.setsParaGanar} sets ganados.',
-      );
+      throw LigasException(l10nActual.errNingunLadoLlega(a.setsParaGanar));
     }
     _lista[i] = Amistoso(
       id: a.id,

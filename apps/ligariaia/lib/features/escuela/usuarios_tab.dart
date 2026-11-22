@@ -1,3 +1,4 @@
+import '../../core/idioma.dart';
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,23 +20,34 @@ class UsuariosTab extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => mostrarInvitar(context, ref, escuelaId),
         icon: const Icon(Icons.person_add_alt),
-        label: const Text('Invitar'),
+        label: Text(context.l10n.invitar),
       ),
       body: AsyncView<List<UsuarioEscuela>>(
         value: datos,
         onRetry: () => ref.invalidate(usuariosEscuelaProvider(escuelaId)),
         builder: (lista) => lista.isEmpty
-            ? const EstadoVacio(icono: Icons.people_outline, texto: 'Aún no hay usuarios en esta escuela.')
+            ? EstadoVacio(
+                icono: Icons.people_outline,
+                texto: context.l10n.sinUsuarios,
+              )
             : RefreshIndicator(
-                onRefresh: () async => ref.invalidate(usuariosEscuelaProvider(escuelaId)),
-                child: ListView(padding: const EdgeInsets.only(bottom: 88), children: [
-                  for (final u in lista)
-                    ListTile(
-                      leading: const CircleAvatar(child: Icon(Icons.person_outline)),
-                      title: Text(u.nombre?.isNotEmpty == true ? u.nombre! : u.email),
-                      subtitle: Text('${u.email} · ${_rolLegible(u.rol)}'),
-                    ),
-                ]),
+                onRefresh: () async =>
+                    ref.invalidate(usuariosEscuelaProvider(escuelaId)),
+                child: ListView(
+                  padding: const EdgeInsets.only(bottom: 88),
+                  children: [
+                    for (final u in lista)
+                      ListTile(
+                        leading: const CircleAvatar(
+                          child: Icon(Icons.person_outline),
+                        ),
+                        title: Text(
+                          u.nombre?.isNotEmpty == true ? u.nombre! : u.email,
+                        ),
+                        subtitle: Text('${u.email} · ${_rolLegible(u.rol)}'),
+                      ),
+                  ],
+                ),
               ),
       ),
     );

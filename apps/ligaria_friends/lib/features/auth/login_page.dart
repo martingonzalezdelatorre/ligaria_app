@@ -4,6 +4,7 @@ import 'auth_repositorio.dart';
 import 'auth_widgets.dart';
 import 'recuperar_page.dart';
 import 'registro_page.dart';
+import '../../core/idioma.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key, required this.auth});
@@ -53,10 +54,10 @@ class _LoginPageState extends State<LoginPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Text('Bienvenido de nuevo', style: t.headlineSmall),
+              Text(context.l10n.bienvenidoDeNuevo, style: t.headlineSmall),
               const SizedBox(height: 6),
               Text(
-                'Entra y organiza tu próximo partido.',
+                context.l10n.entraOrganiza,
                 style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               ),
               const SizedBox(height: 24),
@@ -71,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
                 textInputAction: TextInputAction.next,
                 validator: validarEmail,
                 decoration: decoracionCampo(
-                  'Email',
+                  context.l10n.email,
                   Icons.alternate_email_rounded,
                 ),
               ),
@@ -88,12 +89,12 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ),
                   ),
-                  child: const Text('¿Olvidaste tu contraseña?'),
+                  child: Text(context.l10n.olvidasteContrasena),
                 ),
               ),
               const SizedBox(height: 8),
               BotonPrincipal(
-                texto: 'Iniciar sesión',
+                texto: context.l10n.iniciarSesion,
                 cargando: _cargando,
                 onPressed: _entrar,
               ),
@@ -106,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Text(
-                        '¿Aún no juegas con nosotros?',
+                        context.l10n.aunNoJuegas,
                         textAlign: TextAlign.center,
                         style: t.bodySmall?.copyWith(
                           color: cs.onSurfaceVariant,
@@ -125,7 +126,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 icon: const Icon(Icons.person_add_alt_1_rounded),
-                label: const Text('Crear cuenta'),
+                label: Text(context.l10n.crearCuenta),
               ),
             ],
           ),

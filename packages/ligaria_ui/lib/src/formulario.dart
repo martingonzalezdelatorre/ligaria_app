@@ -94,7 +94,7 @@ class HojaFormulario extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Cerrar',
+            tooltip: MaterialLocalizations.of(context).closeButtonLabel,
             onPressed: enviando ? null : () => Navigator.of(context).pop(),
             icon: const Icon(Icons.close),
           ),
@@ -119,7 +119,7 @@ class HojaFormulario extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: () => Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(foregroundColor: cs.onSurface, side: BorderSide(color: cs.outline)),
-                child: const Text('Cancelar'),
+                child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
               ),
             )
           else ...[
@@ -129,7 +129,7 @@ class HojaFormulario extends StatelessWidget {
               child: OutlinedButton(
                 onPressed: enviando ? null : () => Navigator.of(context).pop(),
                 style: OutlinedButton.styleFrom(foregroundColor: cs.onSurface, side: BorderSide(color: cs.outline)),
-                child: const Text('Cancelar'),
+                child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
               ),
             ),
             const SizedBox(width: 12),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'store_repositorio.dart';
+import '../../../core/idioma.dart';
 
 String _fecha(DateTime d) =>
     '${d.day}/${d.month.toString().padLeft(2, '0')}/${d.year} '
@@ -18,7 +19,7 @@ Future<void> solicitarProducto(
     context: context,
     builder: (c) => StatefulBuilder(
       builder: (c, setState) => AlertDialog(
-        title: const Text('Solicitar producto'),
+        title: Text(c.l10n.solicitarProducto),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,7 +31,7 @@ Future<void> solicitarProducto(
             const SizedBox(height: 12),
             Row(
               children: [
-                const Text('Cantidad'),
+                Text(c.l10n.cantidad),
                 const Spacer(),
                 IconButton(
                   onPressed: cantidad > 1
@@ -50,22 +51,20 @@ Future<void> solicitarProducto(
             TextField(
               controller: nota,
               maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: 'Nota para la tienda (opcional)',
-              ),
+              decoration: InputDecoration(labelText: c.l10n.notaTienda),
             ),
             const SizedBox(height: 12),
-            Text('Total: ${euros(producto.precio * cantidad)}'),
+            Text(c.l10n.totalX(euros(producto.precio * cantidad))),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancelar'),
+            child: Text(c.l10n.cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Enviar solicitud'),
+            child: Text(c.l10n.enviarSolicitud),
           ),
         ],
       ),
@@ -75,7 +74,7 @@ Future<void> solicitarProducto(
   try {
     await repo.solicitar(producto.id, cantidad, nota: nota.text);
     if (context.mounted) {
-      avisar(context, 'Solicitud enviada a la tienda');
+      avisar(context, context.l10n.solicitudEnviada);
     }
   } on StoreException catch (e) {
     if (context.mounted) avisar(context, e.mensaje);
@@ -104,7 +103,7 @@ class _MisPedidosPageState extends State<MisPedidosPage> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Mis pedidos')),
+    appBar: AppBar(title: Text(context.l10n.misPedidos)),
     body: FondoBlobs(
       child: SafeArea(
         child: ContenidoCentrado(
@@ -122,9 +121,9 @@ class _MisPedidosPageState extends State<MisPedidosPage> {
               }
               final lista = snap.data!;
               if (lista.isEmpty) {
-                return const EstadoVacio(
+                return EstadoVacio(
                   icono: Icons.inbox_outlined,
-                  texto: 'Aún no has solicitado productos.',
+                  texto: context.l10n.aunNoSolicitado,
                 );
               }
               return RefreshIndicator(
@@ -202,7 +201,7 @@ class _TarjetaPedido extends StatelessWidget {
             const SizedBox(height: 12),
             OutlinedButton(
               onPressed: onCancelar,
-              child: const Text('Cancelar pedido'),
+              child: Text(context.l10n.cancelarPedido),
             ),
           ],
         ],

@@ -2,22 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import '../ajustes/ajustes_page.dart';
 import '../ajustes/ajustes_repositorio.dart';
+import '../estadisticas/estadisticas_page.dart';
 import '../grupos/grupos_repositorio.dart';
 import 'ranking_repositorio.dart';
+import '../../../core/idioma.dart';
 
 enum _Vista {
-  global('Global', Icons.public, Preferencia.rankingGlobal),
-  provincia('Provincia', Icons.map_outlined, Preferencia.rankingProvincia),
-  localidad(
-    'Localidad',
-    Icons.location_city_outlined,
-    Preferencia.rankingLocalidad,
-  ),
-  grupo('Mis grupos', Icons.groups_outlined, null);
+  global(Icons.public, Preferencia.rankingGlobal),
+  provincia(Icons.map_outlined, Preferencia.rankingProvincia),
+  localidad(Icons.location_city_outlined, Preferencia.rankingLocalidad),
+  grupo(Icons.groups_outlined, null);
 
-  const _Vista(this.etiqueta, this.icono, this.preferencia);
-  final String etiqueta;
+  const _Vista(this.icono, this.preferencia);
   final IconData icono;
+
+  String etiqueta(AppL10n l) => switch (this) {
+    global => l.vistaGlobal,
+    provincia => l.vistaProvincia,
+    localidad => l.vistaLocalidad,
+    grupo => l.vistaGrupos,
+  };
 
   /// Ajuste que hay que activar para aparecer en ese ranking (`null`: siempre).
   final Preferencia? preferencia;
@@ -76,10 +80,10 @@ class _RankingPageState extends State<RankingPage> {
   }
 
   String _descripcion() => switch (_vista) {
-    _Vista.global => 'Clasificación global de la app',
-    _Vista.provincia => 'Clasificación de tu provincia',
-    _Vista.localidad => 'Clasificación de tu localidad',
-    _Vista.grupo => 'Clasificación de tu grupo',
+    _Vista.global => context.l10n.descGlobal,
+    _Vista.provincia => context.l10n.descProvincia,
+    _Vista.localidad => context.l10n.descLocalidad,
+    _Vista.grupo => context.l10n.descGrupo,
   };
 
   /// Aviso cuando el usuario no aparece en el ranking o falta su ubicación.
@@ -87,14 +91,14 @@ class _RankingPageState extends State<RankingPage> {
     if (p == null || _vista == _Vista.grupo) return const SizedBox.shrink();
     String? titulo, detalle;
     if (_vista == _Vista.provincia && !p.tieneProvincia) {
-      titulo = 'Indica tu provincia';
-      detalle = 'Complétala en Ajustes de cuenta para ver este ranking.';
+      titulo = context.l10n.indicaTuProvincia;
+      detalle = context.l10n.completalaAjustes;
     } else if (_vista == _Vista.localidad && !p.tieneLocalidad) {
-      titulo = 'Indica tu localidad';
-      detalle = 'Complétala en Ajustes de cuenta para ver este ranking.';
+      titulo = context.l10n.indicaTuLocalidad;
+      detalle = context.l10n.completalaAjustes;
     } else if (!p.valorDe(_vista.preferencia!)) {
-      titulo = 'No apareces en este ranking';
-      detalle = 'Únete desde Ajustes de cuenta para competir.';
+      titulo = context.l10n.noApareces;
+      detalle = context.l10n.unetePara;
     }
     if (titulo == null) return const SizedBox.shrink();
     return Padding(
@@ -107,7 +111,7 @@ class _RankingPageState extends State<RankingPage> {
           subtitle: Text(detalle!),
           trailing: TextButton(
             onPressed: _ajustes,
-            child: const Text('Ajustes'),
+            child: Text(context.l10n.ajustes),
           ),
         ),
       ),
@@ -131,7 +135,7 @@ class _RankingPageState extends State<RankingPage> {
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
             children: [
               Text(
-                'Ranking',
+                context.l10n.ranking,
                 style: t.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   letterSpacing: -.5,
@@ -139,8 +143,21 @@ class _RankingPageState extends State<RankingPage> {
               ),
               const SizedBox(height: 4),
               Text(
-                '${_descripcion()}: 10 puntos por partido ganado.',
+                context.l10n.descConPuntos(_descripcion()),
                 style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => EstadisticasPage(grupos: widget.grupos),
+                    ),
+                  ),
+                  icon: const Icon(Icons.query_stats_rounded),
+                  label: Text(context.l10n.estadisticas),
+                ),
               ),
               const SizedBox(height: 16),
               Wrap(
@@ -150,7 +167,7 @@ class _RankingPageState extends State<RankingPage> {
                   for (final v in _Vista.values)
                     ChoiceChip(
                       avatar: Icon(v.icono, size: 18),
-                      label: Text(v.etiqueta),
+                      label: Text(v.etiqueta(context.l10n)),
                       selected: _vista == v,
                       onSelected: (_) => setState(() {
                         _vista = v;
@@ -167,7 +184,7 @@ class _RankingPageState extends State<RankingPage> {
                 DropdownButtonFormField<String>(
                   initialValue: _grupo?.id,
                   isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Grupo'),
+                  decoration: InputDecoration(labelText: context.l10n.grupo),
                   items: [
                     for (final g in grupos)
                       DropdownMenuItem(value: g.id, child: Text(g.nombre)),
@@ -184,9 +201,9 @@ class _RankingPageState extends State<RankingPage> {
               ),
               const SizedBox(height: 20),
               if (_vista == _Vista.grupo && grupos.isEmpty)
-                const EstadoVacio(
+                EstadoVacio(
                   icono: Icons.groups_outlined,
-                  texto: 'Únete a un grupo para ver su ranking.',
+                  texto: context.l10n.unetePorRanking,
                 )
               else
                 FutureBuilder<List<PuestoRanking>>(
@@ -206,9 +223,9 @@ class _RankingPageState extends State<RankingPage> {
                     }
                     final lista = snap.data!;
                     if (lista.isEmpty) {
-                      return const EstadoVacio(
+                      return EstadoVacio(
                         icono: Icons.emoji_events_outlined,
-                        texto: 'Todavía no hay nadie en este ranking.',
+                        texto: context.l10n.nadieRanking,
                       );
                     }
                     return Column(
@@ -283,7 +300,7 @@ class _FilaRanking extends StatelessWidget {
                     style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
                   ),
                   Text(
-                    '${datos.ganados} ganados de ${datos.jugados} jugados',
+                    context.l10n.ganadosDeJugados(datos.ganados, datos.jugados),
                     style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 ],
@@ -293,7 +310,7 @@ class _FilaRanking extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  '${datos.puntos} pts',
+                  context.l10n.puntosAbrev(datos.puntos),
                   style: t.titleLarge?.copyWith(
                     fontWeight: FontWeight.w900,
                     color: cs.primary,

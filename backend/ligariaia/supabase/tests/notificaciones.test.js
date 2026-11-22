@@ -56,6 +56,37 @@ test('generar_calendario avisa a jugadores, tutores y entrenadores de los equipo
   assert.equal((await notifs(U.orgA, 'competicion_en_curso')).length, 0);
 });
 
+test('programar, reprogramar y aplazar un partido avisa a ambos equipos (no al autor)', async () => {
+  const e = (await rows(U.orgA, `select id from encuentro limit 1`))[0];
+  await rpc(U.orgA, `select programar_encuentro('${e.id}', '2026-12-01 18:30+01', 'Polideportivo', 'Pista 2')`);
+  let n = await notifs(U.jugA, 'partido_programacion');
+  assert.equal(n.length, 1);
+  assert.equal(n[0].titulo, 'Partido programado');
+  assert.match(n[0].cuerpo, /01\/12\/2026 a las 18:30 · Polideportivo · Pista 2/);
+  for (const u of [U.tutA, U.entA, U.entB]) assert.equal((await notifs(u, 'partido_programacion')).length, 1);
+  assert.equal((await notifs(U.orgA, 'partido_programacion')).length, 0, 'el autor no se notifica');
+  assert.equal((await notifs(U.ajeno, 'partido_programacion')).length, 0);
+
+  await rpc(U.orgA, `select programar_encuentro('${e.id}', '2026-12-02 19:00+01', 'Polideportivo', 'Pista 2')`);
+  n = await notifs(U.jugA, 'partido_programacion');
+  assert.equal(n.length, 2);
+  assert.equal(n[1].titulo, 'Partido reprogramado');
+
+  // fecha y estado en la misma llamada: un solo aviso
+  await rpc(U.orgA, `select programar_encuentro('${e.id}', null, null, null, 'APLAZADO')`);
+  n = await notifs(U.jugA, 'partido_programacion');
+  assert.equal(n.length, 3);
+  assert.equal(n[2].titulo, 'Partido aplazado');
+  assert.match(n[2].cuerpo, /Se avisará de la nueva fecha/);
+
+  // un cambio que no cambia nada no avisa
+  await rpc(U.orgA, `select programar_encuentro('${e.id}', null, null, null, 'APLAZADO')`);
+  assert.equal((await notifs(U.jugA, 'partido_programacion')).length, 3);
+
+  await rpc(U.orgA, `select cambiar_estado_encuentro('${e.id}', 'SUSPENDIDO')`);
+  assert.equal((await notifs(U.jugA, 'partido_programacion')).at(-1).titulo, 'Partido suspendido');
+});
+
 test('RLS: cada usuario solo ve y marca como leídas las suyas; no puede insertar ni borrar', async () => {
   const todas = await rows(U.jugA, 'select * from notificacion');
   assert.ok(todas.length >= 1 && todas.every((x) => x.usuario_id === U.jugA));
@@ -79,6 +110,8 @@ test('resultado registrado: avisa a ambos equipos salvo a quien lo registra', as
   assert.match(r[0].titulo, /no presentado/i);
   assert.equal((await notifs(U.entB, 'resultado_registrado')).length, 1);
   assert.equal((await notifs(U.entA, 'resultado_registrado')).length, 0, 'el autor no se notifica a sí mismo');
+  // el resultado de un partido suspendido no genera avisos de programación (siguen siendo los 4 anteriores)
+  assert.equal((await notifs(U.jugA, 'partido_programacion')).length, 4);
   assert.equal(r[0].email_estado, 'pendiente');
 });
 

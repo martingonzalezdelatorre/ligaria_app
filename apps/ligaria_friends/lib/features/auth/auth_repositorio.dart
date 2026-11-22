@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../../core/idioma.dart';
 
 /// Perfil de la cuenta: decide qué parte de la app se muestra al entrar.
 enum TipoCuenta { jugador, tienda }
@@ -76,7 +77,7 @@ class AuthDemo implements AuthRepositorio {
   }) async {
     await _latencia();
     if (_usuarios[email.trim().toLowerCase()] != password) {
-      throw const AuthException('Email o contraseña incorrectos.');
+      throw AuthException(l10nActual.errCredenciales);
     }
     _actual = email.trim().toLowerCase();
     _fijar(true);
@@ -96,7 +97,7 @@ class AuthDemo implements AuthRepositorio {
     await _latencia();
     final e = email.trim().toLowerCase();
     if (_usuarios.containsKey(e)) {
-      throw const AuthException('Ya existe una cuenta con ese email.');
+      throw AuthException(l10nActual.errCuentaExiste);
     }
     _usuarios[e] = password;
     if (nombreTienda != null) _tiendas.add(e);

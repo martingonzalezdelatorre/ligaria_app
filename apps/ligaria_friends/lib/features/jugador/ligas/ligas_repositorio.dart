@@ -1,21 +1,30 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../grupos/grupos_repositorio.dart';
+import '../../../core/idioma.dart';
 
 enum Deporte {
-  tenis('TENIS', 'Tenis'),
-  padel('PADEL', 'Pádel');
+  tenis('TENIS'),
+  padel('PADEL');
 
-  const Deporte(this.codigo, this.etiqueta);
-  final String codigo, etiqueta;
+  const Deporte(this.codigo);
+  final String codigo;
+  String get etiqueta => switch (this) {
+    tenis => l10nActual.tenis,
+    padel => l10nActual.padel,
+  };
   static Deporte desde(String c) => values.firstWhere((d) => d.codigo == c);
 }
 
 enum Modalidad {
-  individual('INDIVIDUAL', 'Individual'),
-  parejas('PAREJAS', 'Parejas');
+  individual('INDIVIDUAL'),
+  parejas('PAREJAS');
 
-  const Modalidad(this.codigo, this.etiqueta);
-  final String codigo, etiqueta;
+  const Modalidad(this.codigo);
+  final String codigo;
+  String get etiqueta => switch (this) {
+    individual => l10nActual.modIndividual,
+    parejas => l10nActual.modParejas,
+  };
   static Modalidad desde(String c) => values.firstWhere((m) => m.codigo == c);
 }
 
@@ -41,10 +50,10 @@ class Liga {
   bool get enBorrador => estado == 'BORRADOR';
   bool get enCurso => estado == 'EN_CURSO';
   String get estadoEtiqueta => switch (estado) {
-    'BORRADOR' => 'Preparando',
-    'EN_CURSO' => 'En curso',
-    'FINALIZADA' => 'Finalizada',
-    'CANCELADA' => 'Cancelada',
+    'BORRADOR' => l10nActual.estPreparando,
+    'EN_CURSO' => l10nActual.estEnCurso,
+    'FINALIZADA' => l10nActual.estFinalizada,
+    'CANCELADA' => l10nActual.estCancelada,
     _ => estado,
   };
 
@@ -165,8 +174,13 @@ abstract class LigasRepositorio {
   Future<List<PartidoLiga>> partidos(String ligaId);
   Future<List<FilaClasificacion>> clasificacion(String ligaId);
 
-  /// [sets]: pares [juegosLocal, juegosVisitante] por set.
-  Future<void> registrarResultado(String partidoId, List<List<int>> sets);
+  /// [sets]: pares [juegosLocal, juegosVisitante] por set. [puntos]: secuencia de «L» / «V» del
+  /// tanteador, si se puntuó el partido en directo (para las estadísticas).
+  Future<void> registrarResultado(
+    String partidoId,
+    List<List<int>> sets, {
+    String? puntos,
+  });
 
   /// Crea un partido suelto entre dos participantes de una liga en curso (solo administradores).
   Future<void> crearPartido({
@@ -308,7 +322,7 @@ class LigasSupabase implements LigasRepositorio {
     String? lugar,
   }) => _traducir(() async {
     if (localId == visitanteId) {
-      throw const LigasException('Elige dos participantes distintos.');
+      throw LigasException(l10nActual.errParticipantesDistintos);
     }
     final ultima = await _c
         .from('partido')
@@ -328,18 +342,36 @@ class LigasSupabase implements LigasRepositorio {
   });
 
   @override
-  Future<void> registrarResultado(String partidoId, List<List<int>> sets) =>
-      _traducir(
-        () => _c.rpc(
-          'registrar_resultado',
-          params: {
-            'p_partido': partidoId,
-            'p_sets': [
-              for (final s in sets) {'local': s[0], 'visitante': s[1]},
-            ],
-          },
-        ),
+  Future<void> registrarResultado(
+    String partidoId,
+    List<List<int>> sets, {
+    String? puntos,
+  }) async {
+    await _traducir(
+      () => _c.rpc(
+        'registrar_resultado',
+        params: {
+          'p_partido': partidoId,
+          'p_sets': [
+            for (final s in sets) {'local': s[0], 'visitante': s[1]},
+          ],
+        },
+      ),
+    );
+    if (puntos == null || puntos.isEmpty) return;
+    try {
+      await _c.rpc(
+        'guardar_puntos',
+        params: {
+          'p_amistoso': null,
+          'p_partido': partidoId,
+          'p_puntos': puntos,
+        },
       );
+    } on PostgrestException {
+      // El resultado ya está guardado; sin los puntos solo faltan las estadísticas de puntos.
+    }
+  }
 
   Future<T> _traducir<T>(Future<T> Function() accion) async {
     try {
@@ -453,7 +485,7 @@ class LigasDemo implements LigasRepositorio {
   }) async {
     final lista = _participantes.putIfAbsent(ligaId, () => []);
     if (lista.any((p) => p.$1.nombre == nombre.trim())) {
-      throw const LigasException('Ya hay un participante con ese nombre.');
+      throw LigasException(l10nActual.errParticipanteDup);
     }
     lista.add((
       Participante(id: 'part-${_n++}', nombre: nombre.trim()),
@@ -476,7 +508,7 @@ class LigasDemo implements LigasRepositorio {
         p.$1,
     ];
     if (ps.length < 2) {
-      throw const LigasException('Hacen falta al menos 2 participantes.');
+      throw LigasException(l10nActual.errMin2Part);
     }
     final arr = <Participante?>[...ps];
     if (arr.length.isOdd) arr.add(null);
@@ -566,7 +598,7 @@ class LigasDemo implements LigasRepositorio {
     String? lugar,
   }) async {
     if (localId == visitanteId) {
-      throw const LigasException('Elige dos participantes distintos.');
+      throw LigasException(l10nActual.errParticipantesDistintos);
     }
     final ps = _participantes[ligaId] ?? [];
     final l = ps.firstWhere((p) => p.$1.id == localId).$1;
@@ -585,8 +617,9 @@ class LigasDemo implements LigasRepositorio {
   @override
   Future<void> registrarResultado(
     String partidoId,
-    List<List<int>> sets,
-  ) async {
+    List<List<int>> sets, {
+    String? puntos,
+  }) async {
     final liga = _ligas.firstWhere(
       (l) => _partidos[l.id]?.any((p) => p.id == partidoId) ?? false,
     );
@@ -594,19 +627,15 @@ class LigasDemo implements LigasRepositorio {
     var sl = 0, sv = 0;
     for (final s in sets) {
       if (s[0] == s[1]) {
-        throw const LigasException('Un set no puede acabar en empate.');
+        throw LigasException(l10nActual.errSetEmpate);
       }
       if (sl == liga.setsParaGanar || sv == liga.setsParaGanar) {
-        throw const LigasException(
-          'El partido ya estaba decidido antes de ese set.',
-        );
+        throw LigasException(l10nActual.errPartidoDecidido);
       }
       s[0] > s[1] ? sl++ : sv++;
     }
     if (sl != liga.setsParaGanar && sv != liga.setsParaGanar) {
-      throw LigasException(
-        'Ningún lado llega a ${liga.setsParaGanar} sets ganados.',
-      );
+      throw LigasException(l10nActual.errNingunLadoLlega(liga.setsParaGanar));
     }
     p.sets = sets;
   }

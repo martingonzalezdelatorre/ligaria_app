@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     as sb
     show AuthException;
 import 'auth_repositorio.dart';
+import '../../core/idioma.dart';
 
 /// Autenticación real con Supabase Auth (email + contraseña).
 class SupabaseAuth implements AuthRepositorio {
@@ -48,7 +49,7 @@ class SupabaseAuth implements AuthRepositorio {
     // Con "Confirm email" activo, Supabase no devuelve sesión hasta confirmar.
     // Si el email ya existe, devuelve un usuario sin identidades (anti-enumeración).
     if (r.user != null && (r.user!.identities?.isEmpty ?? false)) {
-      throw const AuthException('Ya existe una cuenta con ese email.');
+      throw AuthException(l10nActual.errCuentaExiste);
     }
     return r.session != null;
   });
@@ -97,21 +98,17 @@ class SupabaseAuth implements AuthRepositorio {
     } on sb.AuthException catch (e) {
       throw AuthException(e.message);
     } catch (_) {
-      throw const AuthException(
-        'No se pudo conectar. Revisa tu conexión e inténtalo de nuevo.',
-      );
+      throw AuthException(l10nActual.errConexion);
     }
   }
 
   String _mensaje(AuthApiException e) => switch (e.code) {
-    'invalid_credentials' => 'Email o contraseña incorrectos.',
-    'email_not_confirmed' =>
-      'Confirma tu email antes de entrar (revisa tu correo).',
-    'user_already_exists' ||
-    'email_exists' => 'Ya existe una cuenta con ese email.',
-    'weak_password' => 'La contraseña es demasiado débil.',
+    'invalid_credentials' => l10nActual.errCredenciales,
+    'email_not_confirmed' => l10nActual.errEmailSinConfirmar,
+    'user_already_exists' || 'email_exists' => l10nActual.errCuentaExiste,
+    'weak_password' => l10nActual.errContrasenaDebil,
     'over_request_rate_limit' ||
-    'over_email_send_rate_limit' => 'Demasiados intentos. Espera un momento.',
-    _ => 'No se pudo completar la operación (${e.message}).',
+    'over_email_send_rate_limit' => l10nActual.errDemasiadosIntentos,
+    _ => l10nActual.errOperacionMsg(e.message),
   };
 }

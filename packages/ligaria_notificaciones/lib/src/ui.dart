@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'notificacion.dart';
 import 'servicio.dart';
+import 'textos.dart';
 
 /// Arranca el servicio mientras el widget está en pantalla y, donde no hay notificaciones del
 /// sistema (web), enseña cada aviso nuevo como banner dentro de la app.
@@ -75,7 +76,7 @@ class _NotificacionesHostState extends State<NotificacionesHost>
         action: widget.alAbrir == null
             ? null
             : SnackBarAction(
-                label: 'Ver',
+                label: TextosNotificaciones.actual.ver,
                 onPressed: () => widget.alAbrir!(n),
               ),
       ),
@@ -120,7 +121,7 @@ class CampanaNotificaciones extends StatelessWidget {
   Widget build(BuildContext context) => ValueListenableBuilder<int>(
     valueListenable: servicio.noLeidas,
     builder: (context, n, _) => IconButton(
-      tooltip: 'Notificaciones',
+      tooltip: TextosNotificaciones.actual.notificaciones,
       icon: Badge(
         isLabelVisible: n > 0,
         label: Text(n > 99 ? '99+' : '$n'),
@@ -171,10 +172,10 @@ class _BandejaNotificacionesPageState extends State<BandejaNotificacionesPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Notificaciones'),
+      title: Text(TextosNotificaciones.actual.notificaciones),
       actions: [
         IconButton(
-          tooltip: 'Marcar todas como leídas',
+          tooltip: TextosNotificaciones.actual.marcarLeidas,
           icon: const Icon(Icons.done_all),
           onPressed: () async {
             await widget.servicio.marcarTodasLeidas();
@@ -183,7 +184,7 @@ class _BandejaNotificacionesPageState extends State<BandejaNotificacionesPage> {
         ),
         if (widget.tipos != null)
           IconButton(
-            tooltip: 'Preferencias',
+            tooltip: TextosNotificaciones.actual.preferencias,
             icon: const Icon(Icons.tune),
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
@@ -206,13 +207,15 @@ class _BandejaNotificacionesPageState extends State<BandejaNotificacionesPage> {
           return Center(
             child: TextButton(
               onPressed: _recargar,
-              child: const Text('No se pudieron cargar. Reintentar'),
+              child: Text(TextosNotificaciones.actual.errorCargarReintentar),
             ),
           );
         }
         final l = snap.data ?? const [];
         if (l.isEmpty) {
-          return const Center(child: Text('No tienes notificaciones.'));
+          return Center(
+            child: Text(TextosNotificaciones.actual.sinNotificaciones),
+          );
         }
         return RefreshIndicator(
           onRefresh: () async => _recargar(),
@@ -292,16 +295,18 @@ class _PreferenciasNotificacionesPageState
       if (!mounted) return;
       setState(() => _prefs = {..._prefs!, tipo: antes});
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No se pudo guardar el cambio.')),
+        SnackBar(content: Text(TextosNotificaciones.actual.errorGuardar)),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Preferencias de avisos')),
+    appBar: AppBar(title: Text(TextosNotificaciones.actual.preferenciasAvisos)),
     body: _error
-        ? const Center(child: Text('No se pudieron cargar las preferencias.'))
+        ? Center(
+            child: Text(TextosNotificaciones.actual.errorCargarPreferencias),
+          )
         : _prefs == null
         ? const Center(child: CircularProgressIndicator())
         : ListView(
@@ -315,7 +320,7 @@ class _PreferenciasNotificacionesPageState
                   ),
                 ),
                 SwitchListTile(
-                  title: const Text('En la app'),
+                  title: Text(TextosNotificaciones.actual.enLaApp),
                   value: (_prefs![e.key] ?? const PreferenciaNotificacion()).app,
                   onChanged: (v) => _cambiar(
                     e.key,
@@ -325,7 +330,7 @@ class _PreferenciasNotificacionesPageState
                   ),
                 ),
                 SwitchListTile(
-                  title: const Text('Por email'),
+                  title: Text(TextosNotificaciones.actual.porEmail),
                   value:
                       (_prefs![e.key] ?? const PreferenciaNotificacion()).email,
                   onChanged: (v) => _cambiar(
@@ -343,9 +348,10 @@ class _PreferenciasNotificacionesPageState
 
 String _hace(DateTime t) {
   final d = DateTime.now().difference(t);
-  if (d.inMinutes < 1) return 'ahora';
-  if (d.inMinutes < 60) return 'hace ${d.inMinutes} min';
-  if (d.inHours < 24) return 'hace ${d.inHours} h';
-  if (d.inDays < 7) return 'hace ${d.inDays} d';
+  final x = TextosNotificaciones.actual;
+  if (d.inMinutes < 1) return x.ahora;
+  if (d.inMinutes < 60) return x.haceMin.replaceAll('{n}', '${d.inMinutes}');
+  if (d.inHours < 24) return x.haceHoras.replaceAll('{n}', '${d.inHours}');
+  if (d.inDays < 7) return x.haceDias.replaceAll('{n}', '${d.inDays}');
   return '${t.day.toString().padLeft(2, '0')}/${t.month.toString().padLeft(2, '0')}';
 }

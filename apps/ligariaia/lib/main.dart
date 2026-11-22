@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
+import 'core/idioma.dart';
 import 'core/theme_mode.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,14 +19,17 @@ Future<void> main() async {
     await Supabase.initialize(
       url: AppConfig.supabaseUrl,
       publishableKey: AppConfig.supabaseAnonKey,
-      authOptions: const FlutterAuthClientOptions(authFlowType: AuthFlowType.implicit),
+      authOptions: const FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.implicit,
+      ),
     );
   }
   runApp(const ProviderScope(child: LigariaApp()));
 }
 
-const _locales = [Locale('es')];
+final _locales = [for (final (l, _) in idiomasApp) l];
 const _delegates = [
+  AppL10n.delegate,
   GlobalMaterialLocalizations.delegate,
   GlobalWidgetsLocalizations.delegate,
   GlobalCupertinoLocalizations.delegate,
@@ -41,7 +45,7 @@ class LigariaApp extends ConsumerWidget {
         title: 'Ligaria',
         debugShowCheckedModeBanner: false,
         theme: temaClaro(),
-        locale: _locales.first,
+        locale: ref.watch(idiomaProvider),
         supportedLocales: _locales,
         localizationsDelegates: _delegates,
         home: const Scaffold(
@@ -64,11 +68,12 @@ class LigariaApp extends ConsumerWidget {
       theme: temaClaro(),
       darkTheme: temaOscuro(),
       themeMode: ref.watch(themeModeProvider),
-      locale: _locales.first,
+      locale: ref.watch(idiomaProvider),
       supportedLocales: _locales,
       localizationsDelegates: _delegates,
       routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => NotificacionesRaiz(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) =>
+          NotificacionesRaiz(child: child ?? const SizedBox.shrink()),
     );
   }
 }

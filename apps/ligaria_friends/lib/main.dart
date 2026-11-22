@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 import 'core/config.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'core/idioma.dart';
 import 'core/invitacion.dart';
 import 'features/auth/registro_page.dart';
 import 'features/auth/auth_repositorio.dart';
@@ -21,6 +23,7 @@ import 'features/jugador/ligas/confirmacion_repositorio.dart';
 import 'features/jugador/ligas/ligas_repositorio.dart';
 import 'features/jugador/ligas/marcador_repositorio.dart';
 import 'features/jugador/ajustes/ajustes_repositorio.dart';
+import 'features/jugador/estadisticas/estadisticas_repositorio.dart';
 import 'features/jugador/ranking/ranking_repositorio.dart';
 
 /// Acento propio de Friends; el resto del estilo viene de `ligaria_ui`.
@@ -37,6 +40,7 @@ Future<void> main() async {
   final LigasRepositorio ligas;
   final AmistososRepositorio amistosos;
   await Invitacion.cargar();
+  await IdiomaControl.instancia.cargar();
   if (AppConfig.usaSupabase) {
     // Si venimos del enlace del correo de recuperación, hay que recordarlo antes de que Supabase consuma la URL.
     recuperacionInicial =
@@ -57,6 +61,7 @@ Future<void> main() async {
     StoreRepositorio.instancia = StoreSupabase();
     TiendaRepositorio.instancia = TiendaSupabase();
     RankingRepositorio.instancia = RankingSupabase();
+    EstadisticasRepositorio.instancia = EstadisticasSupabase();
     AjustesRepositorio.instancia = AjustesSupabase();
   } else {
     // Modo demo (demo@ligaria.es / demo1234): en memoria y con datos de ejemplo.
@@ -121,13 +126,29 @@ class LigariaFriendsApp extends StatelessWidget {
   final AmistososRepositorio amistosos;
 
   @override
-  Widget build(BuildContext context) => MaterialApp(
-    title: 'Ligaria Friends',
-    debugShowCheckedModeBanner: false,
-    theme: temaClaro(acento: acentoFriends),
-    darkTheme: temaOscuro(acento: acentoFriends),
-    themeMode: ThemeMode.dark,
-    home: _Raiz(auth: auth, grupos: grupos, ligas: ligas, amistosos: amistosos),
+  Widget build(BuildContext context) => ValueListenableBuilder<Locale>(
+    valueListenable: IdiomaControl.instancia,
+    builder: (context, locale, _) => MaterialApp(
+      title: 'Ligaria Friends',
+      debugShowCheckedModeBanner: false,
+      theme: temaClaro(acento: acentoFriends),
+      darkTheme: temaOscuro(acento: acentoFriends),
+      themeMode: ThemeMode.dark,
+      locale: locale,
+      supportedLocales: AppL10n.supportedLocales,
+      localizationsDelegates: const [
+        AppL10n.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: _Raiz(
+        auth: auth,
+        grupos: grupos,
+        ligas: ligas,
+        amistosos: amistosos,
+      ),
+    ),
   );
 }
 
@@ -289,7 +310,7 @@ class _UnirseAlEntrarState extends State<_UnirseAlEntrar> {
     try {
       await widget.grupos.unirse(codigo, invitador: Invitacion.invitador);
       await Invitacion.limpiar();
-      return '¡Ya estás en el grupo! Puedes crear ligas y partidos amistosos.';
+      return l10nActual.yaEstasEnGrupo;
     } on GruposException catch (e) {
       await Invitacion.limpiar();
       return e.mensaje;

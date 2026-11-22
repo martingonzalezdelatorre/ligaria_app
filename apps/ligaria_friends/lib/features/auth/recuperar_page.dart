@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'auth_repositorio.dart';
 import 'auth_widgets.dart';
+import '../../core/idioma.dart';
 
 class RecuperarPage extends StatefulWidget {
   const RecuperarPage({super.key, required this.auth, this.emailInicial = ''});
@@ -55,19 +56,19 @@ class _RecuperarPageState extends State<RecuperarPage> {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  'Revisa tu correo',
+                  context.l10n.revisaCorreo,
                   style: t.headlineSmall,
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Si existe una cuenta con ${_email.text.trim()}, te hemos enviado un enlace para elegir una contraseña nueva. Caduca en poco tiempo; mira también la carpeta de spam.',
+                  context.l10n.revisaCorreoTexto(_email.text.trim()),
                   style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
                 BotonPrincipal(
-                  texto: 'Volver a iniciar sesión',
+                  texto: context.l10n.volverIniciarSesion,
                   onPressed: () => Navigator.of(context).maybePop(),
                 ),
               ],
@@ -77,10 +78,10 @@ class _RecuperarPageState extends State<RecuperarPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text('Recupera tu contraseña', style: t.headlineSmall),
+                  Text(context.l10n.recuperaContrasena, style: t.headlineSmall),
                   const SizedBox(height: 6),
                   Text(
-                    'Escribe tu correo y te enviaremos un enlace para elegir una contraseña nueva.',
+                    context.l10n.recuperaTexto,
                     style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
                   ),
                   const SizedBox(height: 24),
@@ -96,13 +97,13 @@ class _RecuperarPageState extends State<RecuperarPage> {
                     validator: validarEmail,
                     onFieldSubmitted: (_) => _enviar(),
                     decoration: decoracionCampo(
-                      'Correo electrónico',
+                      context.l10n.correoElectronico,
                       Icons.mail_outline,
                     ),
                   ),
                   const SizedBox(height: 24),
                   BotonPrincipal(
-                    texto: 'Enviar enlace',
+                    texto: context.l10n.enviarEnlace,
                     cargando: _cargando,
                     onPressed: _enviar,
                   ),

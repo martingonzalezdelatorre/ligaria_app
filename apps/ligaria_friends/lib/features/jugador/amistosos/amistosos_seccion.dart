@@ -8,7 +8,9 @@ import '../ligas/ligas_repositorio.dart';
 import '../ligas/marcador_page.dart';
 import '../ligas/marcador_repositorio.dart';
 import '../ligas/tanteador_page.dart';
+import '../ligas/tanteo.dart';
 import 'amistosos_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Sección «Amistosos»: partidos sin liga, con su resultado. [grupo] `null`: los amistosos entre amigos, sin grupo.
 class AmistososSeccion extends StatefulWidget {
@@ -51,15 +53,15 @@ class _AmistososSeccionState extends State<AmistososSeccion> {
     try {
       await ConfirmacionRepositorio.instancia.confirmar(amistosoId: a.id);
       if (!mounted) return;
-      avisar(context, 'Resultado confirmado');
+      avisar(context, context.l10n.resultadoConfirmado);
       _recargar();
     } catch (e) {
-      if (mounted) avisar(context, 'No se pudo confirmar el resultado.');
+      if (mounted) avisar(context, context.l10n.errConfirmar);
     }
   }
 
   Future<void> _tanteador(Amistoso a) async {
-    final sets = await Navigator.of(context).push<List<List<int>>>(
+    final res = await Navigator.of(context).push<ResultadoTanteador>(
       MaterialPageRoute(
         builder: (_) => TanteadorPage(
           local: a.local,
@@ -70,9 +72,9 @@ class _AmistososSeccionState extends State<AmistososSeccion> {
         ),
       ),
     );
-    if (sets == null) return;
+    if (res == null) return;
     try {
-      await widget.repo.registrarResultado(a.id, sets);
+      await widget.repo.registrarResultado(a.id, res.sets, puntos: res.puntos);
       if (mounted) _recargar();
     } on LigasException catch (e) {
       if (mounted) avisar(context, e.mensaje);
@@ -124,7 +126,9 @@ class _AmistososSeccionState extends State<AmistososSeccion> {
           children: [
             const SizedBox(height: 24),
             Text(
-              widget.grupo == null ? 'Amistosos con amigos' : 'Amistosos',
+              widget.grupo == null
+                  ? context.l10n.amistososConAmigos
+                  : context.l10n.amistosos,
               style: t.titleLarge,
             ),
             const SizedBox(height: 12),
@@ -216,7 +220,10 @@ class _Fila extends StatelessWidget {
                   children: [
                     Insignia(a.deporte.etiqueta),
                     if (enDirecto && !a.jugado)
-                      const Insignia('EN DIRECTO', color: Color(0xFFEF4444)),
+                      Insignia(
+                        context.l10n.enDirecto,
+                        color: const Color(0xFFEF4444),
+                      ),
                     if (cuando.isNotEmpty)
                       Text(
                         cuando,
@@ -256,16 +263,16 @@ class _Fila extends StatelessWidget {
                       FilledButton.tonalIcon(
                         onPressed: onVer,
                         icon: const Icon(Icons.visibility_outlined, size: 18),
-                        label: const Text('Ver marcador'),
+                        label: Text(context.l10n.verMarcador),
                       ),
                     FilledButton.icon(
                       onPressed: onTanteador,
                       icon: const Icon(Icons.scoreboard_outlined, size: 18),
-                      label: const Text('Tanteador'),
+                      label: Text(context.l10n.tanteador),
                     ),
                     TextButton(
                       onPressed: onResultado,
-                      child: const Text('Introducir resultado'),
+                      child: Text(context.l10n.introducirResultado),
                     ),
                   ],
                 ),

@@ -17,9 +17,14 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   Future<void> set(ThemeMode modo) async {
     state = modo;
     try {
-      await (await SharedPreferences.getInstance()).setString(_clave, modo.name);
+      await (await SharedPreferences.getInstance()).setString(
+        _clave,
+        modo.name,
+      );
     } catch (_) {}
   }
 }
 
-final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(ThemeModeNotifier.new);
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);

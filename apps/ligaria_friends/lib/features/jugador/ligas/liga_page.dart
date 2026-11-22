@@ -8,8 +8,10 @@ import 'dialogo_resultado.dart';
 import 'marcador_page.dart';
 import 'marcador_repositorio.dart';
 import 'tanteador_page.dart';
+import 'tanteo.dart';
 import 'formato.dart';
 import 'ligas_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Una liga: participantes (mientras se prepara), y después clasificación y partidos con resultados.
 class LigaPage extends StatefulWidget {
@@ -72,10 +74,10 @@ class _LigaPageState extends State<LigaPage> {
     try {
       await ConfirmacionRepositorio.instancia.confirmar(partidoId: p.id);
       if (!mounted) return;
-      avisar(context, 'Resultado confirmado');
+      avisar(context, context.l10n.resultadoConfirmado);
       _recargar();
     } catch (e) {
-      if (mounted) avisar(context, 'No se pudo confirmar el resultado.');
+      if (mounted) avisar(context, context.l10n.errConfirmar);
     }
   }
 
@@ -121,18 +123,16 @@ class _LigaPageState extends State<LigaPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Generar calendario'),
-        content: const Text(
-          'Se crearán todos los partidos y ya no podrás cambiar los participantes. ¿Continuar?',
-        ),
+        title: Text(c.l10n.generarCalendario),
+        content: Text(c.l10n.generarCalendarioTxt),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancelar'),
+            child: Text(c.l10n.cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Generar'),
+            child: Text(c.l10n.generar),
           ),
         ],
       ),
@@ -148,10 +148,13 @@ class _LigaPageState extends State<LigaPage> {
           orElse: () => _liga,
         ),
       );
+      if (!mounted) return;
       _recargar();
       avisar(
         context,
-        'Calendario generado: $n ${n == 1 ? 'partido' : 'partidos'}',
+        n == 1
+            ? context.l10n.calendarioGenerado1
+            : context.l10n.calendarioGeneradoN(n),
       );
     } on LigasException catch (e) {
       if (mounted) avisar(context, e.mensaje);
@@ -159,7 +162,7 @@ class _LigaPageState extends State<LigaPage> {
   }
 
   Future<void> _tanteador(PartidoLiga p) async {
-    final sets = await Navigator.of(context).push<List<List<int>>>(
+    final res = await Navigator.of(context).push<ResultadoTanteador>(
       MaterialPageRoute(
         builder: (_) => TanteadorPage(
           local: p.localNombre,
@@ -170,8 +173,10 @@ class _LigaPageState extends State<LigaPage> {
         ),
       ),
     );
-    if (sets == null) return;
-    await _ejecutar(() => widget.ligas.registrarResultado(p.id, sets));
+    if (res == null) return;
+    await _ejecutar(
+      () => widget.ligas.registrarResultado(p.id, res.sets, puntos: res.puntos),
+    );
   }
 
   void _ver(PartidoLiga p) => Navigator.of(context).push(
@@ -246,7 +251,9 @@ class _LigaPageState extends State<LigaPage> {
                             icono: Icons.flag_outlined,
                           ),
                           Insignia(
-                            'Al mejor de ${_liga.setsParaGanar * 2 - 1} sets',
+                            context.l10n.alMejorDeSets(
+                              _liga.setsParaGanar * 2 - 1,
+                            ),
                           ),
                         ],
                       ),
@@ -255,11 +262,11 @@ class _LigaPageState extends State<LigaPage> {
                     if (_liga.enBorrador)
                       ..._borrador(d, t, cs)
                     else ...[
-                      Text('Clasificación', style: t.titleLarge),
+                      Text(context.l10n.clasificacion, style: t.titleLarge),
                       const SizedBox(height: 12),
                       _Tabla(filas: d.tabla),
                       const SizedBox(height: 28),
-                      Text('Partidos', style: t.titleLarge),
+                      Text(context.l10n.partidos, style: t.titleLarge),
                       const SizedBox(height: 12),
                       ..._rondas(d.partidos, d.confirmaciones, t, cs),
                     ],
@@ -280,7 +287,7 @@ class _LigaPageState extends State<LigaPage> {
         children: [
           Expanded(
             child: Text(
-              'Participantes (${d.participantes.length})',
+              context.l10n.participantesN(d.participantes.length),
               style: t.titleLarge,
             ),
           ),
@@ -288,7 +295,7 @@ class _LigaPageState extends State<LigaPage> {
             FilledButton.icon(
               onPressed: _agregar,
               icon: const Icon(Icons.add),
-              label: const Text('Añadir'),
+              label: Text(context.l10n.anadir),
             ),
         ],
       ),
@@ -296,8 +303,8 @@ class _LigaPageState extends State<LigaPage> {
       if (d.participantes.isEmpty)
         Text(
           widget.esAdmin
-              ? 'Aún no hay participantes. Añade a los miembros del grupo que van a jugar.'
-              : 'El administrador todavía no ha añadido participantes.',
+              ? context.l10n.sinParticipantesAdmin
+              : context.l10n.sinParticipantesMiembro,
           style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
         ),
       for (final p in d.participantes)
@@ -305,7 +312,7 @@ class _LigaPageState extends State<LigaPage> {
           izquierda: AvatarEquipo(p.nombre, tam: 36),
           derecha: widget.esAdmin
               ? IconButton(
-                  tooltip: 'Quitar',
+                  tooltip: context.l10n.quitar,
                   icon: const Icon(Icons.close_rounded),
                   onPressed: () =>
                       _ejecutar(() => widget.ligas.quitarParticipante(p.id)),
@@ -316,9 +323,7 @@ class _LigaPageState extends State<LigaPage> {
       if (widget.esAdmin) ...[
         const SizedBox(height: 20),
         Text(
-          falta
-              ? 'Necesitas al menos 2 participantes para generar el calendario.'
-              : 'Cuando estén todos, genera el calendario.',
+          falta ? context.l10n.necesitas2 : context.l10n.cuandoEstenTodos,
           style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
         ),
         const SizedBox(height: 12),
@@ -327,7 +332,7 @@ class _LigaPageState extends State<LigaPage> {
           child: FilledButton.icon(
             onPressed: falta ? null : _generar,
             icon: const Icon(Icons.event_available_outlined),
-            label: const Text('Generar calendario'),
+            label: Text(context.l10n.generarCalendario),
           ),
         ),
       ],
@@ -349,7 +354,7 @@ class _LigaPageState extends State<LigaPage> {
         Padding(
           padding: const EdgeInsets.only(top: 12, bottom: 8),
           child: Text(
-            'Ronda ${e.key}',
+            context.l10n.rondaN(e.key),
             style: t.titleSmall?.copyWith(color: cs.onSurfaceVariant),
           ),
         ),
@@ -363,16 +368,16 @@ class _LigaPageState extends State<LigaPage> {
                         FilledButton.tonalIcon(
                           onPressed: () => _ver(p),
                           icon: const Icon(Icons.visibility_outlined, size: 18),
-                          label: const Text('Ver marcador'),
+                          label: Text(context.l10n.verMarcador),
                         ),
                       FilledButton.icon(
                         onPressed: () => _tanteador(p),
                         icon: const Icon(Icons.scoreboard_outlined, size: 18),
-                        label: const Text('Tanteador'),
+                        label: Text(context.l10n.tanteador),
                       ),
                       TextButton(
                         onPressed: () => _resultado(p),
-                        child: const Text('Introducir resultado'),
+                        child: Text(context.l10n.introducirResultado),
                       ),
                     ],
                   ),
@@ -412,9 +417,12 @@ class _LigaPageState extends State<LigaPage> {
                     style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                   ),
                 if (!p.jugado && _vivos.contains(p.id))
-                  const Padding(
-                    padding: EdgeInsets.only(top: 4),
-                    child: Insignia('EN DIRECTO', color: Color(0xFFEF4444)),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Insignia(
+                      context.l10n.enDirecto,
+                      color: const Color(0xFFEF4444),
+                    ),
                   ),
                 if (p.jugado && confirmacionDe(confirmaciones, p.id) != null)
                   Padding(
@@ -513,11 +521,11 @@ class _Tabla extends StatelessWidget {
           Row(
             children: [
               const SizedBox(width: 28),
-              Expanded(child: Text('Jugador', style: cab)),
-              num('PJ', estilo: cab),
-              num('G', estilo: cab),
-              num('P', estilo: cab),
-              num('Pts', estilo: cab),
+              Expanded(child: Text(context.l10n.jugador, style: cab)),
+              num(context.l10n.tablaPJ, estilo: cab),
+              num(context.l10n.tablaG, estilo: cab),
+              num(context.l10n.tablaP, estilo: cab),
+              num(context.l10n.tablaPts, estilo: cab),
             ],
           ),
           const Divider(height: 16),
@@ -575,24 +583,30 @@ class _ElegirJugadoresState extends State<_ElegirJugadores> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: Text(widget.cuantos == 1 ? 'Añadir jugador' : 'Añadir pareja'),
+    title: Text(
+      widget.cuantos == 1
+          ? context.l10n.anadirJugador
+          : context.l10n.anadirPareja,
+    ),
     content: SizedBox(
       width: 380,
       child: widget.miembros.isEmpty
-          ? const Text('Todos los miembros del grupo ya están inscritos.')
+          ? Text(context.l10n.todosInscritos)
           : SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     widget.cuantos == 1
-                        ? 'Elige a quién inscribir.'
-                        : 'Elige los 2 jugadores de la pareja.',
+                        ? context.l10n.eligeQuienInscribir
+                        : context.l10n.eligeLos2Pareja,
                   ),
                   for (final m in widget.miembros)
                     CheckboxListTile(
                       dense: true,
-                      title: Text(m.esYo ? '${m.nombre} (tú)' : m.nombre),
+                      title: Text(
+                        m.esYo ? '${m.nombre} ${context.l10n.tu}' : m.nombre,
+                      ),
                       value: _sel.contains(m),
                       onChanged: (v) => setState(() {
                         if (v == true) {
@@ -609,13 +623,13 @@ class _ElegirJugadoresState extends State<_ElegirJugadores> {
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
+        child: Text(context.l10n.cancelar),
       ),
       FilledButton(
         onPressed: _sel.length == widget.cuantos
             ? () => Navigator.pop(context, _sel)
             : null,
-        child: const Text('Añadir'),
+        child: Text(context.l10n.anadir),
       ),
     ],
   );

@@ -2,15 +2,21 @@
 /// No dependen de ninguna pantalla ni de Supabase.
 library;
 
+import '../../core/idioma.dart';
+
 /// Importe en euros con coma decimal.
 String euros(double v) => '${v.toStringAsFixed(2).replaceAll('.', ',')} €';
 
 enum TipoComercio {
-  tienda('TIENDA', 'Tiendas'),
-  club('CLUB', 'Clubs');
+  tienda('TIENDA'),
+  club('CLUB');
 
-  const TipoComercio(this.codigo, this.plural);
-  final String codigo, plural;
+  const TipoComercio(this.codigo);
+  final String codigo;
+  String get plural => switch (this) {
+    tienda => l10nActual.tipoTiendas,
+    club => l10nActual.tipoClubs,
+  };
 
   static TipoComercio desde(String c) =>
       values.firstWhere((t) => t.codigo == c, orElse: () => tienda);
@@ -65,14 +71,21 @@ class Producto {
 }
 
 enum EstadoPedido {
-  pendiente('PENDIENTE', 'Pendiente'),
-  confirmado('CONFIRMADO', 'Confirmado'),
-  rechazado('RECHAZADO', 'Rechazado'),
-  entregado('ENTREGADO', 'Entregado'),
-  cancelado('CANCELADO', 'Cancelado');
+  pendiente('PENDIENTE'),
+  confirmado('CONFIRMADO'),
+  rechazado('RECHAZADO'),
+  entregado('ENTREGADO'),
+  cancelado('CANCELADO');
 
-  const EstadoPedido(this.codigo, this.texto);
-  final String codigo, texto;
+  const EstadoPedido(this.codigo);
+  final String codigo;
+  String get texto => switch (this) {
+    pendiente => l10nActual.estPedPendiente,
+    confirmado => l10nActual.estPedConfirmado,
+    rechazado => l10nActual.estPedRechazado,
+    entregado => l10nActual.estPedEntregado,
+    cancelado => l10nActual.estPedCancelado,
+  };
 
   static EstadoPedido desde(String c) =>
       values.firstWhere((e) => e.codigo == c, orElse: () => pendiente);

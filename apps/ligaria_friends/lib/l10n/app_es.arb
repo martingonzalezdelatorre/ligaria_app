@@ -1,0 +1,673 @@
+{
+  "@@locale": "es",
+  "idioma": "Idioma",
+  "ntVer": "Ver",
+  "ntNotificaciones": "Notificaciones",
+  "ntMarcarLeidas": "Marcar todas como leídas",
+  "ntPreferencias": "Preferencias",
+  "ntErrorCargar": "No se pudieron cargar. Reintentar",
+  "ntSinNotificaciones": "No tienes notificaciones.",
+  "ntErrorGuardar": "No se pudo guardar el cambio.",
+  "ntPreferenciasAvisos": "Preferencias de avisos",
+  "ntErrorPreferencias": "No se pudieron cargar las preferencias.",
+  "ntEnLaApp": "En la app",
+  "ntPorEmail": "Por email",
+  "ntAhora": "ahora",
+  "ntHaceMin": "hace {x} min",
+  "@ntHaceMin": {
+    "placeholders": {
+      "x": {
+        "type": "String"
+      }
+    }
+  },
+  "ntHaceHoras": "hace {x} h",
+  "@ntHaceHoras": {
+    "placeholders": {
+      "x": {
+        "type": "String"
+      }
+    }
+  },
+  "ntHaceDias": "hace {x} d",
+  "@ntHaceDias": {
+    "placeholders": {
+      "x": {
+        "type": "String"
+      }
+    }
+  },
+  "cancelar": "Cancelar",
+  "volver": "Volver",
+  "bienvenidoDeNuevo": "Bienvenido de nuevo",
+  "entraOrganiza": "Entra y organiza tu próximo partido.",
+  "email": "Email",
+  "olvidasteContrasena": "¿Olvidaste tu contraseña?",
+  "iniciarSesion": "Iniciar sesión",
+  "aunNoJuegas": "¿Aún no juegas con nosotros?",
+  "crearCuenta": "Crear cuenta",
+  "introduceEmail": "Introduce tu email",
+  "emailNoValido": "Email no válido",
+  "introduceContrasena": "Introduce tu contraseña",
+  "minimo8": "Mínimo 8 caracteres",
+  "tuLigaTusAmigos": "Tu liga.\nTus amigos.\nTu pista.",
+  "organizaPartidos": "Organiza partidos de tenis y pádel, sube al ranking y presume de victorias.",
+  "tenis": "Tenis",
+  "padel": "Pádel",
+  "mostrarContrasena": "Mostrar contraseña",
+  "ocultarContrasena": "Ocultar contraseña",
+  "contrasena": "Contraseña",
+  "debesAceptar": "Debes aceptar las condiciones de uso.",
+  "confirmaEmail": "Confirma tu email",
+  "enlaceEnviadoA": "Te hemos enviado un enlace a {email}. Ábrelo para activar tu cuenta y luego inicia sesión.",
+  "@enlaceEnviadoA": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "irAIniciarSesion": "Ir a iniciar sesión",
+  "creaTuCuenta": "Crea tu cuenta",
+  "teInvitaronGrupo": "Te han invitado a un grupo. Crea tu cuenta y entrarás directamente.",
+  "unetePlayLiga": "Únete a la liga y reta a tus amigos.",
+  "jugador": "Jugador",
+  "tienda": "Tienda",
+  "introNombreTienda": "Introduce el nombre de la tienda",
+  "nombreTienda": "Nombre de la tienda",
+  "introTuNombre": "Introduce tu nombre",
+  "tuNombreResp": "Tu nombre (responsable)",
+  "nombre": "Nombre",
+  "repiteContrasena": "Repite la contraseña",
+  "contrasenasNoCoinciden": "Las contraseñas no coinciden",
+  "codigoInvitacionOpc": "Código de invitación (opcional)",
+  "siAmigoInvito": "Si un amigo te invitó, escribe su código y entrarás en su grupo.",
+  "acepto": "Acepto las condiciones de uso y la política de privacidad",
+  "registrarme": "Registrarme",
+  "yaTengoCuenta": "Ya tengo cuenta",
+  "revisaCorreo": "Revisa tu correo",
+  "revisaCorreoTexto": "Si existe una cuenta con {email}, te hemos enviado un enlace para elegir una contraseña nueva. Caduca en poco tiempo; mira también la carpeta de spam.",
+  "@revisaCorreoTexto": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "volverIniciarSesion": "Volver a iniciar sesión",
+  "recuperaContrasena": "Recupera tu contraseña",
+  "recuperaTexto": "Escribe tu correo y te enviaremos un enlace para elegir una contraseña nueva.",
+  "correoElectronico": "Correo electrónico",
+  "enviarEnlace": "Enviar enlace",
+  "errCambiarContrasena": "No se pudo cambiar la contraseña. El enlace puede haber caducado: pide uno nuevo.",
+  "eligeNuevaContrasena": "Elige tu nueva contraseña",
+  "minimo8Punto": "Mínimo 8 caracteres.",
+  "nuevaContrasena": "Nueva contraseña",
+  "guardarContrasena": "Guardar contraseña",
+  "errCredenciales": "Email o contraseña incorrectos.",
+  "errCuentaExiste": "Ya existe una cuenta con ese email.",
+  "errConexion": "No se pudo conectar. Revisa tu conexión e inténtalo de nuevo.",
+  "errEmailSinConfirmar": "Confirma tu email antes de entrar (revisa tu correo).",
+  "errContrasenaDebil": "La contraseña es demasiado débil.",
+  "errDemasiadosIntentos": "Demasiados intentos. Espera un momento.",
+  "errOperacionMsg": "No se pudo completar la operación ({msg}).",
+  "@errOperacionMsg": {
+    "placeholders": {
+      "msg": {
+        "type": "String"
+      }
+    }
+  },
+  "tipoTiendas": "Tiendas",
+  "tipoClubs": "Clubs",
+  "estPedPendiente": "Pendiente",
+  "estPedConfirmado": "Confirmado",
+  "estPedRechazado": "Rechazado",
+  "estPedEntregado": "Entregado",
+  "estPedCancelado": "Cancelado",
+  "errReservaPasada": "No puedes reservar una hora que ya ha pasado.",
+  "errHoraReservada": "Esa hora ya está reservada.",
+  "errSoloPendientes": "Solo puedes cancelar pedidos pendientes.",
+  "storeSub": "Material de pádel y alquiler de pistas.",
+  "aunNoTiendas": "Aún no hay tiendas.",
+  "aunNoClubs": "Aún no hay clubs.",
+  "clubSinPistas": "Este club aún no ha publicado pistas.",
+  "cubierta": "Cubierta",
+  "tiendaSinProductos": "Esta tienda aún no ha publicado productos.",
+  "detalle": "Detalle",
+  "solicitar": "Solicitar",
+  "misReservas": "Mis reservas",
+  "misPedidos": "Mis pedidos",
+  "sinDescripcion": "Sin descripción.",
+  "confirmarReserva": "Confirmar reserva",
+  "reservaDeA": "{pista} · {dia} de {desde} a {hasta}\nPrecio: {precio}",
+  "@reservaDeA": {
+    "placeholders": {
+      "pista": {
+        "type": "String"
+      },
+      "dia": {
+        "type": "String"
+      },
+      "desde": {
+        "type": "String"
+      },
+      "hasta": {
+        "type": "String"
+      },
+      "precio": {
+        "type": "String"
+      }
+    }
+  },
+  "reservar": "Reservar",
+  "reservaConfirmada": "Reserva confirmada",
+  "precioPorHora": "{precio} por hora",
+  "@precioPorHora": {
+    "placeholders": {
+      "precio": {
+        "type": "String"
+      }
+    }
+  },
+  "horasGris": "Las horas en gris están ocupadas o ya han pasado.",
+  "cancelarReserva": "Cancelar reserva",
+  "mantener": "Mantener",
+  "aunNoReservas": "Aún no tienes reservas.",
+  "solicitarProducto": "Solicitar producto",
+  "cantidad": "Cantidad",
+  "notaTienda": "Nota para la tienda (opcional)",
+  "totalX": "Total: {importe}",
+  "@totalX": {
+    "placeholders": {
+      "importe": {
+        "type": "String"
+      }
+    }
+  },
+  "enviarSolicitud": "Enviar solicitud",
+  "solicitudEnviada": "Solicitud enviada a la tienda",
+  "aunNoSolicitado": "Aún no has solicitado productos.",
+  "cancelarPedido": "Cancelar pedido",
+  "errSinTienda": "Tu cuenta no tiene una tienda asociada.",
+  "errPedidoCerrado": "El pedido ya está cerrado.",
+  "aunNoPedidosRecibidos": "Aún no has recibido pedidos.",
+  "rechazar": "Rechazar",
+  "marcarEntregado": "Marcar entregado",
+  "nuevoProducto": "Nuevo producto",
+  "editarProducto": "Editar producto",
+  "introNombre": "Introduce el nombre",
+  "precioEur": "Precio (€)",
+  "precioNoValido": "Precio no válido",
+  "categoriaOpc": "Categoría (opcional)",
+  "descripcionOpc2": "Descripción (opcional)",
+  "urlImagenOpc": "URL de la imagen (opcional)",
+  "eliminarProducto": "Eliminar producto",
+  "eliminarDelCatalogo": "¿Eliminar \"{nombre}\" del catálogo?",
+  "@eliminarDelCatalogo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "eliminar": "Eliminar",
+  "misProductos": "Mis productos",
+  "aunNoProductos": "Aún no tienes productos. Añade el primero.",
+  "editar": "Editar",
+  "datosGuardados": "Datos guardados",
+  "contrasenaActualizada": "Contraseña actualizada",
+  "ajustesCuenta": "Ajustes de cuenta",
+  "errCargarAjustes": "No se pudieron cargar los ajustes.",
+  "tusDatos": "Tus datos",
+  "apellidos": "Apellidos",
+  "emailUsuario": "Email (tu usuario)",
+  "noSePuedeModificar": "No se puede modificar.",
+  "provincia": "Provincia",
+  "escribeParaBuscar": "Escribe para buscar",
+  "eligeProvinciaLista": "Elige una provincia de la lista.",
+  "localidad": "Localidad",
+  "eligePrimeroProvincia": "Elige primero la provincia",
+  "guardarDatos": "Guardar datos",
+  "seguridad": "Seguridad",
+  "cambiarContrasena": "Cambiar contraseña",
+  "eligeContrasenaNueva": "Elige una contraseña nueva para tu cuenta.",
+  "rankings": "Rankings",
+  "rankingsAyuda": "Elige en qué clasificaciones apareces con tu nombre. En el ranking de tus grupos siempre te ven.",
+  "rankingGlobal": "Ranking global",
+  "todaApp": "Toda la app.",
+  "rankingMiProvincia": "Ranking de mi provincia",
+  "jugadoresDe": "Jugadores de {lugar}.",
+  "@jugadoresDe": {
+    "placeholders": {
+      "lugar": {
+        "type": "String"
+      }
+    }
+  },
+  "indicaProvincia": "Indica tu provincia y guarda los datos.",
+  "rankingMiLocalidad": "Ranking de mi localidad",
+  "indicaLocalidad": "Indica tu localidad y guarda los datos.",
+  "notificaciones": "Notificaciones",
+  "recibirNotificaciones": "Recibir notificaciones",
+  "notificacionesDetalle": "Avisos en la app y por email (resultados por confirmar, pedidos…).",
+  "contrasenaNueva": "Contraseña nueva",
+  "cambiar": "Cambiar",
+  "idiomaApp": "Idioma de la aplicación",
+  "grupos": "Grupos",
+  "store": "Store",
+  "ranking": "Ranking",
+  "cerrarSesion": "Cerrar sesión",
+  "productos": "Productos",
+  "pedidos": "Pedidos",
+  "miTienda": "Mi tienda",
+  "notifResultadosPorConfirmar": "Resultados por confirmar",
+  "notifPedidoNuevo": "Pedidos nuevos (tienda)",
+  "notifPedidoCancelado": "Pedidos cancelados (tienda)",
+  "notifPedidoEstado": "Estado de tus pedidos",
+  "notifReservaNueva": "Reservas de pista (club)",
+  "mensajeInvitacion": "¡Únete a mi grupo «{grupo}» en Ligaria Friends! Regístrate desde este enlace y entrarás directamente: {enlace}",
+  "@mensajeInvitacion": {
+    "placeholders": {
+      "grupo": {
+        "type": "String"
+      },
+      "enlace": {
+        "type": "String"
+      }
+    }
+  },
+  "yaEstasEnGrupo": "¡Ya estás en el grupo! Puedes crear ligas y partidos amistosos.",
+  "partidoCreado": "Partido creado",
+  "nuevoGrupo": "Nuevo grupo",
+  "descripcionOpc": "Descripción (opcional)",
+  "crear": "Crear",
+  "unirseConCodigo": "Unirse con código",
+  "codigoInvitacion": "Código de invitación",
+  "unirme": "Unirme",
+  "tusGrupos": "Tus grupos",
+  "unGrupoAmigos": "1 grupo de amigos",
+  "nGruposAmigos": "{n} grupos de amigos",
+  "@nGruposAmigos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "crearPartido": "Crear partido",
+  "crearGrupo": "Crear grupo",
+  "unirmeConCodigo": "Unirme con código",
+  "ligaEntreAmigosEmpieza": "Tu liga entre amigos empieza aquí",
+  "aunNoTienesGrupos": "Aún no tienes grupos. Crea uno para empezar tu liga entre amigos.",
+  "pasoCreaGrupo": "Crea tu grupo",
+  "pasoCreaGrupoTxt": "Ponle nombre y tú serás el administrador.",
+  "pasoInvita": "Invita a tus amigos",
+  "pasoInvitaTxt": "Comparte el código de invitación del grupo.",
+  "pasoJugad": "Jugad la liga",
+  "pasoJugadTxt": "Calendario, resultados y clasificación.",
+  "miembro1": "1 miembro",
+  "miembrosN": "{n} miembros",
+  "@miembrosN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "admin": "Admin",
+  "codigoCopiado": "Código copiado",
+  "codigo": "Código",
+  "invitacionEnviadaA": "Invitación enviada a {destino}",
+  "@invitacionEnviadaA": {
+    "placeholders": {
+      "destino": {
+        "type": "String"
+      }
+    }
+  },
+  "noSePudoWhatsapp": "No se pudo abrir WhatsApp. Invitación copiada",
+  "sinAmigosAnadir": "No tienes amigos que añadir: invita a alguien y aparecerá aquí.",
+  "anadirAmigoGrupo": "Añadir un amigo al grupo",
+  "amigoAnadidoGrupo": "{nombre} añadido al grupo",
+  "@amigoAnadidoGrupo": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "ahoraEsAdmin": "{nombre} ahora es administrador",
+  "@ahoraEsAdmin": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "yaNoEsAdmin": "{nombre} ya no es administrador",
+  "@yaNoEsAdmin": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "generarCodigoNuevo": "Generar código nuevo",
+  "codigoActualDejara": "El código actual dejará de funcionar. Quienes ya están en el grupo no se ven afectados.",
+  "generar": "Generar",
+  "enlaceCopiado": "Enlace copiado. Quien lo abra se registra y entra al grupo",
+  "miembros": "Miembros",
+  "anadirAmigo": "Añadir amigo",
+  "errCargarMiembros": "No se pudieron cargar los miembros.",
+  "invitaTexto": "Envía el enlace por WhatsApp o email: quien lo abra se registra y entra al grupo automáticamente. También puede usar el código en «Unirme con código».",
+  "whatsapp": "WhatsApp",
+  "copiarEnlace": "Copiar enlace",
+  "codigoNuevo": "Código nuevo",
+  "tu": "(tú)",
+  "opciones": "Opciones",
+  "quitarAdmin": "Quitar administrador",
+  "hacerAdmin": "Hacer administrador",
+  "emailValido": "Introduce un email válido",
+  "telefonoValido": "Introduce un teléfono válido",
+  "invitarPorEmail": "Invitar por email",
+  "invitarPorWhatsapp": "Invitar por WhatsApp",
+  "telefono": "Teléfono",
+  "conPrefijo": "Con prefijo (+34…). Sin prefijo se asume España.",
+  "continuar": "Continuar",
+  "errInvitacion": "No se pudo enviar la invitación.",
+  "errCodigoInvalido": "Código de invitación no válido.",
+  "mesesCortos": "ene,feb,mar,abr,may,jun,jul,ago,sep,oct,nov,dic",
+  "diasCortos": "lun,mar,mié,jue,vie,sáb,dom",
+  "modIndividual": "Individual",
+  "modParejas": "Parejas",
+  "estPreparando": "Preparando",
+  "estEnCurso": "En curso",
+  "estFinalizada": "Finalizada",
+  "estCancelada": "Cancelada",
+  "errParticipantesDistintos": "Elige dos participantes distintos.",
+  "errParticipanteDup": "Ya hay un participante con ese nombre.",
+  "errMin2Part": "Hacen falta al menos 2 participantes.",
+  "errSetEmpate": "Un set no puede acabar en empate.",
+  "errPartidoDecidido": "El partido ya estaba decidido antes de ese set.",
+  "errNingunLadoLlega": "Ningún lado llega a {n} sets ganados.",
+  "@errNingunLadoLlega": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "ligas": "Ligas",
+  "nuevaLiga": "Nueva liga",
+  "errCargarLigas": "No se pudieron cargar las ligas.",
+  "aunNoLigasAdmin": "Aún no hay ligas. Crea la primera para empezar a jugar.",
+  "aunNoLigasMiembro": "Aún no hay ligas. El administrador creará la primera; mientras, puedes crear partidos amistosos.",
+  "jugadosDePartidos": "{a}/{b} partidos",
+  "@jugadosDePartidos": {
+    "placeholders": {
+      "a": {
+        "type": "int"
+      },
+      "b": {
+        "type": "int"
+      }
+    }
+  },
+  "nombreLigaEj": "Nombre (p. ej. Liga de verano)",
+  "deporte": "Deporte",
+  "modalidad": "Modalidad",
+  "formatoPartido": "Formato de partido",
+  "alMejorDe": "Al mejor de {n}",
+  "@alMejorDe": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "resultadoConfirmado": "Resultado confirmado",
+  "errConfirmar": "No se pudo confirmar el resultado.",
+  "generarCalendario": "Generar calendario",
+  "generarCalendarioTxt": "Se crearán todos los partidos y ya no podrás cambiar los participantes. ¿Continuar?",
+  "calendarioGenerado1": "Calendario generado: 1 partido",
+  "calendarioGeneradoN": "Calendario generado: {n} partidos",
+  "@calendarioGeneradoN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "alMejorDeSets": "Al mejor de {n} sets",
+  "@alMejorDeSets": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "partidos": "Partidos",
+  "participantesN": "Participantes ({n})",
+  "@participantesN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "sinParticipantesAdmin": "Aún no hay participantes. Añade a los miembros del grupo que van a jugar.",
+  "sinParticipantesMiembro": "El administrador todavía no ha añadido participantes.",
+  "necesitas2": "Necesitas al menos 2 participantes para generar el calendario.",
+  "cuandoEstenTodos": "Cuando estén todos, genera el calendario.",
+  "rondaN": "Ronda {n}",
+  "@rondaN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "verMarcador": "Ver marcador",
+  "tanteador": "Tanteador",
+  "introducirResultado": "Introducir resultado",
+  "enDirecto": "EN DIRECTO",
+  "tablaPJ": "PJ",
+  "tablaG": "G",
+  "tablaP": "P",
+  "tablaPts": "Pts",
+  "anadirJugador": "Añadir jugador",
+  "anadirPareja": "Añadir pareja",
+  "todosInscritos": "Todos los miembros del grupo ya están inscritos.",
+  "eligeQuienInscribir": "Elige a quién inscribir.",
+  "eligeLos2Pareja": "Elige los 2 jugadores de la pareja.",
+  "anadir": "Añadir",
+  "clasificacion": "Clasificación",
+  "quitar": "Quitar",
+  "fecha": "Fecha",
+  "hora": "Hora",
+  "lugarOpc": "Lugar (opcional)",
+  "grupoOpc": "Grupo (opcional)",
+  "sinGrupoAmigos": "Sin grupo (entre amigos)",
+  "formato": "Formato",
+  "jugadorN": "Jugador {n}",
+  "@jugadorN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "local": "Local",
+  "visitante": "Visitante",
+  "jugadorRepetido": "Un jugador no puede aparecer dos veces.",
+  "sinLigasEnCurso": "No hay ligas en curso donde seas administrador. Crea una liga en tu grupo, inscribe a los participantes y genera el calendario; o crea un partido amistoso.",
+  "liga": "Liga",
+  "nuevoPartido": "Nuevo partido",
+  "amistoso": "Amistoso",
+  "deLiga": "De liga",
+  "resultado": "Resultado",
+  "setN": "Set {n}",
+  "@setN": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "anadirSet": "Añadir set",
+  "rellenaJuegos": "Rellena los juegos de todos los sets.",
+  "guardar": "Guardar",
+  "marcadorNoEmite": "Tu marcador no se emite en directo en este partido.",
+  "salirTanteador": "¿Salir del tanteador?",
+  "partidoNoGuardado": "El partido en curso no se ha guardado y se perderá.",
+  "seguir": "Seguir",
+  "salir": "Salir",
+  "tanteadorDeporte": "Tanteador · {deporte}",
+  "@tanteadorDeporte": {
+    "placeholders": {
+      "deporte": {
+        "type": "String"
+      }
+    }
+  },
+  "deshacerPunto": "Deshacer último punto",
+  "ganaX": "Gana {nombre}",
+  "@ganaX": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "guardarResultado": "Guardar resultado",
+  "corregirPunto": "Corregir último punto",
+  "puntoDeOro": "Punto de oro",
+  "puntoDeOroTxt": "En el 40-40 el siguiente punto decide el juego",
+  "puntoPara": "Punto para {nombre}",
+  "@puntoPara": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "marcadorDeporte": "Marcador · {deporte}",
+  "@marcadorDeporte": {
+    "placeholders": {
+      "deporte": {
+        "type": "String"
+      }
+    }
+  },
+  "partidoNoJugando": "El partido no se está jugando ahora",
+  "cuandoEmpieces": "Cuando alguien empiece a puntuar, verás aquí el marcador en directo. Si ya terminó, el resultado está en el grupo.",
+  "seActualizaSolo": "Se actualiza solo a medida que se anotan los puntos.",
+  "desempate": "Desempate",
+  "setsJuegosPunto": "Sets · Juegos · Punto",
+  "sets": "Sets",
+  "sinConfirmarN": "Sin confirmar · {a}/{b}",
+  "@sinConfirmarN": {
+    "placeholders": {
+      "a": {
+        "type": "int"
+      },
+      "b": {
+        "type": "int"
+      }
+    }
+  },
+  "confirmar": "Confirmar",
+  "amistososConAmigos": "Amistosos con amigos",
+  "amistosos": "Amistosos",
+  "vistaGlobal": "Global",
+  "vistaProvincia": "Provincia",
+  "vistaLocalidad": "Localidad",
+  "vistaGrupos": "Mis grupos",
+  "descGlobal": "Clasificación global de la app",
+  "descProvincia": "Clasificación de tu provincia",
+  "descLocalidad": "Clasificación de tu localidad",
+  "descGrupo": "Clasificación de tu grupo",
+  "descConPuntos": "{desc}: 10 puntos por partido ganado.",
+  "@descConPuntos": {
+    "placeholders": {
+      "desc": {
+        "type": "String"
+      }
+    }
+  },
+  "indicaTuProvincia": "Indica tu provincia",
+  "indicaTuLocalidad": "Indica tu localidad",
+  "completalaAjustes": "Complétala en Ajustes de cuenta para ver este ranking.",
+  "noApareces": "No apareces en este ranking",
+  "unetePara": "Únete desde Ajustes de cuenta para competir.",
+  "ajustes": "Ajustes",
+  "grupo": "Grupo",
+  "unetePorRanking": "Únete a un grupo para ver su ranking.",
+  "nadieRanking": "Todavía no hay nadie en este ranking.",
+  "ganadosDeJugados": "{a} ganados de {b} jugados",
+  "@ganadosDeJugados": {
+    "placeholders": {
+      "a": {
+        "type": "int"
+      },
+      "b": {
+        "type": "int"
+      }
+    }
+  },
+  "puntosAbrev": "{n} pts",
+  "@puntosAbrev": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "vozActivar": "Cantar puntos por voz",
+  "vozParar": "Dejar de escuchar",
+  "vozEscuchando": "Escuchando…",
+  "vozAyuda": "Di el nombre de quien gana el punto, «local», «visitante» o «deshacer».",
+  "vozNoDisponible": "No se puede usar la voz: revisa los permisos de micrófono y reconocimiento de voz.",
+  "vozNoEntendido": "No he entendido: «{texto}»",
+  "@vozNoEntendido": {
+    "placeholders": {
+      "texto": {
+        "type": "String"
+      }
+    }
+  },
+  "estadisticas": "Estadísticas",
+  "estMias": "Mías",
+  "estGrupo": "Del grupo",
+  "estPartidos": "Partidos",
+  "estVictorias": "Victorias",
+  "estJuegos": "Juegos",
+  "estPuntos": "Puntos",
+  "estPctPuntos": "Puntos ganados",
+  "estMediaPuntos": "Media por partido",
+  "estMediaDetalle": "{g} ganados · {p} perdidos",
+  "@estMediaDetalle": { "placeholders": { "g": { "type": "String" }, "p": { "type": "String" } } },
+  "estSoloConfirmados": "Solo cuentan los partidos con resultado confirmado.",
+  "estPuntosDe": "Puntos de {n} partidos puntuados con el tanteador",
+  "@estPuntosDe": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "estSinPartidos": "Aún no tienes partidos confirmados.",
+  "estSinPuntos": "Sin puntos guardados todavía: puntúa un partido con el tanteador.",
+  "estGanadosPerdidos": "{g} ganados · {p} perdidos",
+  "@estGanadosPerdidos": {
+    "placeholders": {
+      "g": {
+        "type": "int"
+      },
+      "p": {
+        "type": "int"
+      }
+    }
+  }
+}

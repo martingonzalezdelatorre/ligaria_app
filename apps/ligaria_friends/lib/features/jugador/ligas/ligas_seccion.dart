@@ -3,6 +3,7 @@ import 'package:ligaria_ui/ligaria_ui.dart';
 import '../grupos/grupos_repositorio.dart';
 import 'liga_page.dart';
 import 'ligas_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Sección «Ligas» de un grupo: lista, creación (solo administradores) y acceso a cada liga.
 class LigasSeccion extends StatefulWidget {
@@ -72,12 +73,12 @@ class _LigasSeccionState extends State<LigasSeccion> {
       children: [
         Row(
           children: [
-            Expanded(child: Text('Ligas', style: t.titleLarge)),
+            Expanded(child: Text(context.l10n.ligas, style: t.titleLarge)),
             if (widget.grupo.esAdmin)
               FilledButton.icon(
                 onPressed: _crear,
                 icon: const Icon(Icons.add),
-                label: const Text('Nueva liga'),
+                label: Text(context.l10n.nuevaLiga),
               ),
           ],
         ),
@@ -93,7 +94,7 @@ class _LigasSeccionState extends State<LigasSeccion> {
             }
             if (snap.hasError) {
               return Text(
-                'No se pudieron cargar las ligas.',
+                context.l10n.errCargarLigas,
                 style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
               );
             }
@@ -136,8 +137,8 @@ class _Vacio extends StatelessWidget {
           Expanded(
             child: Text(
               esAdmin
-                  ? 'Aún no hay ligas. Crea la primera para empezar a jugar.'
-                  : 'Aún no hay ligas. El administrador creará la primera; mientras, puedes crear partidos amistosos.',
+                  ? context.l10n.aunNoLigasAdmin
+                  : context.l10n.aunNoLigasMiembro,
               style: Theme.of(
                 context,
               ).textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
@@ -205,7 +206,10 @@ class _TarjetaLiga extends StatelessWidget {
                           Insignia(liga.estadoEtiqueta, color: cs.primary),
                           if (liga.partidos > 0)
                             Insignia(
-                              '${liga.jugados}/${liga.partidos} partidos',
+                              context.l10n.jugadosDePartidos(
+                                liga.jugados,
+                                liga.partidos,
+                              ),
                             ),
                         ],
                       ),
@@ -276,7 +280,7 @@ class _DialogoNuevaLigaState extends State<_DialogoNuevaLiga> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Nueva liga'),
+    title: Text(context.l10n.nuevaLiga),
     content: SizedBox(
       width: 380,
       child: SingleChildScrollView(
@@ -288,29 +292,27 @@ class _DialogoNuevaLigaState extends State<_DialogoNuevaLiga> {
               controller: _nombre,
               autofocus: true,
               onChanged: (_) => setState(() {}),
-              decoration: const InputDecoration(
-                labelText: 'Nombre (p. ej. Liga de verano)',
-              ),
+              decoration: InputDecoration(labelText: context.l10n.nombreLigaEj),
             ),
             _selector<Deporte>(
-              'Deporte',
+              context.l10n.deporte,
               Deporte.values,
               _deporte,
               (d) => d.etiqueta,
               (d) => _deporte = d,
             ),
             _selector<Modalidad>(
-              'Modalidad',
+              context.l10n.modalidad,
               Modalidad.values,
               _modalidad,
               (m) => m.etiqueta,
               (m) => _modalidad = m,
             ),
             _selector<int>(
-              'Formato de partido',
+              context.l10n.formatoPartido,
               const [1, 2, 3],
               _sets,
-              (s) => 'Al mejor de ${s * 2 - 1}',
+              (s) => context.l10n.alMejorDe(s * 2 - 1),
               (s) => _sets = s,
             ),
           ],
@@ -320,7 +322,7 @@ class _DialogoNuevaLigaState extends State<_DialogoNuevaLiga> {
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
+        child: Text(context.l10n.cancelar),
       ),
       FilledButton(
         onPressed: _nombre.text.trim().length < 2
@@ -329,7 +331,7 @@ class _DialogoNuevaLigaState extends State<_DialogoNuevaLiga> {
                 context,
                 _NuevaLiga(_nombre.text, _deporte, _modalidad, _sets),
               ),
-        child: const Text('Crear'),
+        child: Text(context.l10n.crear),
       ),
     ],
   );

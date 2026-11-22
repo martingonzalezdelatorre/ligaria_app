@@ -1,3 +1,4 @@
+import '../../core/idioma.dart';
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,8 +10,20 @@ class SuperadminHome extends ConsumerWidget {
   const SuperadminHome({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => const AreaTabs(secciones: [
-        SeccionArea(Icons.apartment_outlined, 'Organizaciones', OrganizacionesTab(), iconoActivo: Icons.apartment),
-        SeccionArea(Icons.emoji_events_outlined, 'Ligas', LigasSaTab(), iconoActivo: Icons.emoji_events),
-      ]);
+  Widget build(BuildContext context, WidgetRef ref) => AreaTabs(
+    secciones: [
+      SeccionArea(
+        Icons.apartment_outlined,
+        context.l10n.tabOrganizaciones,
+        const OrganizacionesTab(),
+        iconoActivo: Icons.apartment,
+      ),
+      SeccionArea(
+        Icons.emoji_events_outlined,
+        context.l10n.tabLigas,
+        const LigasSaTab(),
+        iconoActivo: Icons.emoji_events,
+      ),
+    ],
+  );
 }

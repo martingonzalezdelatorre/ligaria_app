@@ -7,6 +7,7 @@ import '../amistosos/amistosos_seccion.dart';
 import '../ligas/ligas_repositorio.dart';
 import '../ligas/ligas_seccion.dart';
 import 'grupos_repositorio.dart';
+import '../../../core/idioma.dart';
 
 /// Detalle de un grupo: código y mensaje de invitación, y lista de miembros.
 class GrupoPage extends StatefulWidget {
@@ -45,7 +46,7 @@ class _GrupoPageState extends State<GrupoPage> {
           email: destino,
           urlApp: Invitacion.base,
         );
-        if (mounted) avisar(context, 'Invitación enviada a $destino');
+        if (mounted) avisar(context, context.l10n.invitacionEnviadaA(destino));
       } on GruposException catch (e) {
         if (mounted) avisar(context, e.mensaje);
       }
@@ -60,7 +61,7 @@ class _GrupoPageState extends State<GrupoPage> {
     if (!ok && mounted) {
       _copiar(
         Invitacion.mensaje(g, _codigo, widget.repo.yo),
-        'No se pudo abrir WhatsApp. Invitación copiada',
+        context.l10n.noSePudoWhatsapp,
       );
     }
   }
@@ -79,16 +80,13 @@ class _GrupoPageState extends State<GrupoPage> {
           .toList();
       if (!mounted) return;
       if (libres.isEmpty) {
-        avisar(
-          context,
-          'No tienes amigos que añadir: invita a alguien y aparecerá aquí.',
-        );
+        avisar(context, context.l10n.sinAmigosAnadir);
         return;
       }
       final elegido = await showDialog<Contacto>(
         context: context,
         builder: (c) => SimpleDialog(
-          title: const Text('Añadir un amigo al grupo'),
+          title: Text(c.l10n.anadirAmigoGrupo),
           children: [
             for (final a in libres)
               SimpleDialogOption(
@@ -108,7 +106,7 @@ class _GrupoPageState extends State<GrupoPage> {
       await widget.repo.anadirContacto(widget.grupo.id, elegido.id);
       if (!mounted) return;
       setState(() => _miembros = widget.repo.miembros(widget.grupo.id));
-      avisar(context, '${elegido.nombre} añadido al grupo');
+      avisar(context, context.l10n.amigoAnadidoGrupo(elegido.nombre));
     } on GruposException catch (e) {
       if (mounted) avisar(context, e.mensaje);
     }
@@ -124,8 +122,8 @@ class _GrupoPageState extends State<GrupoPage> {
       avisar(
         context,
         hacer
-            ? '${m.nombre} ahora es administrador'
-            : '${m.nombre} ya no es administrador',
+            ? context.l10n.ahoraEsAdmin(m.nombre)
+            : context.l10n.yaNoEsAdmin(m.nombre),
       );
     } on GruposException catch (e) {
       if (mounted) avisar(context, e.mensaje);
@@ -136,18 +134,16 @@ class _GrupoPageState extends State<GrupoPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Generar código nuevo'),
-        content: const Text(
-          'El código actual dejará de funcionar. Quienes ya están en el grupo no se ven afectados.',
-        ),
+        title: Text(c.l10n.generarCodigoNuevo),
+        content: Text(c.l10n.codigoActualDejara),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Cancelar'),
+            child: Text(c.l10n.cancelar),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Generar'),
+            child: Text(c.l10n.generar),
           ),
         ],
       ),
@@ -223,12 +219,13 @@ class _GrupoPageState extends State<GrupoPage> {
                     codigo: _codigo,
                     esAdmin: g.esAdmin,
                     regenerando: _regenerando,
-                    onCopiarCodigo: () => _copiar(_codigo, 'Código copiado'),
+                    onCopiarCodigo: () =>
+                        _copiar(_codigo, context.l10n.codigoCopiado),
                     onWhatsapp: () => _compartir(porEmail: false),
                     onEmail: () => _compartir(porEmail: true),
                     onCopiarMensaje: () => _copiar(
                       Invitacion.enlace(_codigo, widget.repo.yo),
-                      'Enlace copiado. Quien lo abra se registra y entra al grupo',
+                      context.l10n.enlaceCopiado,
                     ),
                     onRegenerar: _regenerar,
                   ),
@@ -236,12 +233,14 @@ class _GrupoPageState extends State<GrupoPage> {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    Expanded(child: Text('Miembros', style: t.titleLarge)),
+                    Expanded(
+                      child: Text(context.l10n.miembros, style: t.titleLarge),
+                    ),
                     if (g.esAdmin)
                       TextButton.icon(
                         onPressed: _anadirAmigo,
                         icon: const Icon(Icons.group_add_outlined),
-                        label: const Text('Añadir amigo'),
+                        label: Text(context.l10n.anadirAmigo),
                       ),
                   ],
                 ),
@@ -257,7 +256,7 @@ class _GrupoPageState extends State<GrupoPage> {
                     }
                     if (snap.hasError) {
                       return Text(
-                        'No se pudieron cargar los miembros.',
+                        context.l10n.errCargarMiembros,
                         style: t.bodyMedium?.copyWith(
                           color: cs.onSurfaceVariant,
                         ),
@@ -323,12 +322,12 @@ class _TarjetaInvitar extends StatelessWidget {
             children: [
               Icon(Icons.person_add_alt_1_outlined, color: cs.primary),
               const SizedBox(width: 10),
-              Text('Invita a tus amigos', style: t.titleMedium),
+              Text(context.l10n.pasoInvita, style: t.titleMedium),
             ],
           ),
           const SizedBox(height: 6),
           Text(
-            'Envía el enlace por WhatsApp o email: quien lo abra se registra y entra al grupo automáticamente. También puede usar el código en «Unirme con código».',
+            context.l10n.invitaTexto,
             style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
           ),
           const SizedBox(height: 18),
@@ -373,23 +372,23 @@ class _TarjetaInvitar extends StatelessWidget {
               FilledButton.icon(
                 onPressed: onWhatsapp,
                 icon: const Icon(Icons.chat_rounded),
-                label: const Text('WhatsApp'),
+                label: Text(context.l10n.whatsapp),
               ),
               FilledButton.tonalIcon(
                 onPressed: onEmail,
                 icon: const Icon(Icons.mail_outline_rounded),
-                label: const Text('Email'),
+                label: Text(context.l10n.email),
               ),
               OutlinedButton.icon(
                 onPressed: onCopiarMensaje,
                 icon: const Icon(Icons.link_rounded),
-                label: const Text('Copiar enlace'),
+                label: Text(context.l10n.copiarEnlace),
               ),
               if (esAdmin)
                 OutlinedButton.icon(
                   onPressed: regenerando ? null : onRegenerar,
                   icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Código nuevo'),
+                  label: Text(context.l10n.codigoNuevo),
                 ),
             ],
           ),
@@ -424,21 +423,27 @@ class _FilaMiembro extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              m.esYo ? '${m.nombre} (tú)' : m.nombre,
+              m.esYo ? '${m.nombre} ${context.l10n.tu}' : m.nombre,
               style: Theme.of(context).textTheme.titleSmall,
             ),
           ),
           if (m.esAdmin)
-            Insignia('Admin', color: cs.primary, icono: Icons.shield_outlined),
+            Insignia(
+              context.l10n.admin,
+              color: cs.primary,
+              icono: Icons.shield_outlined,
+            ),
           if (onCambiarAdmin != null)
             PopupMenuButton<void>(
-              tooltip: 'Opciones',
+              tooltip: context.l10n.opciones,
               icon: const Icon(Icons.more_vert),
               itemBuilder: (_) => [
                 PopupMenuItem(
                   onTap: onCambiarAdmin,
                   child: Text(
-                    m.esAdmin ? 'Quitar administrador' : 'Hacer administrador',
+                    m.esAdmin
+                        ? context.l10n.quitarAdmin
+                        : context.l10n.hacerAdmin,
                   ),
                 ),
               ],
@@ -471,11 +476,11 @@ class _DialogoDestinoState extends State<_DialogoDestino> {
     if (widget.porEmail) {
       return RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(t)
           ? null
-          : 'Introduce un email válido';
+          : context.l10n.emailValido;
     }
     return Invitacion.telefono(t).length >= 9
         ? null
-        : 'Introduce un teléfono válido';
+        : context.l10n.telefonoValido;
   }
 
   void _enviar() {
@@ -486,7 +491,11 @@ class _DialogoDestinoState extends State<_DialogoDestino> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: Text(widget.porEmail ? 'Invitar por email' : 'Invitar por WhatsApp'),
+    title: Text(
+      widget.porEmail
+          ? context.l10n.invitarPorEmail
+          : context.l10n.invitarPorWhatsapp,
+    ),
     actionsPadding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
     contentPadding: const EdgeInsets.fromLTRB(28, 20, 28, 12),
     content: SizedBox(
@@ -502,15 +511,15 @@ class _DialogoDestinoState extends State<_DialogoDestino> {
           validator: _validar,
           onFieldSubmitted: (_) => _enviar(),
           decoration: InputDecoration(
-            labelText: widget.porEmail ? 'Email' : 'Teléfono',
+            labelText: widget.porEmail
+                ? context.l10n.email
+                : context.l10n.telefono,
             prefixIcon: Icon(
               widget.porEmail
                   ? Icons.mail_outline_rounded
                   : Icons.phone_outlined,
             ),
-            helperText: widget.porEmail
-                ? null
-                : 'Con prefijo (+34…). Sin prefijo se asume España.',
+            helperText: widget.porEmail ? null : context.l10n.conPrefijo,
           ),
         ),
       ),
@@ -518,9 +527,9 @@ class _DialogoDestinoState extends State<_DialogoDestino> {
     actions: [
       TextButton(
         onPressed: () => Navigator.pop(context),
-        child: const Text('Cancelar'),
+        child: Text(context.l10n.cancelar),
       ),
-      FilledButton(onPressed: _enviar, child: const Text('Continuar')),
+      FilledButton(onPressed: _enviar, child: Text(context.l10n.continuar)),
     ],
   );
 }

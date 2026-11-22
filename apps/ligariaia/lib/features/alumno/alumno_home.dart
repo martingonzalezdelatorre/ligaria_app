@@ -1,3 +1,4 @@
+import '../../core/idioma.dart';
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,8 +10,20 @@ class AlumnoHome extends ConsumerWidget {
   const AlumnoHome({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) => const AreaTabs(secciones: [
-        SeccionArea(Icons.emoji_events_outlined, 'Liga', LigaTab(), iconoActivo: Icons.emoji_events),
-        SeccionArea(Icons.badge_outlined, 'Mi ficha', FichaTab(), iconoActivo: Icons.badge),
-      ]);
+  Widget build(BuildContext context, WidgetRef ref) => AreaTabs(
+    secciones: [
+      SeccionArea(
+        Icons.emoji_events_outlined,
+        context.l10n.secLiga,
+        const LigaTab(),
+        iconoActivo: Icons.emoji_events,
+      ),
+      SeccionArea(
+        Icons.badge_outlined,
+        context.l10n.miFicha,
+        const FichaTab(),
+        iconoActivo: Icons.badge,
+      ),
+    ],
+  );
 }

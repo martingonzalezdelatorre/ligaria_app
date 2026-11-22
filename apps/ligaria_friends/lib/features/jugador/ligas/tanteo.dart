@@ -1,3 +1,11 @@
+/// Lo que devuelve el tanteador al guardar: los sets y la secuencia de puntos, en orden.
+/// [puntos] es una cadena de «L» (punto del local) y «V» (del visitante).
+class ResultadoTanteador {
+  const ResultadoTanteador({required this.sets, required this.puntos});
+  final List<List<int>> sets;
+  final String puntos;
+}
+
 /// Marcador de un partido de tenis o pádel, punto a punto. Inmutable: cada punto devuelve un estado nuevo.
 class Tanteo {
   const Tanteo({

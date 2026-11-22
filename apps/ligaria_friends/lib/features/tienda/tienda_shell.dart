@@ -5,6 +5,7 @@ import '../../core/notificaciones.dart';
 import 'pedidos_recibidos_page.dart';
 import 'productos_page.dart';
 import 'tienda_repositorio.dart';
+import '../../core/idioma.dart';
 
 /// Pantalla principal del perfil Tienda: gestionar productos y ver los pedidos recibidos.
 class TiendaShell extends StatefulWidget {
@@ -26,18 +27,21 @@ class TiendaShell extends StatefulWidget {
 class _TiendaShellState extends State<TiendaShell> {
   int _seccion = 0;
 
-  static const _destinos = [
+  List<({IconData icono, IconData activo, String texto})> _destinos(
+    AppL10n l,
+  ) => [
     (
       icono: Icons.inventory_2_outlined,
       activo: Icons.inventory_2,
-      texto: 'Productos',
+      texto: l.productos,
     ),
-    (icono: Icons.inbox_outlined, activo: Icons.inbox, texto: 'Pedidos'),
+    (icono: Icons.inbox_outlined, activo: Icons.inbox, texto: l.pedidos),
   ];
 
   @override
   Widget build(BuildContext context) {
     final ancha = MediaQuery.sizeOf(context).width >= 720;
+    final destinos = _destinos(context.l10n);
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -47,7 +51,8 @@ class _TiendaShellState extends State<TiendaShell> {
             const SizedBox(width: 12),
             FutureBuilder<Comercio>(
               future: widget.repo.miTienda(),
-              builder: (_, snap) => Text(snap.data?.nombre ?? 'Mi tienda'),
+              builder: (_, snap) =>
+                  Text(snap.data?.nombre ?? context.l10n.miTienda),
             ),
           ],
         ),
@@ -57,9 +62,10 @@ class _TiendaShellState extends State<TiendaShell> {
               servicio: widget.notificaciones!,
               tipos: tiposNotificacion,
             ),
+          const SelectorIdioma(),
           if (widget.onSalir != null)
             IconButton(
-              tooltip: 'Cerrar sesión',
+              tooltip: context.l10n.cerrarSesion,
               onPressed: widget.onSalir,
               icon: const Icon(Icons.logout_rounded),
             ),
@@ -71,7 +77,7 @@ class _TiendaShellState extends State<TiendaShell> {
               selectedIndex: _seccion,
               onDestinationSelected: (i) => setState(() => _seccion = i),
               destinations: [
-                for (final d in _destinos)
+                for (final d in destinos)
                   NavigationDestination(
                     icon: Icon(d.icono),
                     selectedIcon: Icon(d.activo),
@@ -90,7 +96,7 @@ class _TiendaShellState extends State<TiendaShell> {
                   onDestinationSelected: (i) => setState(() => _seccion = i),
                   labelType: NavigationRailLabelType.all,
                   destinations: [
-                    for (final d in _destinos)
+                    for (final d in destinos)
                       NavigationRailDestination(
                         icon: Icon(d.icono),
                         selectedIcon: Icon(d.activo),

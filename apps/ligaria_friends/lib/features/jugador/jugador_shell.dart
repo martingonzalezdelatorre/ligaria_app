@@ -10,6 +10,7 @@ import 'grupos/grupos_repositorio.dart';
 import 'ligas/ligas_repositorio.dart';
 import 'ranking/ranking_page.dart';
 import 'store/store_page.dart';
+import '../../core/idioma.dart';
 
 /// Pantalla principal del perfil Jugador: grupos, ligas y partidos, y Store.
 class JugadorShell extends StatefulWidget {
@@ -40,23 +41,26 @@ class JugadorShell extends StatefulWidget {
 class _JugadorShellState extends State<JugadorShell> {
   int _seccion = 0;
 
-  static const _destinos = [
-    (icono: Icons.groups_outlined, activo: Icons.groups, texto: 'Grupos'),
+  List<({IconData icono, IconData activo, String texto})> _destinos(
+    AppL10n l,
+  ) => [
+    (icono: Icons.groups_outlined, activo: Icons.groups, texto: l.grupos),
     (
       icono: Icons.storefront_outlined,
       activo: Icons.storefront,
-      texto: 'Store',
+      texto: l.store,
     ),
     (
       icono: Icons.emoji_events_outlined,
       activo: Icons.emoji_events,
-      texto: 'Ranking',
+      texto: l.ranking,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     final ancha = MediaQuery.sizeOf(context).width >= 720;
+    final destinos = _destinos(context.l10n);
     final contenido = IndexedStack(
       index: _seccion,
       children: [
@@ -86,7 +90,7 @@ class _JugadorShellState extends State<JugadorShell> {
               tipos: tiposNotificacion,
             ),
           IconButton(
-            tooltip: 'Ajustes de cuenta',
+            tooltip: context.l10n.ajustesCuenta,
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => AjustesPage(auth: widget.auth),
@@ -96,7 +100,7 @@ class _JugadorShellState extends State<JugadorShell> {
           ),
           if (widget.onSalir != null)
             IconButton(
-              tooltip: 'Cerrar sesión',
+              tooltip: context.l10n.cerrarSesion,
               onPressed: widget.onSalir,
               icon: const Icon(Icons.logout_rounded),
             ),
@@ -108,7 +112,7 @@ class _JugadorShellState extends State<JugadorShell> {
               selectedIndex: _seccion,
               onDestinationSelected: (i) => setState(() => _seccion = i),
               destinations: [
-                for (final d in _destinos)
+                for (final d in destinos)
                   NavigationDestination(
                     icon: Icon(d.icono),
                     selectedIcon: Icon(d.activo),
@@ -127,7 +131,7 @@ class _JugadorShellState extends State<JugadorShell> {
                   onDestinationSelected: (i) => setState(() => _seccion = i),
                   labelType: NavigationRailLabelType.all,
                   destinations: [
-                    for (final d in _destinos)
+                    for (final d in destinos)
                       NavigationRailDestination(
                         icon: Icon(d.icono),
                         selectedIcon: Icon(d.activo),

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
+import 'comando_voz.dart';
+import 'escucha_voz.dart';
 import 'ligas_repositorio.dart';
 import 'marcador_repositorio.dart';
 import 'tablero_marcador.dart';
 import 'tanteo.dart';
+import '../../../core/idioma.dart';
 
 /// Tanteador en directo (puntos, juegos y sets) de un partido de tenis o pádel.
-/// Al terminar, devuelve los sets con `Navigator.pop` para guardarlos como resultado.
+/// Al terminar, devuelve un [ResultadoTanteador] (sets y puntos) con `Navigator.pop`.
 class TanteadorPage extends StatefulWidget {
   const TanteadorPage({
     super.key,
@@ -34,13 +37,87 @@ class _TanteadorPageState extends State<TanteadorPage> {
     puntoDeOro: widget.deporte == Deporte.padel,
   );
   final _historial = <Tanteo>[];
+  // Quién ganó cada punto («L» / «V»), en paralelo al historial, para guardarlos con el resultado.
+  final _secuencia = <String>[];
   bool _emitiendo = true;
   bool _avisado = false;
+
+  // Voz: se escucha de forma continua mientras esté activada y el partido no haya terminado.
+  late final _interprete = InterpreteVoz(
+    local: widget.local,
+    visitante: widget.visitante,
+  );
+  bool _vozActiva = false;
+  bool _vozPreparada = false;
 
   @override
   void initState() {
     super.initState();
     _emitir();
+  }
+
+  @override
+  void dispose() {
+    _vozActiva = false;
+    EscuchaVoz.instancia.parar();
+    super.dispose();
+  }
+
+  Future<void> _alternarVoz() async {
+    if (_vozActiva) {
+      setState(() => _vozActiva = false);
+      await EscuchaVoz.instancia.parar();
+      return;
+    }
+    if (!_vozPreparada) {
+      final ok = await EscuchaVoz.instancia.preparar(
+        alTerminarEscucha: _reescuchar,
+        alFallar: (_) {},
+      );
+      if (!mounted) return;
+      if (!ok) {
+        avisar(context, context.l10n.vozNoDisponible);
+        return;
+      }
+      _vozPreparada = true;
+    }
+    setState(() => _vozActiva = true);
+    await _escuchar();
+  }
+
+  Future<void> _escuchar() async {
+    if (!mounted || !_vozActiva || _t.terminado) return;
+    await EscuchaVoz.instancia.escuchar(
+      idioma: Localizations.localeOf(context).languageCode,
+      alFrase: _alFrase,
+    );
+  }
+
+  /// El reconocedor se corta solo tras unos segundos de silencio: se reanuda mientras siga activo.
+  void _reescuchar() {
+    if (!mounted || !_vozActiva) return;
+    if (_t.terminado) {
+      setState(() => _vozActiva = false);
+      return;
+    }
+    Future.delayed(const Duration(milliseconds: 300), _escuchar);
+  }
+
+  void _alFrase(String frase) {
+    if (!mounted) return;
+    final comandos = _interprete.interpretar(frase);
+    if (comandos.isEmpty) {
+      avisar(context, context.l10n.vozNoEntendido(frase));
+      return;
+    }
+    for (final c in comandos) {
+      switch (c) {
+        case PuntoVoz(:final local):
+          _punto(local);
+        case DeshacerVoz():
+          _deshacer();
+      }
+    }
   }
 
   /// Publica el marcador para que el resto del grupo lo siga. Si no se puede (p. ej. no juegas
@@ -58,7 +135,7 @@ class _TanteadorPageState extends State<TanteadorPage> {
       setState(() => _emitiendo = false);
       if (!_avisado) {
         _avisado = true;
-        avisar(context, 'Tu marcador no se emite en directo en este partido.');
+        avisar(context, context.l10n.marcadorNoEmite);
       }
     }
   }
@@ -67,6 +144,7 @@ class _TanteadorPageState extends State<TanteadorPage> {
     if (_t.terminado) return;
     setState(() {
       _historial.add(_t);
+      _secuencia.add(local ? 'L' : 'V');
       _t = _t.punto(local);
     });
     _emitir();
@@ -74,7 +152,10 @@ class _TanteadorPageState extends State<TanteadorPage> {
 
   void _deshacer() {
     if (_historial.isEmpty) return;
-    setState(() => _t = _historial.removeLast());
+    setState(() {
+      _t = _historial.removeLast();
+      _secuencia.removeLast();
+    });
     _emitir();
   }
 
@@ -87,18 +168,16 @@ class _TanteadorPageState extends State<TanteadorPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('¿Salir del tanteador?'),
-        content: const Text(
-          'El partido en curso no se ha guardado y se perderá.',
-        ),
+        title: Text(c.l10n.salirTanteador),
+        content: Text(c.l10n.partidoNoGuardado),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(c, false),
-            child: const Text('Seguir'),
+            child: Text(c.l10n.seguir),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(c, true),
-            child: const Text('Salir'),
+            child: Text(c.l10n.salir),
           ),
         ],
       ),
@@ -121,11 +200,21 @@ class _TanteadorPageState extends State<TanteadorPage> {
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          title: Text('Tanteador · ${widget.deporte.etiqueta}'),
+          title: Text(context.l10n.tanteadorDeporte(widget.deporte.etiqueta)),
           leading: BackButton(onPressed: _salir),
           actions: [
             IconButton(
-              tooltip: 'Deshacer último punto',
+              tooltip: _vozActiva
+                  ? context.l10n.vozParar
+                  : context.l10n.vozActivar,
+              onPressed: _t.terminado ? null : _alternarVoz,
+              icon: Icon(
+                _vozActiva ? Icons.mic_rounded : Icons.mic_none_rounded,
+                color: _vozActiva ? cs.primary : null,
+              ),
+            ),
+            IconButton(
+              tooltip: context.l10n.deshacerPunto,
               onPressed: _historial.isEmpty ? null : _deshacer,
               icon: const Icon(Icons.undo_rounded),
             ),
@@ -164,7 +253,9 @@ class _TanteadorPageState extends State<TanteadorPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            'Gana ${_t.ganaLocal ? widget.local : widget.visitante}',
+                            context.l10n.ganaX(
+                              _t.ganaLocal ? widget.local : widget.visitante,
+                            ),
                             style: t.titleLarge,
                             textAlign: TextAlign.center,
                           ),
@@ -180,18 +271,39 @@ class _TanteadorPageState extends State<TanteadorPage> {
                     FilledButton.icon(
                       onPressed: () {
                         _emitir(true);
-                        Navigator.pop(context, _t.resultado);
+                        Navigator.pop(
+                          context,
+                          ResultadoTanteador(
+                            sets: _t.resultado,
+                            puntos: _secuencia.join(),
+                          ),
+                        );
                       },
                       icon: const Icon(Icons.save_rounded),
-                      label: const Text('Guardar resultado'),
+                      label: Text(context.l10n.guardarResultado),
                     ),
                     const SizedBox(height: 8),
                     TextButton.icon(
                       onPressed: _deshacer,
                       icon: const Icon(Icons.undo_rounded),
-                      label: const Text('Corregir último punto'),
+                      label: Text(context.l10n.corregirPunto),
                     ),
                   ] else ...[
+                    if (_vozActiva) ...[
+                      Row(
+                        children: [
+                          Icon(Icons.mic_rounded, color: cs.primary, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '${context.l10n.vozEscuchando} ${context.l10n.vozAyuda}',
+                              style: t.bodySmall,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     _BotonPunto(
                       nombre: widget.local,
                       onTap: () => _punto(true),
@@ -205,10 +317,8 @@ class _TanteadorPageState extends State<TanteadorPage> {
                       const SizedBox(height: 12),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Punto de oro'),
-                        subtitle: const Text(
-                          'En el 40-40 el siguiente punto decide el juego',
-                        ),
+                        title: Text(context.l10n.puntoDeOro),
+                        subtitle: Text(context.l10n.puntoDeOroTxt),
                         value: _t.puntoDeOro,
                         onChanged: (v) {
                           setState(() => _t = _t.copiar(puntoDeOro: v));
@@ -238,7 +348,7 @@ class _BotonPunto extends StatelessWidget {
     child: FilledButton(
       onPressed: onTap,
       child: Text(
-        'Punto para $nombre',
+        context.l10n.puntoPara(nombre),
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
       ),

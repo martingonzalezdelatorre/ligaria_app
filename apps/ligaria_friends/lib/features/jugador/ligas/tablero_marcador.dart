@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'tanteo.dart';
+import '../../../core/idioma.dart';
 
 /// Tablero del marcador (sets cerrados, juegos y punto actual). Se adapta al ancho:
 /// compacto en móvil y más grande en pantallas anchas. Lo usan el tanteador y la vista en directo.
@@ -39,7 +40,7 @@ class TableroMarcador extends StatelessWidget {
                   if (enDirecto && !t.terminado) const _EnDirecto(),
                   const Spacer(),
                   if (t.desempate && !t.terminado)
-                    Insignia('Desempate', color: cs.primary),
+                    Insignia(context.l10n.desempate, color: cs.primary),
                 ],
               ),
               if (enDirecto || t.desempate) SizedBox(height: 10 * k),
@@ -67,7 +68,9 @@ class TableroMarcador extends StatelessWidget {
                 children: [
                   const Spacer(),
                   Text(
-                    t.terminado ? 'Sets' : 'Sets · Juegos · Punto',
+                    t.terminado
+                        ? context.l10n.sets
+                        : context.l10n.setsJuegosPunto,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
@@ -185,7 +188,7 @@ class _EnDirectoState extends State<_EnDirecto>
       ),
       const SizedBox(width: 6),
       Text(
-        'EN DIRECTO',
+        context.l10n.enDirecto,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
           fontWeight: FontWeight.w900,
           letterSpacing: 1,

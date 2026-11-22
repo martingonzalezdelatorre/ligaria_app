@@ -7,16 +7,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'auth.dart';
 import 'config.dart';
+import 'idioma.dart';
 
 /// Tipos que emite el backend (`public.notificacion.tipo`) y su etiqueta en las preferencias.
-const tiposNotificacion = {
-  'resultado_registrado': 'Resultados de encuentros',
-  'competicion_en_curso': 'Calendario disponible',
-  'inscripcion_estado': 'Inscripciones aceptadas o rechazadas',
+Map<String, String> get tiposNotificacion => {
+  'resultado_registrado': l10nActual.notifResultados,
+  'competicion_en_curso': l10nActual.notifCalendario,
+  'inscripcion_estado': l10nActual.notifInscripciones,
+  'partido_programacion': l10nActual.notifProgramacion,
 };
 
 /// Servicio de notificaciones del usuario con sesión; `null` sin sesión o sin Supabase (demo/tests).
-final notificacionesProvider = FutureProvider<NotificacionesServicio?>((ref) async {
+final notificacionesProvider = FutureProvider<NotificacionesServicio?>((
+  ref,
+) async {
   final uid = ref.watch(sesionProvider).value;
   if (uid == null || !AppConfig.configurada) return null;
   final servicio = NotificacionesServicio(

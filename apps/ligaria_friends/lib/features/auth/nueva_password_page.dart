@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'auth_repositorio.dart';
 import 'auth_widgets.dart';
+import '../../core/idioma.dart';
 
 /// Paso 2 de la recuperación: se llega desde el enlace del correo (sesión de recuperación)
 /// y se elige la contraseña nueva.
@@ -45,10 +46,7 @@ class _NuevaPasswordPageState extends State<NuevaPasswordPage> {
       if (mounted) widget.onTerminar();
     } on AuthException {
       if (mounted) {
-        setState(
-          () => _error =
-              'No se pudo cambiar la contraseña. El enlace puede haber caducado: pide uno nuevo.',
-        );
+        setState(() => _error = l10nActual.errCambiarContrasena);
       }
     } finally {
       if (mounted) setState(() => _cargando = false);
@@ -70,10 +68,10 @@ class _NuevaPasswordPageState extends State<NuevaPasswordPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('Elige tu nueva contraseña', style: t.headlineSmall),
+            Text(context.l10n.eligeNuevaContrasena, style: t.headlineSmall),
             const SizedBox(height: 6),
             Text(
-              'Mínimo 8 caracteres.',
+              context.l10n.minimo8Punto,
               style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: 24),
@@ -83,25 +81,28 @@ class _NuevaPasswordPageState extends State<NuevaPasswordPage> {
             ],
             CampoPassword(
               controller: _nueva,
-              etiqueta: 'Nueva contraseña',
+              etiqueta: context.l10n.nuevaContrasena,
               accion: TextInputAction.next,
             ),
             espacioCampo,
             CampoPassword(
               controller: _repite,
-              etiqueta: 'Repite la contraseña',
+              etiqueta: context.l10n.repiteContrasena,
               validator: (v) =>
-                  v != _nueva.text ? 'Las contraseñas no coinciden' : null,
+                  v != _nueva.text ? context.l10n.contrasenasNoCoinciden : null,
               onEnviar: _guardar,
             ),
             const SizedBox(height: 24),
             BotonPrincipal(
-              texto: 'Guardar contraseña',
+              texto: context.l10n.guardarContrasena,
               cargando: _cargando,
               onPressed: _guardar,
             ),
             const SizedBox(height: 8),
-            TextButton(onPressed: _cancelar, child: const Text('Cancelar')),
+            TextButton(
+              onPressed: _cancelar,
+              child: Text(context.l10n.cancelar),
+            ),
           ],
         ),
       ),
