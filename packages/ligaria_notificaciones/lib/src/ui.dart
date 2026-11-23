@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:ligaria_ui/ligaria_ui.dart' show Cargando;
 
 import 'notificacion.dart';
 import 'servicio.dart';
@@ -201,7 +202,7 @@ class _BandejaNotificacionesPageState extends State<BandejaNotificacionesPage> {
       future: _lista,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: Cargando());
         }
         if (snap.hasError) {
           return Center(
@@ -308,7 +309,7 @@ class _PreferenciasNotificacionesPageState
             child: Text(TextosNotificaciones.actual.errorCargarPreferencias),
           )
         : _prefs == null
-        ? const Center(child: CircularProgressIndicator())
+        ? const Center(child: Cargando())
         : ListView(
             children: [
               for (final e in widget.tipos.entries) ...[

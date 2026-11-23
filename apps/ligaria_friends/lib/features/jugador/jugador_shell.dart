@@ -9,6 +9,8 @@ import 'grupos/grupos_page.dart';
 import 'grupos/grupos_repositorio.dart';
 import 'ligas/ligas_repositorio.dart';
 import 'ranking/ranking_page.dart';
+import 'social/acciones_jugador.dart';
+import 'social/chat_page.dart';
 import 'store/store_page.dart';
 import '../../core/idioma.dart';
 
@@ -70,7 +72,14 @@ class _JugadorShellState extends State<JugadorShell> {
           amistosos: widget.amistosos,
         ),
         const StorePage(),
-        RankingPage(grupos: widget.grupos),
+        RankingPage(
+          grupos: widget.grupos,
+          acciones: AccionesJugador(
+            grupos: widget.grupos,
+            ligas: widget.ligas,
+            amistosos: widget.amistosos,
+          ),
+        ),
       ],
     );
     return Scaffold(
@@ -84,6 +93,13 @@ class _JugadorShellState extends State<JugadorShell> {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: context.l10n.mensajesTitulo,
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const ConversacionesPage()),
+            ),
+            icon: const Icon(Icons.forum_outlined),
+          ),
           if (widget.notificaciones != null)
             CampanaNotificaciones(
               servicio: widget.notificaciones!,

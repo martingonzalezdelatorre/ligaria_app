@@ -65,7 +65,7 @@ class _LoginPageState extends State<LoginPage> {
                 AvisoError(_error!),
                 const SizedBox(height: 16),
               ],
-              TextFormField(
+              CampoTextoForm(
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
                 autofillHints: const [AutofillHints.email],

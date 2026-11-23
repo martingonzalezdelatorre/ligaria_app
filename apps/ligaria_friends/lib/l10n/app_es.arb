@@ -669,5 +669,43 @@
         "type": "int"
       }
     }
-  }
+  },
+  "tusAmigos": "Tus amigos",
+  "amigosSub": "Gente con la que has contactado o invitado desde la app",
+  "sinAmigosHome": "Aún no tienes amigos: invita a alguien desde un grupo y aparecerá aquí, tenga o no grupo.",
+  "amigosTab": "Amigos",
+  "sinAmistososHome": "Aún no hay amistosos entre amigos. Crea un partido sin grupo y aparecerá aquí.",
+  "tabJugadores": "Jugadores",
+  "accWhatsapp": "WhatsApp",
+  "accMensaje": "Mensaje interno",
+  "accRetar": "Retar a un partido",
+  "accAnadirAmigo": "Añadir a mis amigos",
+  "sinWhatsapp": "{nombre} no ha compartido su teléfono para WhatsApp.",
+  "@sinWhatsapp": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "errWhatsapp": "No se pudo abrir WhatsApp.",
+  "amigoAnadido": "Añadido a tus amigos",
+  "buscarPorNombre": "Buscar por nombre",
+  "filtroProvincia": "Provincia",
+  "filtroTodasProvincias": "Todas las provincias",
+  "filtroLocalidad": "Localidad",
+  "btnBuscar": "Buscar",
+  "buscaJugadoresHint": "Busca jugadores por nombre, provincia o localidad.",
+  "sinJugadoresZona": "No hay jugadores con esos criterios. Solo aparecen quienes activan su visibilidad en Ajustes.",
+  "escribeMensaje": "Escribe un mensaje…",
+  "mensajesTitulo": "Mensajes",
+  "sinMensajes": "Aún no tienes mensajes.",
+  "chatVacio": "Empieza la conversación.",
+  "errMensaje": "No se pudo enviar el mensaje.",
+  "telefonoWhatsapp": "Teléfono (WhatsApp)",
+  "buscableTitulo": "Aparecer en la búsqueda de jugadores",
+  "buscableDetalle": "Otros jugadores podrán encontrarte por nombre o zona y escribirte.",
+  "telVisibleTitulo": "Compartir mi teléfono para WhatsApp",
+  "telVisibleDetalle": "Solo lo verán tus amigos, compañeros de grupo y quienes te encuentren en la búsqueda.",
+  "seccionJugadores": "Jugadores"
 }

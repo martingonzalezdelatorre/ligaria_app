@@ -5,6 +5,8 @@ import '../amistosos/amistosos_repositorio.dart';
 import '../amistosos/amistosos_seccion.dart';
 import '../ligas/ligas_repositorio.dart';
 import '../ligas/nuevo_partido.dart';
+import '../social/acciones_jugador.dart';
+import '../social/jugadores_tab.dart';
 import 'grupo_page.dart';
 import 'grupos_repositorio.dart';
 import '../../../core/idioma.dart';
@@ -25,13 +27,34 @@ class GruposPage extends StatefulWidget {
 }
 
 class _GruposPageState extends State<GruposPage> {
-  late Future<List<Grupo>> _grupos = widget.repo.misGrupos();
+  late Future<_Inicio> _datos = _cargar();
   int _version = 0; // fuerza a recargar los amistosos sin grupo
+  int _tab = 0; // 0 grupos · 1 amistosos · 2 amigos · 3 jugadores
+  String _filtro = '';
+
+  late final _acciones = AccionesJugador(
+    grupos: widget.repo,
+    ligas: widget.ligas,
+    amistosos: widget.amistosos,
+    alCambiar: _recargar,
+  );
+
+  /// Grupos y amigos (invitados, contactados o compañeros de grupo), estén o no en un grupo.
+  Future<_Inicio> _cargar() async {
+    final grupos = await widget.repo.misGrupos();
+    var amigos = <Miembro>[];
+    try {
+      amigos = (await widget.repo.jugadoresPosibles())
+          .where((m) => !m.esYo)
+          .toList();
+    } catch (_) {} // los amigos son un extra: si falla, se siguen viendo los grupos
+    return _Inicio(grupos, amigos);
+  }
 
   void _recargar() {
-    final nuevos = widget.repo.misGrupos();
+    final nuevos = _cargar();
     setState(() {
-      _grupos = nuevos;
+      _datos = nuevos;
       _version++;
     });
   }
@@ -78,13 +101,13 @@ class _GruposPageState extends State<GruposPage> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
+            CampoTexto(
               controller: nombre,
               autofocus: true,
               decoration: InputDecoration(labelText: c.l10n.nombre),
             ),
             const SizedBox(height: 12),
-            TextField(
+            CampoTexto(
               controller: desc,
               decoration: InputDecoration(labelText: c.l10n.descripcionOpc),
             ),
@@ -114,7 +137,7 @@ class _GruposPageState extends State<GruposPage> {
       context: context,
       builder: (c) => AlertDialog(
         title: Text(context.l10n.unirseConCodigo),
-        content: TextField(
+        content: CampoTexto(
           controller: codigo,
           autofocus: true,
           textCapitalization: TextCapitalization.characters,
@@ -146,76 +169,337 @@ class _GruposPageState extends State<GruposPage> {
   }
 
   @override
-  Widget build(BuildContext context) => FutureBuilder<List<Grupo>>(
-    future: _grupos,
+  Widget build(BuildContext context) => FutureBuilder<_Inicio>(
+    future: _datos,
     builder: (context, snap) {
       if (snap.connectionState != ConnectionState.done) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: Cargando());
       }
       if (snap.hasError) {
         return EstadoVacio(icono: Icons.error_outline, texto: '${snap.error}');
       }
-      final grupos = snap.data!;
-      return ListView(
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
-        children: [
-          if (grupos.isEmpty)
-            _Bienvenida(onCrear: _crear, onUnirse: _unirse)
-          else ...[
-            _Cabecera(
-              total: grupos.length,
-              onCrear: _crear,
-              onUnirse: _unirse,
-              onPartido: () => _partido(grupos),
-            ),
-            const SizedBox(height: 24),
-            _Rejilla(grupos: grupos, onAbrir: _abrir),
-            AmistososSeccion(
-              key: ValueKey('sin-grupo-$_version'),
-              repo: widget.amistosos,
-            ),
+      final grupos = snap.data!.grupos;
+      final amigos = snap.data!.amigos;
+      final l = context.l10n;
+      final filtro = _filtro.trim().toLowerCase();
+      final visibles = filtro.isEmpty
+          ? grupos
+          : grupos.where((g) => g.nombre.toLowerCase().contains(filtro)).toList();
+      final Widget contenido = switch (_tab) {
+        0 => Column(
+          key: const ValueKey('tab-grupos'),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (grupos.length > 4) ...[
+              CampoTexto(
+                onChanged: (v) => setState(() => _filtro = v),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: '${l.grupos}…',
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (grupos.isEmpty)
+              _Bienvenida(onCrear: _crear, onUnirse: _unirse)
+            else
+              _Rejilla(grupos: visibles, onAbrir: _abrir),
           ],
+        ),
+        1 => AmistososSeccion(
+          key: ValueKey('sin-grupo-$_version'),
+          repo: widget.amistosos,
+          conTitulo: false,
+          vacio: _Vacio(
+            icono: Icons.sports_tennis,
+            texto: l.sinAmistososHome,
+          ),
+        ),
+        2 => _SeccionAmigos(
+          key: const ValueKey('tab-amigos'),
+          amigos: amigos,
+          acciones: _acciones,
+        ),
+        _ => JugadoresTab(
+          key: const ValueKey('tab-jugadores'),
+          acciones: _acciones,
+        ),
+      };
+      return CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+            sliver: SliverToBoxAdapter(
+              child: _Cabecera(
+                onCrear: _crear,
+                onUnirse: _unirse,
+                onPartido: () => _partido(grupos),
+              ),
+            ),
+          ),
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _PestanasDelegate(
+              seleccion: _tab,
+              onCambio: (i) => setState(() => _tab = i),
+              pestanas: [
+                _Pestana(Icons.groups_outlined, Icons.groups, l.grupos, grupos.length),
+                _Pestana(
+                  Icons.sports_tennis_outlined,
+                  Icons.sports_tennis,
+                  l.amistosos,
+                  null,
+                ),
+                _Pestana(
+                  Icons.people_alt_outlined,
+                  Icons.people_alt,
+                  l.amigosTab,
+                  amigos.length,
+                ),
+                _Pestana(
+                  Icons.person_search_outlined,
+                  Icons.person_search,
+                  l.tabJugadores,
+                  null,
+                ),
+              ],
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 40),
+            sliver: SliverToBoxAdapter(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                child: KeyedSubtree(key: ValueKey(_tab), child: contenido),
+              ),
+            ),
+          ),
         ],
       );
     },
   );
 }
 
-/// Título de la sección y acciones principales (cuando ya hay grupos).
-class _Cabecera extends StatelessWidget {
-  const _Cabecera({
-    required this.total,
-    required this.onCrear,
-    required this.onUnirse,
-    required this.onPartido,
+class _Pestana {
+  const _Pestana(this.icono, this.activo, this.texto, this.cuenta);
+  final IconData icono, activo;
+  final String texto;
+  final int? cuenta;
+}
+
+/// Selector de pestañas fijo bajo la cabecera: no se pierde al hacer scroll.
+class _PestanasDelegate extends SliverPersistentHeaderDelegate {
+  _PestanasDelegate({
+    required this.seleccion,
+    required this.onCambio,
+    required this.pestanas,
   });
-  final int total;
-  final VoidCallback onCrear, onUnirse, onPartido;
+  final int seleccion;
+  final ValueChanged<int> onCambio;
+  final List<_Pestana> pestanas;
+
+  @override
+  double get minExtent => 90;
+  @override
+  double get maxExtent => 90;
+
+  @override
+  bool shouldRebuild(_PestanasDelegate old) =>
+      old.seleccion != seleccion || old.pestanas != pestanas;
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlaps) {
+    final cs = Theme.of(context).colorScheme;
+    final marca = Marca.de(context);
+    final t = Theme.of(context).textTheme;
+    return Container(
+      color: overlaps
+          ? Theme.of(context).scaffoldBackgroundColor.withValues(alpha: .94)
+          : Colors.transparent,
+      padding: const EdgeInsets.fromLTRB(24, 6, 24, 10),
+      alignment: Alignment.center,
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: marca.superficie,
+          borderRadius: BorderRadius.circular(26),
+          border: Border.all(color: marca.borde),
+        ),
+        child: Row(
+          children: [
+            for (var i = 0; i < pestanas.length; i++)
+              Expanded(
+                child: Semantics(
+                  button: true,
+                  selected: i == seleccion,
+                  label: pestanas[i].texto,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onCambio(i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOutCubic,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 2,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: i == seleccion ? cs.primary : Colors.transparent,
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Badge(
+                            isLabelVisible: pestanas[i].cuenta != null,
+                            label: Text('${pestanas[i].cuenta}'),
+                            child: Icon(
+                              i == seleccion
+                                  ? pestanas[i].activo
+                                  : pestanas[i].icono,
+                              size: 22,
+                              color: i == seleccion
+                                  ? cs.onPrimary
+                                  : cs.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          // El nombre se ve siempre completo: se reduce si no cabe.
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              pestanas[i].texto,
+                              maxLines: 1,
+                              softWrap: false,
+                              style: t.labelMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: i == seleccion
+                                    ? cs.onPrimary
+                                    : cs.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _Vacio extends StatelessWidget {
+  const _Vacio({required this.icono, required this.texto});
+  final IconData icono;
+  final String texto;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 32),
+    child: Column(
+      children: [
+        MedallonVacio(icono: icono),
+        const SizedBox(height: 16),
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Text(
+            texto,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _Inicio {
+  const _Inicio(this.grupos, this.amigos);
+  final List<Grupo> grupos;
+  final List<Miembro> amigos;
+}
+
+/// Todas las personas de tu círculo (invitadas, contactadas o de tus grupos), con o sin grupo.
+class _SeccionAmigos extends StatelessWidget {
+  const _SeccionAmigos({
+    super.key,
+    required this.amigos,
+    required this.acciones,
+  });
+  final List<Miembro> amigos;
+  final AccionesJugador acciones;
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
     final cs = Theme.of(context).colorScheme;
-    final titulo = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.l10n.tusGrupos,
-          style: t.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w900,
-            letterSpacing: -.5,
+    final marca = Marca.de(context);
+    return Aparece(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            amigos.isEmpty
+                ? context.l10n.sinAmigosHome
+                : context.l10n.amigosSub,
+            style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
           ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          total == 1
-              ? context.l10n.unGrupoAmigos
-              : context.l10n.nGruposAmigos(total),
-          style: t.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-        ),
-      ],
+          const SizedBox(height: 14),
+          for (final a in amigos)
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.fromLTRB(14, 8, 6, 8),
+              decoration: BoxDecoration(
+                color: marca.superficie,
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(color: marca.borde),
+              ),
+              child: Row(
+                children: [
+                  AvatarEquipo(a.nombre, tam: 40),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      a.nombre,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: t.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  BotonesJugador(
+                    acciones: acciones,
+                    id: a.id,
+                    nombre: a.nombre,
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
     );
-    final acciones = Wrap(
+  }
+}
+
+/// Acciones principales de la pantalla de inicio.
+class _Cabecera extends StatelessWidget {
+  const _Cabecera({
+    required this.onCrear,
+    required this.onUnirse,
+    required this.onPartido,
+  });
+  final VoidCallback onCrear, onUnirse, onPartido;
+
+  @override
+  Widget build(BuildContext context) => Aparece(
+    child: Wrap(
       spacing: 12,
       runSpacing: 12,
       children: [
@@ -235,24 +519,8 @@ class _Cabecera extends StatelessWidget {
           label: Text(context.l10n.unirmeConCodigo),
         ),
       ],
-    );
-    return Aparece(
-      child: LayoutBuilder(
-        builder: (context, c) => c.maxWidth >= 980
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(child: titulo),
-                  acciones,
-                ],
-              )
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [titulo, const SizedBox(height: 16), acciones],
-              ),
-      ),
-    );
-  }
+    ),
+  );
 }
 
 /// Estado vacío con llamada a la acción y los pasos para empezar.

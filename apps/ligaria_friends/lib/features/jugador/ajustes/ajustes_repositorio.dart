@@ -62,7 +62,9 @@ enum Preferencia {
   rankingGlobal('ranking_global'),
   rankingProvincia('ranking_provincia'),
   rankingLocalidad('ranking_localidad'),
-  notificaciones('notificaciones');
+  notificaciones('notificaciones'),
+  buscable('buscable'),
+  telefonoVisible('telefono_visible');
 
   const Preferencia(this.columna);
   final String columna;
@@ -80,9 +82,13 @@ class PerfilUsuario {
     this.rankingProvincia = false,
     this.rankingLocalidad = false,
     this.notificaciones = true,
+    this.telefono = '',
+    this.buscable = false,
+    this.telefonoVisible = false,
   });
   final String email;
-  final String nombre, apellidos, localidad, provincia;
+  final String nombre, apellidos, localidad, provincia, telefono;
+  final bool buscable, telefonoVisible;
   final bool rankingGlobal, rankingProvincia, rankingLocalidad, notificaciones;
 
   bool get tieneProvincia => provincia.trim().isNotEmpty;
@@ -93,6 +99,8 @@ class PerfilUsuario {
     Preferencia.rankingProvincia => rankingProvincia,
     Preferencia.rankingLocalidad => rankingLocalidad,
     Preferencia.notificaciones => notificaciones,
+    Preferencia.buscable => buscable,
+    Preferencia.telefonoVisible => telefonoVisible,
   };
 
   PerfilUsuario copiaCon({
@@ -100,6 +108,7 @@ class PerfilUsuario {
     String? apellidos,
     String? localidad,
     String? provincia,
+    String? telefono,
     Preferencia? preferencia,
     bool? valor,
   }) => PerfilUsuario(
@@ -108,6 +117,11 @@ class PerfilUsuario {
     apellidos: apellidos ?? this.apellidos,
     localidad: localidad ?? this.localidad,
     provincia: provincia ?? this.provincia,
+    telefono: telefono ?? this.telefono,
+    buscable: preferencia == Preferencia.buscable ? valor! : buscable,
+    telefonoVisible: preferencia == Preferencia.telefonoVisible
+        ? valor!
+        : telefonoVisible,
     rankingGlobal: preferencia == Preferencia.rankingGlobal
         ? valor!
         : rankingGlobal,
@@ -133,6 +147,9 @@ class PerfilUsuario {
         rankingProvincia: (f['ranking_provincia'] as bool?) ?? false,
         rankingLocalidad: (f['ranking_localidad'] as bool?) ?? false,
         notificaciones: (f['notificaciones'] as bool?) ?? true,
+        telefono: (f['telefono'] as String?) ?? '',
+        buscable: (f['buscable'] as bool?) ?? false,
+        telefonoVisible: (f['telefono_visible'] as bool?) ?? false,
       );
 }
 
@@ -149,6 +166,7 @@ abstract class AjustesRepositorio {
     required String apellidos,
     required String localidad,
     required String provincia,
+    String telefono = '',
   });
 
   Future<void> establecer(Preferencia preferencia, bool valor);
@@ -172,7 +190,8 @@ class AjustesSupabase implements AjustesRepositorio {
         .from('perfil')
         .select(
           'nombre, apellidos, localidad, provincia, ranking_global, '
-          'ranking_provincia, ranking_localidad, notificaciones',
+          'ranking_provincia, ranking_localidad, notificaciones, telefono, buscable, '
+          'telefono_visible',
         )
         .eq('id', user.id)
         .maybeSingle();
@@ -185,6 +204,7 @@ class AjustesSupabase implements AjustesRepositorio {
     required String apellidos,
     required String localidad,
     required String provincia,
+    String telefono = '',
   }) => _traducir(
     () => _c
         .from('perfil')
@@ -193,6 +213,7 @@ class AjustesSupabase implements AjustesRepositorio {
           'apellidos': apellidos.trim(),
           'localidad': localidad.trim(),
           'provincia': provincia.trim(),
+          'telefono': telefono.trim().isEmpty ? null : telefono.trim(),
         })
         .eq('id', _c.auth.currentUser!.id),
   );
@@ -224,7 +245,9 @@ class AjustesDemo implements AjustesRepositorio {
     required String apellidos,
     required String localidad,
     required String provincia,
+    String telefono = '',
   }) async => _perfil = _perfil.copiaCon(
+    telefono: telefono.trim(),
     nombre: nombre.trim(),
     apellidos: apellidos.trim(),
     localidad: localidad.trim(),

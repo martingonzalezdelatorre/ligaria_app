@@ -48,7 +48,7 @@ Future<void> solicitarProducto(
                 ),
               ],
             ),
-            TextField(
+            CampoTexto(
               controller: nota,
               maxLines: 2,
               decoration: InputDecoration(labelText: c.l10n.notaTienda),
@@ -111,7 +111,7 @@ class _MisPedidosPageState extends State<MisPedidosPage> {
             future: _pedidos,
             builder: (context, snap) {
               if (snap.connectionState != ConnectionState.done) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(child: Cargando());
               }
               if (snap.hasError) {
                 return EstadoVacio(

@@ -289,14 +289,16 @@ class _EscuelasTab extends ConsumerWidget {
           .read(ligaRepositoryProvider)
           .invitarEscuela(liga.id, elegida.id);
       ref.invalidate(orgInvitacionesProvider(liga.id));
-      if (context.mounted)
+      if (context.mounted) {
         avisar(context, context.l10n.invitacionEnviadaA(elegida.nombre));
+      }
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         avisar(
           context,
           mensajeError(e, defecto: context.l10n.errEnviarInvitacion),
         );
+      }
     }
   }
 
@@ -310,14 +312,16 @@ class _EscuelasTab extends ConsumerWidget {
           .read(ligaRepositoryProvider)
           .retirarInvitacion(liga.id, i.escuelaId);
       ref.invalidate(orgInvitacionesProvider(liga.id));
-      if (context.mounted)
+      if (context.mounted) {
         avisar(context, context.l10n.invitacionRetiradaDe(i.escuela));
+      }
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         avisar(
           context,
           mensajeError(e, defecto: context.l10n.errRetirarInvitacion),
         );
+      }
     }
   }
 
@@ -524,11 +528,12 @@ class _SolicitudesTab extends ConsumerWidget {
         );
       }
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         avisar(
           context,
           mensajeError(e, defecto: context.l10n.errResolverSolicitud),
         );
+      }
     }
   }
 

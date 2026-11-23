@@ -24,10 +24,12 @@ Future<({Grupo? grupo})?> mostrarNuevoPartido(
   required GruposRepositorio gruposRepo,
   required LigasRepositorio ligas,
   required AmistososRepositorio amistosos,
+  String? rivalId,
 }) async {
   return showDialog<({Grupo? grupo})>(
     context: context,
     builder: (_) => _NuevoPartido(
+      rivalId: rivalId,
       grupos: grupos,
       gruposRepo: gruposRepo,
       ligas: ligas,
@@ -38,6 +40,7 @@ Future<({Grupo? grupo})?> mostrarNuevoPartido(
 
 class _NuevoPartido extends StatefulWidget {
   const _NuevoPartido({
+    this.rivalId,
     required this.grupos,
     required this.gruposRepo,
     required this.ligas,
@@ -47,6 +50,9 @@ class _NuevoPartido extends StatefulWidget {
   final GruposRepositorio gruposRepo;
   final LigasRepositorio ligas;
   final AmistososRepositorio amistosos;
+
+  /// Retar a alguien: partido individual contigo contra esa persona.
+  final String? rivalId;
   @override
   State<_NuevoPartido> createState() => _NuevoPartidoState();
 }
@@ -72,6 +78,16 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
   _LigaActiva? _liga;
   Future<List<Participante>>? _participantes;
   String? _local, _visitante;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.rivalId != null) {
+      _modalidad = Modalidad.individual;
+      _jl[0] = widget.gruposRepo.yo;
+      _jv[0] = widget.rivalId;
+    }
+  }
 
   @override
   void dispose() {
@@ -249,7 +265,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
         ],
       ),
       const SizedBox(height: 14),
-      TextField(
+      CampoTexto(
         controller: _lugar,
         decoration: InputDecoration(labelText: context.l10n.lugarOpc),
       ),
@@ -357,7 +373,7 @@ class _NuevoPartidoState extends State<_NuevoPartido> {
       if (snap.connectionState != ConnectionState.done) {
         return const SizedBox(
           height: 80,
-          child: Center(child: CircularProgressIndicator()),
+          child: Center(child: Cargando()),
         );
       }
       final activas = snap.data ?? const [];

@@ -14,9 +14,21 @@ import '../../../core/idioma.dart';
 
 /// Sección «Amistosos»: partidos sin liga, con su resultado. [grupo] `null`: los amistosos entre amigos, sin grupo.
 class AmistososSeccion extends StatefulWidget {
-  const AmistososSeccion({super.key, this.grupo, required this.repo});
+  const AmistososSeccion({
+    super.key,
+    this.grupo,
+    required this.repo,
+    this.conTitulo = true,
+    this.vacio,
+  });
   final Grupo? grupo;
   final AmistososRepositorio repo;
+
+  /// `false`: sin encabezado propio (cuando ya lo da una pestaña).
+  final bool conTitulo;
+
+  /// Qué mostrar si no hay amistosos; por defecto, nada.
+  final Widget? vacio;
   @override
   State<AmistososSeccion> createState() => _AmistososSeccionState();
 }
@@ -116,7 +128,15 @@ class _AmistososSeccionState extends State<AmistososSeccion> {
     builder: (context, snap) {
       final lista = snap.data ?? const <Amistoso>[];
       if (lista.isEmpty) {
-        return const SizedBox.shrink(); // sin amistosos no ocupa sitio
+        if (snap.connectionState != ConnectionState.done) {
+          return widget.vacio == null
+              ? const SizedBox.shrink()
+              : const Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: Cargando()),
+                );
+        }
+        return widget.vacio ?? const SizedBox.shrink();
       }
       final t = Theme.of(context).textTheme;
       return StreamBuilder<Set<String>>(
@@ -124,14 +144,16 @@ class _AmistososSeccionState extends State<AmistososSeccion> {
         builder: (context, vivo) => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 24),
-            Text(
-              widget.grupo == null
-                  ? context.l10n.amistososConAmigos
-                  : context.l10n.amistosos,
-              style: t.titleLarge,
-            ),
-            const SizedBox(height: 12),
+            if (widget.conTitulo) ...[
+              const SizedBox(height: 24),
+              Text(
+                widget.grupo == null
+                    ? context.l10n.amistososConAmigos
+                    : context.l10n.amistosos,
+                style: t.titleLarge,
+              ),
+              const SizedBox(height: 12),
+            ],
             for (final a in lista)
               _Fila(
                 a,

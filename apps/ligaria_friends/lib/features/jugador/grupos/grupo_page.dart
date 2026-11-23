@@ -251,7 +251,7 @@ class _GrupoPageState extends State<GrupoPage> {
                     if (snap.connectionState != ConnectionState.done) {
                       return const Padding(
                         padding: EdgeInsets.all(24),
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(child: Cargando()),
                       );
                     }
                     if (snap.hasError) {
@@ -502,7 +502,7 @@ class _DialogoDestinoState extends State<_DialogoDestino> {
       width: 520,
       child: Form(
         key: _form,
-        child: TextFormField(
+        child: CampoTextoForm(
           controller: _ctl,
           autofocus: true,
           keyboardType: widget.porEmail

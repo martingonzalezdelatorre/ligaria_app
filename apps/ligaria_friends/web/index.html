@@ -31,8 +31,38 @@
 
   <title>Ligaria Friends</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    html, body { margin: 0; background: #07503F; }
+    #carga-inicial {
+      position: fixed; inset: 0; z-index: 10;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #07503F; color: #fff;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      transition: opacity .25s ease;
+    }
+    #carga-inicial .aro {
+      width: 72px; height: 72px; border-radius: 50%;
+      border: 6px solid rgba(255,255,255,.18); border-top-color: #C6F432;
+      animation: carga-giro 1s linear infinite;
+    }
+    #carga-inicial p { margin: 28px 24px 0; font-size: 24px; font-weight: 800; text-align: center; }
+    @keyframes carga-giro { to { transform: rotate(360deg); } }
+  </style>
 </head>
 <body>
+  <!-- Pantalla de carga mientras se descarga el motor de Flutter; la sustituye la de la app en el primer frame. -->
+  <div id="carga-inicial" role="status" aria-live="polite">
+    <div class="aro"></div>
+    <p>Cargando Ligaria Friends</p>
+  </div>
+  <script>
+    window.addEventListener('flutter-first-frame', function () {
+      var c = document.getElementById('carga-inicial');
+      if (!c) return;
+      c.style.opacity = '0';
+      setTimeout(function () { c.remove(); }, 300);
+    });
+  </script>
   <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader

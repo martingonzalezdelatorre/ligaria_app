@@ -43,14 +43,16 @@ class AjustesLigaTab extends ConsumerWidget {
     try {
       await ref.read(ligaRepositoryProvider).eliminarCategoria(c.id);
       ref.invalidate(orgCategoriasProvider(liga.id));
-      if (context.mounted)
+      if (context.mounted) {
         avisar(context, context.l10n.categoriaEliminada(c.nombre));
+      }
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         avisar(
           context,
           mensajeError(e, defecto: context.l10n.errEliminarCategoria),
         );
+      }
     }
   }
 
@@ -95,11 +97,12 @@ class AjustesLigaTab extends ConsumerWidget {
         );
       }
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         avisar(
           context,
           mensajeError(e, defecto: context.l10n.errQuitarOrganizador),
         );
+      }
     }
   }
 

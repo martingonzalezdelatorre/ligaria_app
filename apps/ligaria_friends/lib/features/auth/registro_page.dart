@@ -145,7 +145,7 @@ class _RegistroPageState extends State<RegistroPage> {
                     ),
                     const SizedBox(height: 16),
                     if (_esTienda) ...[
-                      TextFormField(
+                      CampoTextoForm(
                         controller: _tienda,
                         textCapitalization: TextCapitalization.words,
                         textInputAction: TextInputAction.next,
@@ -159,7 +159,7 @@ class _RegistroPageState extends State<RegistroPage> {
                       ),
                       espacioCampo,
                     ],
-                    TextFormField(
+                    CampoTextoForm(
                       controller: _nombre,
                       textCapitalization: TextCapitalization.words,
                       autofillHints: const [AutofillHints.name],
@@ -175,7 +175,7 @@ class _RegistroPageState extends State<RegistroPage> {
                       ),
                     ),
                     espacioCampo,
-                    TextFormField(
+                    CampoTextoForm(
                       controller: _email,
                       keyboardType: TextInputType.emailAddress,
                       autofillHints: const [AutofillHints.email],
@@ -202,7 +202,7 @@ class _RegistroPageState extends State<RegistroPage> {
                     ),
                     if (!_esTienda) ...[
                       espacioCampo,
-                      TextFormField(
+                      CampoTextoForm(
                         controller: _codigo,
                         textCapitalization: TextCapitalization.characters,
                         textInputAction: TextInputAction.done,

@@ -106,11 +106,13 @@ class _NuevoEquipoDialogState extends ConsumerState<_NuevoEquipoDialog> {
 
   static IconData _icono(String nombre) {
     final n = nombre.toLowerCase();
-    if (n.contains('tenis') || n.contains('pádel') || n.contains('padel'))
+    if (n.contains('tenis') || n.contains('pádel') || n.contains('padel')) {
       return Icons.sports_tennis;
+    }
     if (n.contains('baloncesto')) return Icons.sports_basketball;
-    if (n.contains('fútbol') || n.contains('futbol'))
+    if (n.contains('fútbol') || n.contains('futbol')) {
       return Icons.sports_soccer;
+    }
     if (n.contains('balonmano')) return Icons.sports_handball;
     if (n.contains('voley')) return Icons.sports_volleyball;
     return Icons.sports;
@@ -307,11 +309,16 @@ class EquipoPage extends ConsumerWidget {
           .where((u) => u.rol == rolADb(Rol.entrenador))
           .toList();
       if (!context.mounted) return;
-      final id =
-          await _elegir(context, context.l10n.asignarEntrenador, Icons.sports, [
-            for (final u in entrenadores)
-              (u.usuarioId, u.nombre?.isNotEmpty == true ? u.nombre! : u.email),
-          ], context.l10n.sinEntrenadores);
+      final id = await _elegir(
+        context,
+        context.l10n.asignarEntrenador,
+        Icons.sports,
+        [
+          for (final u in entrenadores)
+            (u.usuarioId, u.nombre?.isNotEmpty == true ? u.nombre! : u.email),
+        ],
+        context.l10n.sinEntrenadores,
+      );
       if (id == null) return;
       await repo.asignarEntrenador(equipo.id, id);
       if (context.mounted) avisar(context, context.l10n.entrenadorAsignado);

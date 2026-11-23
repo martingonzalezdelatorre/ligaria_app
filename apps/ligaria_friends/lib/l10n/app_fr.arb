@@ -376,5 +376,43 @@
   "estPuntosDe": "Points de {n} matchs notés avec le tableau",
   "estSinPartidos": "Vous n’avez pas encore de matchs confirmés.",
   "estSinPuntos": "Aucun point enregistré : notez un match avec le tableau.",
-  "estGanadosPerdidos": "{g} gagnés · {p} perdus"
+  "estGanadosPerdidos": "{g} gagnés · {p} perdus",
+  "tusAmigos": "Tes amis",
+  "amigosSub": "Les personnes que tu as invitées ou contactées via l'app",
+  "sinAmigosHome": "Tu n'as pas encore d'amis : invite quelqu'un depuis un groupe et il apparaîtra ici, avec ou sans groupe.",
+  "amigosTab": "Amis",
+  "sinAmistososHome": "Aucun match amical entre amis pour le moment. Crée un match sans groupe et il apparaîtra ici.",
+  "tabJugadores": "Joueurs",
+  "accWhatsapp": "WhatsApp",
+  "accMensaje": "Message interne",
+  "accRetar": "Défier à un match",
+  "accAnadirAmigo": "Ajouter à mes amis",
+  "sinWhatsapp": "{nombre} n'a pas partagé son téléphone pour WhatsApp.",
+  "@sinWhatsapp": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "errWhatsapp": "Impossible d'ouvrir WhatsApp.",
+  "amigoAnadido": "Ajouté à tes amis",
+  "buscarPorNombre": "Rechercher par nom",
+  "filtroProvincia": "Province",
+  "filtroTodasProvincias": "Toutes les provinces",
+  "filtroLocalidad": "Ville",
+  "btnBuscar": "Rechercher",
+  "buscaJugadoresHint": "Cherche des joueurs par nom, province ou ville.",
+  "sinJugadoresZona": "Aucun joueur ne correspond. Seules les personnes qui activent leur visibilité dans les réglages apparaissent.",
+  "escribeMensaje": "Écris un message…",
+  "mensajesTitulo": "Messages",
+  "sinMensajes": "Tu n'as pas encore de messages.",
+  "chatVacio": "Commence la conversation.",
+  "errMensaje": "Le message n'a pas pu être envoyé.",
+  "telefonoWhatsapp": "Téléphone (WhatsApp)",
+  "buscableTitulo": "Apparaître dans la recherche de joueurs",
+  "buscableDetalle": "Les autres joueurs pourront te trouver par nom ou zone et t'écrire.",
+  "telVisibleTitulo": "Partager mon téléphone pour WhatsApp",
+  "telVisibleDetalle": "Seuls tes amis, camarades de groupe et ceux qui te trouvent dans la recherche le verront.",
+  "seccionJugadores": "Joueurs"
 }

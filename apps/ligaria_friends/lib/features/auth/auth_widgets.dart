@@ -223,7 +223,7 @@ class CampoPassword extends StatefulWidget {
 class _CampoPasswordState extends State<CampoPassword> {
   bool _oculta = true;
   @override
-  Widget build(BuildContext context) => TextFormField(
+  Widget build(BuildContext context) => CampoTextoForm(
     controller: widget.controller,
     obscureText: _oculta,
     autofillHints: const [AutofillHints.password],

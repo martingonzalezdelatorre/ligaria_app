@@ -47,7 +47,7 @@ class _DialogoResultadoState extends State<DialogoResultado> {
   Widget build(BuildContext context) {
     Widget campo(TextEditingController c) => SizedBox(
       width: 64,
-      child: TextField(
+      child: CampoTexto(
         controller: c,
         keyboardType: TextInputType.number,
         textAlign: TextAlign.center,

@@ -131,7 +131,7 @@ class _EstadisticasPageState extends State<EstadisticasPage> {
 
   Widget _cargando() => const Padding(
     padding: EdgeInsets.all(32),
-    child: Center(child: CircularProgressIndicator()),
+    child: Center(child: Cargando()),
   );
 
   Widget _vistaMia() => FutureBuilder<EstadisticasJugador>(

@@ -119,8 +119,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     final perts = ref.watch(pertenenciasProvider);
     return perts.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => const PantallaCarga(nombre: 'Ligaria IA'),
       error: (e, _) => Scaffold(
         appBar: _barra(context, 'Ligaria'),
         body: AsyncView<void>(

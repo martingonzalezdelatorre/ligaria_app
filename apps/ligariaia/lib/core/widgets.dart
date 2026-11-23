@@ -55,7 +55,7 @@ class AsyncView<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => value.when(
-    loading: () => const Center(child: CircularProgressIndicator()),
+    loading: () => const Center(child: Cargando()),
     error: (e, st) {
       debugPrint('AsyncView error: $e');
       return Center(

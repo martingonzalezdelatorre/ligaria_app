@@ -65,8 +65,9 @@ String mensajeErrorEscuela(Object e) {
   if (t.contains('escuela_existe') || t.contains('email_existe')) {
     return l.errCuentaExiste;
   }
-  if (t.contains('deporte del equipo no coincide'))
+  if (t.contains('deporte del equipo no coincide')) {
     return l.errDeporteNoCoincide;
+  }
   if (t.contains('no está abierta') ||
       t.contains('ya no admite inscripciones')) {
     return l.errLigaCerrada;
@@ -78,8 +79,9 @@ String mensajeErrorEscuela(Object e) {
   if (t.contains('es privada')) return l.errPrivadaInv;
   if (t.contains('invitación ya está resuelta')) return l.errInvRespondida;
   if (t.contains('no pertenece a la organización')) return l.errJugadorOrg;
-  if (t.contains('duplicate key') || t.contains('23505'))
+  if (t.contains('duplicate key') || t.contains('23505')) {
     return l.errRegistroDup;
+  }
   if (t.contains('sin permiso') ||
       t.contains('42501') ||
       t.contains('row-level security')) {

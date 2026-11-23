@@ -66,8 +66,9 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
 
   /// Puntuación escrita en el formulario, o null (con el error ya mostrado) si no es válida.
   Puntuacion? _leerPuntuacion() {
-    if (_formato == 'ELIMINATORIA')
+    if (_formato == 'ELIMINATORIA') {
       return widget.liga?.puntuacion ?? puntuacionPorDefecto; // no puntúa
+    }
     final v = int.tryParse(_pVictoria.text.trim());
     final e = int.tryParse(_pEmpate.text.trim());
     final d = int.tryParse(_pDerrota.text.trim());
@@ -119,8 +120,9 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
           fechaInicio: _inicio,
           fechaFin: _fin,
         );
-        if (puntos != widget.liga!.puntuacion)
+        if (puntos != widget.liga!.puntuacion) {
           await repo.configurarPuntuacion(widget.liga!.id, puntos);
+        }
       } else {
         await repo.crearLiga(
           orgId: widget.escuelaId,
@@ -442,8 +444,9 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
                                       Icons.exposure_plus_1_rounded,
                                     ),
                                     onChanged: (_) {
-                                      if (_errorPuntos != null)
+                                      if (_errorPuntos != null) {
                                         setState(() => _errorPuntos = null);
+                                      }
                                     },
                                   ),
                                 ),

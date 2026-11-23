@@ -25,6 +25,7 @@ import 'features/jugador/ligas/marcador_repositorio.dart';
 import 'features/jugador/ajustes/ajustes_repositorio.dart';
 import 'features/jugador/estadisticas/estadisticas_repositorio.dart';
 import 'features/jugador/ranking/ranking_repositorio.dart';
+import 'features/jugador/social/social_repositorio.dart';
 
 /// Acento propio de Friends; el resto del estilo viene de `ligaria_ui`.
 const acentoFriends = Color(0xFF8B5CF6);
@@ -35,6 +36,8 @@ bool recuperacionInicial = false;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Pantalla de carga inmediata mientras se inicializan idioma, Supabase y repositorios.
+  runApp(const AppCargaInicial(nombre: 'Ligaria Friends', acento: acentoFriends));
   final AuthRepositorio auth;
   final GruposRepositorio grupos;
   final LigasRepositorio ligas;
@@ -63,6 +66,7 @@ Future<void> main() async {
     RankingRepositorio.instancia = RankingSupabase();
     EstadisticasRepositorio.instancia = EstadisticasSupabase();
     AjustesRepositorio.instancia = AjustesSupabase();
+    SocialRepositorio.instancia = SocialSupabase();
   } else {
     // Modo demo (demo@ligaria.es / demo1234): en memoria y con datos de ejemplo.
     auth = AuthDemo();
@@ -236,7 +240,7 @@ class _SegunPerfilState extends State<_SegunPerfil> {
     future: _tipo,
     builder: (context, snap) {
       if (snap.connectionState != ConnectionState.done) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const PantallaCarga(nombre: 'Ligaria Friends');
       }
       if (snap.data == TipoCuenta.tienda) {
         return TiendaShell(
@@ -322,7 +326,7 @@ class _UnirseAlEntrarState extends State<_UnirseAlEntrar> {
     future: _union,
     builder: (context, snap) {
       if (snap.connectionState != ConnectionState.done) {
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const PantallaCarga(nombre: 'Ligaria Friends');
       }
       final aviso = snap.data;
       if (aviso != null) {

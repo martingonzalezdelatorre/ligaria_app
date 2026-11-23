@@ -13,6 +13,8 @@ import 'core/router.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Pantalla de carga inmediata mientras se inicializa Supabase.
+  runApp(const AppCargaInicial(nombre: 'Ligaria IA'));
   if (AppConfig.configurada) {
     // Si venimos del enlace de «recuperar contraseña», lo recordamos antes de que Supabase consuma la URL.
     recuperacionInicial = kIsWeb && Uri.base.fragment.contains('type=recovery');

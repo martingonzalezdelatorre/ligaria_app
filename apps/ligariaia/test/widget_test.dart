@@ -196,14 +196,14 @@ void main() {
           sesionProvider.overrideWith((ref) => Stream.value('u1')),
         ],
         child: const MaterialApp(
-          localizationsDelegates: const [
+          localizationsDelegates: [
             AppL10n.delegate,
             GlobalMaterialLocalizations.delegate,
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: AppL10n.supportedLocales,
-          locale: const Locale('es'),
+          locale: Locale('es'),
           home: HomePage(),
         ),
       ),

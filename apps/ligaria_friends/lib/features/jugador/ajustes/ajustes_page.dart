@@ -28,6 +28,7 @@ class _AjustesPageState extends State<AjustesPage> {
   final _nombre = TextEditingController();
   final _apellidos = TextEditingController();
   final _localidad = TextEditingController();
+  final _telefono = TextEditingController();
   String? _provincia;
   bool _guardando = false;
 
@@ -42,6 +43,7 @@ class _AjustesPageState extends State<AjustesPage> {
             _nombre.text = p.nombre;
             _apellidos.text = p.apellidos;
             _localidad.text = p.localidad;
+            _telefono.text = p.telefono;
             _provincia = p.tieneProvincia ? p.provincia : null;
           });
         })
@@ -59,6 +61,7 @@ class _AjustesPageState extends State<AjustesPage> {
     _nombre.dispose();
     _apellidos.dispose();
     _localidad.dispose();
+    _telefono.dispose();
     super.dispose();
   }
 
@@ -71,6 +74,7 @@ class _AjustesPageState extends State<AjustesPage> {
         apellidos: _apellidos.text,
         localidad: _localidad.text,
         provincia: _provincia ?? '',
+        telefono: _telefono.text,
       );
       if (!mounted) return;
       setState(() {
@@ -78,6 +82,7 @@ class _AjustesPageState extends State<AjustesPage> {
           nombre: _nombre.text.trim(),
           apellidos: _apellidos.text.trim(),
           localidad: _localidad.text.trim(),
+          telefono: _telefono.text.trim(),
           provincia: _provincia ?? '',
         );
       });
@@ -147,7 +152,7 @@ class _AjustesPageState extends State<AjustesPage> {
             key: _form,
             child: Column(
               children: [
-                TextFormField(
+                CampoTextoForm(
                   controller: _nombre,
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
@@ -159,7 +164,7 @@ class _AjustesPageState extends State<AjustesPage> {
                       : null,
                 ),
                 const SizedBox(height: 14),
-                TextFormField(
+                CampoTextoForm(
                   controller: _apellidos,
                   textCapitalization: TextCapitalization.words,
                   decoration: InputDecoration(
@@ -168,7 +173,7 @@ class _AjustesPageState extends State<AjustesPage> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                TextFormField(
+                CampoTextoForm(
                   initialValue: p.email,
                   enabled: false,
                   decoration: InputDecoration(
@@ -187,7 +192,7 @@ class _AjustesPageState extends State<AjustesPage> {
                     return provincias.where((pr) => _sinTildes(pr).contains(q));
                   },
                   onSelected: _elegirProvincia,
-                  fieldViewBuilder: (context, c, foco, _) => TextFormField(
+                  fieldViewBuilder: (context, c, foco, _) => CampoTextoForm(
                     controller: c,
                     focusNode: foco,
                     textCapitalization: TextCapitalization.words,
@@ -223,7 +228,7 @@ class _AjustesPageState extends State<AjustesPage> {
                         .where((l) => _sinTildes(l).contains(q));
                   },
                   onSelected: (v) => _localidad.text = v,
-                  fieldViewBuilder: (context, c, foco, _) => TextFormField(
+                  fieldViewBuilder: (context, c, foco, _) => CampoTextoForm(
                     controller: c,
                     focusNode: foco,
                     enabled: _provincia != null,
@@ -237,6 +242,20 @@ class _AjustesPageState extends State<AjustesPage> {
                       prefixIcon: const Icon(Icons.location_city_outlined),
                     ),
                   ),
+                ),
+                const SizedBox(height: 14),
+                CampoTextoForm(
+                  controller: _telefono,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    labelText: context.l10n.telefonoWhatsapp,
+                    prefixIcon: const Icon(Icons.phone_outlined),
+                  ),
+                  validator: (v) {
+                    final s = (v ?? '').replaceAll(RegExp(r'[\s().+-]'), '');
+                    if (s.isEmpty) return null;
+                    return RegExp(r'^\d{6,15}$').hasMatch(s) ? null : '';
+                  },
                 ),
                 const SizedBox(height: 18),
                 SizedBox(
@@ -307,6 +326,33 @@ class _AjustesPageState extends State<AjustesPage> {
                       ? context.l10n.jugadoresDe(p.localidad)
                       : context.l10n.indicaLocalidad,
                   habilitado: p.tieneLocalidad,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+      (
+        context.l10n.seccionJugadores,
+        [
+          Text(context.l10n.seccionJugadores, style: t.titleLarge),
+          const SizedBox(height: 12),
+          Card(
+            margin: EdgeInsets.zero,
+            child: Column(
+              children: [
+                _interruptor(
+                  pref: Preferencia.buscable,
+                  icono: Icons.person_search_outlined,
+                  titulo: context.l10n.buscableTitulo,
+                  detalle: context.l10n.buscableDetalle,
+                ),
+                _interruptor(
+                  pref: Preferencia.telefonoVisible,
+                  icono: Icons.chat_outlined,
+                  titulo: context.l10n.telVisibleTitulo,
+                  detalle: context.l10n.telVisibleDetalle,
+                  habilitado: p.telefono.isNotEmpty,
                 ),
               ],
             ),
@@ -454,7 +500,7 @@ class _DialogoPasswordState extends State<_DialogoPassword> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextFormField(
+            CampoTextoForm(
               controller: _nueva,
               obscureText: !_ver,
               autofocus: true,
@@ -468,7 +514,7 @@ class _DialogoPasswordState extends State<_DialogoPassword> {
               validator: validarPassword,
             ),
             const SizedBox(height: 14),
-            TextFormField(
+            CampoTextoForm(
               controller: _repetir,
               obscureText: !_ver,
               decoration: InputDecoration(

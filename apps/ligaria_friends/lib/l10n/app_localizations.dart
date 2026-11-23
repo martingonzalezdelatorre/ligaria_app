@@ -2366,6 +2366,192 @@ abstract class AppL10n {
   /// In es, this message translates to:
   /// **'{g} ganados · {p} perdidos'**
   String estGanadosPerdidos(int g, int p);
+
+  /// No description provided for @tusAmigos.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus amigos'**
+  String get tusAmigos;
+
+  /// No description provided for @amigosSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Gente con la que has contactado o invitado desde la app'**
+  String get amigosSub;
+
+  /// No description provided for @sinAmigosHome.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes amigos: invita a alguien desde un grupo y aparecerá aquí, tenga o no grupo.'**
+  String get sinAmigosHome;
+
+  /// No description provided for @amigosTab.
+  ///
+  /// In es, this message translates to:
+  /// **'Amigos'**
+  String get amigosTab;
+
+  /// No description provided for @sinAmistososHome.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay amistosos entre amigos. Crea un partido sin grupo y aparecerá aquí.'**
+  String get sinAmistososHome;
+
+  /// No description provided for @tabJugadores.
+  ///
+  /// In es, this message translates to:
+  /// **'Jugadores'**
+  String get tabJugadores;
+
+  /// No description provided for @accWhatsapp.
+  ///
+  /// In es, this message translates to:
+  /// **'WhatsApp'**
+  String get accWhatsapp;
+
+  /// No description provided for @accMensaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensaje interno'**
+  String get accMensaje;
+
+  /// No description provided for @accRetar.
+  ///
+  /// In es, this message translates to:
+  /// **'Retar a un partido'**
+  String get accRetar;
+
+  /// No description provided for @accAnadirAmigo.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir a mis amigos'**
+  String get accAnadirAmigo;
+
+  /// No description provided for @sinWhatsapp.
+  ///
+  /// In es, this message translates to:
+  /// **'{nombre} no ha compartido su teléfono para WhatsApp.'**
+  String sinWhatsapp(String nombre);
+
+  /// No description provided for @errWhatsapp.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir WhatsApp.'**
+  String get errWhatsapp;
+
+  /// No description provided for @amigoAnadido.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadido a tus amigos'**
+  String get amigoAnadido;
+
+  /// No description provided for @buscarPorNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar por nombre'**
+  String get buscarPorNombre;
+
+  /// No description provided for @filtroProvincia.
+  ///
+  /// In es, this message translates to:
+  /// **'Provincia'**
+  String get filtroProvincia;
+
+  /// No description provided for @filtroTodasProvincias.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las provincias'**
+  String get filtroTodasProvincias;
+
+  /// No description provided for @filtroLocalidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Localidad'**
+  String get filtroLocalidad;
+
+  /// No description provided for @btnBuscar.
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar'**
+  String get btnBuscar;
+
+  /// No description provided for @buscaJugadoresHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Busca jugadores por nombre, provincia o localidad.'**
+  String get buscaJugadoresHint;
+
+  /// No description provided for @sinJugadoresZona.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay jugadores con esos criterios. Solo aparecen quienes activan su visibilidad en Ajustes.'**
+  String get sinJugadoresZona;
+
+  /// No description provided for @escribeMensaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un mensaje…'**
+  String get escribeMensaje;
+
+  /// No description provided for @mensajesTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Mensajes'**
+  String get mensajesTitulo;
+
+  /// No description provided for @sinMensajes.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no tienes mensajes.'**
+  String get sinMensajes;
+
+  /// No description provided for @chatVacio.
+  ///
+  /// In es, this message translates to:
+  /// **'Empieza la conversación.'**
+  String get chatVacio;
+
+  /// No description provided for @errMensaje.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar el mensaje.'**
+  String get errMensaje;
+
+  /// No description provided for @telefonoWhatsapp.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono (WhatsApp)'**
+  String get telefonoWhatsapp;
+
+  /// No description provided for @buscableTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Aparecer en la búsqueda de jugadores'**
+  String get buscableTitulo;
+
+  /// No description provided for @buscableDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Otros jugadores podrán encontrarte por nombre o zona y escribirte.'**
+  String get buscableDetalle;
+
+  /// No description provided for @telVisibleTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Compartir mi teléfono para WhatsApp'**
+  String get telVisibleTitulo;
+
+  /// No description provided for @telVisibleDetalle.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo lo verán tus amigos, compañeros de grupo y quienes te encuentren en la búsqueda.'**
+  String get telVisibleDetalle;
+
+  /// No description provided for @seccionJugadores.
+  ///
+  /// In es, this message translates to:
+  /// **'Jugadores'**
+  String get seccionJugadores;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

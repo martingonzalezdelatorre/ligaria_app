@@ -89,8 +89,9 @@ class _LigaCard extends ConsumerWidget {
       ref.invalidate(orgLigasProvider(escuelaId));
       if (context.mounted) avisar(context, context.l10n.ligaPublicada);
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         avisar(context, mensajeError(e, defecto: context.l10n.errPublicarLiga));
+      }
     }
   }
 
@@ -120,17 +121,19 @@ class _LigaCard extends ConsumerWidget {
         await repo.inscribirEquipo(liga.id, elegido.id, categoriaId: cat.id);
       }
       ref.invalidate(orgClasificacionProvider(liga.id));
-      if (context.mounted)
+      if (context.mounted) {
         avisar(
           context,
           context.l10n.equipoAgregado(elegido.nombre, liga.nombre),
         );
+      }
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         avisar(
           context,
           mensajeError(e, defecto: context.l10n.errAgregarEquipo),
         );
+      }
     }
   }
 
@@ -202,11 +205,12 @@ class _LigaCard extends ConsumerWidget {
       ref.invalidate(orgLigasProvider(escuelaId));
       if (context.mounted) avisar(context, context.l10n.playoffGenerado(n));
     } catch (e) {
-      if (context.mounted)
+      if (context.mounted) {
         avisar(
           context,
           mensajeError(e, defecto: context.l10n.errGenerarPlayoff),
         );
+      }
     }
   }
 

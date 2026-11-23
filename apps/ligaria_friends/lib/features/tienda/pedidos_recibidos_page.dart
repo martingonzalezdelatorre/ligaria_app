@@ -34,7 +34,7 @@ class _PedidosRecibidosPageState extends State<PedidosRecibidosPage> {
     future: _pedidos,
     builder: (context, snap) {
       if (snap.connectionState != ConnectionState.done) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: Cargando());
       }
       if (snap.hasError) {
         return EstadoVacio(icono: Icons.error_outline, texto: '${snap.error}');

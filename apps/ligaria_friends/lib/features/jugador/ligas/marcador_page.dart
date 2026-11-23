@@ -46,7 +46,7 @@ class MarcadorPage extends StatelessWidget {
                     if (snap.connectionState == ConnectionState.waiting)
                       const Padding(
                         padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(child: Cargando()),
                       )
                     else if (tanteo == null) ...[
                       const SizedBox(height: 24),

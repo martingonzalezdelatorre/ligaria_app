@@ -162,8 +162,9 @@ class _CuerpoState extends ConsumerState<_Cuerpo> {
           if (l == null || v == null || l < 0 || v < 0) {
             return avisar(context, context.l10n.completaMarcadores(p.orden));
           }
-          if (l == v)
+          if (l == v) {
             return avisar(context, context.l10n.marcadorEmpate(p.orden));
+          }
           sets.add([l, v]);
         }
         if (sets.isEmpty) continue;
@@ -352,8 +353,9 @@ class _CuerpoState extends ConsumerState<_Cuerpo> {
     List<Jugador> plantilla,
   ) {
     // Si no se puede leer la plantilla (rival) no hay desplegable: el lado queda vacío.
-    if (plantilla.isEmpty && sel.every((s) => s == null))
+    if (plantilla.isEmpty && sel.every((s) => s == null)) {
       return const SizedBox.shrink();
+    }
     final ids = {
       ...plantilla.map((j) => j.jugadorId),
       ...sel.whereType<String>(),

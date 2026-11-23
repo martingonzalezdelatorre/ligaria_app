@@ -4,6 +4,7 @@ import '../ajustes/ajustes_page.dart';
 import '../ajustes/ajustes_repositorio.dart';
 import '../estadisticas/estadisticas_page.dart';
 import '../grupos/grupos_repositorio.dart';
+import '../social/acciones_jugador.dart';
 import 'ranking_repositorio.dart';
 import '../../../core/idioma.dart';
 
@@ -29,11 +30,14 @@ enum _Vista {
 
 /// Rankings: global, de tu provincia, de tu localidad y de cada grupo de amigos.
 class RankingPage extends StatefulWidget {
-  const RankingPage({super.key, this.repo, this.grupos});
+  const RankingPage({super.key, this.repo, this.grupos, this.acciones});
   final RankingRepositorio? repo;
 
   /// Para elegir el grupo en la vista «Mis grupos».
   final GruposRepositorio? grupos;
+
+  /// Acciones sobre cada jugador (WhatsApp, mensaje, retar); sin ellas no se muestran.
+  final AccionesJugador? acciones;
   @override
   State<RankingPage> createState() => _RankingPageState();
 }
@@ -212,7 +216,7 @@ class _RankingPageState extends State<RankingPage> {
                     if (snap.connectionState != ConnectionState.done) {
                       return const Padding(
                         padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(child: Cargando()),
                       );
                     }
                     if (snap.hasError) {
@@ -238,6 +242,7 @@ class _RankingPageState extends State<RankingPage> {
                               child: _FilaRanking(
                                 puesto: i + 1,
                                 datos: lista[i],
+                                acciones: widget.acciones,
                               ),
                             ),
                           ),
@@ -254,7 +259,12 @@ class _RankingPageState extends State<RankingPage> {
 }
 
 class _FilaRanking extends StatelessWidget {
-  const _FilaRanking({required this.puesto, required this.datos});
+  const _FilaRanking({
+    required this.puesto,
+    required this.datos,
+    this.acciones,
+  });
+  final AccionesJugador? acciones;
   final int puesto;
   final PuestoRanking datos;
 
@@ -322,6 +332,17 @@ class _FilaRanking extends StatelessWidget {
                 ),
               ],
             ),
+            if (acciones != null && !acciones!.esYo(datos.usuarioId))
+              IconButton(
+                tooltip: datos.nombre,
+                onPressed: () => acciones!.mostrar(
+                  context,
+                  id: datos.usuarioId,
+                  nombre: datos.nombre,
+                  esAmigo: false,
+                ),
+                icon: const Icon(Icons.more_vert),
+              ),
           ],
         ),
       ),

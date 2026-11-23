@@ -40,14 +40,14 @@ Future<void> abrir(WidgetTester tester, MockRepo repo) async {
     ProviderScope(
       overrides: [ligaRepositoryProvider.overrideWithValue(repo)],
       child: const MaterialApp(
-        localizationsDelegates: const [
+        localizationsDelegates: [
           AppL10n.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: AppL10n.supportedLocales,
-        locale: const Locale('es'),
+        locale: Locale('es'),
         home: Scaffold(
           body: EscuelaHome(escuelaId: 'esc1', escuelaNombre: 'Escuela A'),
         ),

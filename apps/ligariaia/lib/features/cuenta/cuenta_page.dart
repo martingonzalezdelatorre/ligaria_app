@@ -221,7 +221,7 @@ class _CuentaPageState extends ConsumerState<CuentaPage> {
                 data: (p) => _FormPerfil(inicial: p, email: email),
                 loading: () => const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Center(child: CircularProgressIndicator()),
+                  child: Center(child: Cargando()),
                 ),
                 error: (_, _) => Text(context.l10n.errCargarDatosTuyos),
               ),
@@ -241,7 +241,7 @@ class _CuentaPageState extends ConsumerState<CuentaPage> {
                       _FormOrg(inicial: d, tipo: _tipoOrg(pert.orgTipo)),
                   loading: () => const Padding(
                     padding: EdgeInsets.all(16),
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(child: Cargando()),
                   ),
                   error: (_, _) => Text(context.l10n.errCargarDatos),
                 ),

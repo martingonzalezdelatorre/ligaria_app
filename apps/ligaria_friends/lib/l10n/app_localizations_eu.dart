@@ -1261,4 +1261,106 @@ class AppL10nEu extends AppL10n {
   String estGanadosPerdidos(int g, int p) {
     return '$g irabazita · $p galduta';
   }
+
+  @override
+  String get tusAmigos => 'Zure lagunak';
+
+  @override
+  String get amigosSub =>
+      'Aplikaziotik gonbidatu edo harremanetan jarri zaren jendea';
+
+  @override
+  String get sinAmigosHome =>
+      'Oraindik ez duzu lagunik: gonbidatu norbait talde batetik eta hemen agertuko da, talderik izan zein ez.';
+
+  @override
+  String get amigosTab => 'Lagunak';
+
+  @override
+  String get sinAmistososHome =>
+      'Oraindik ez dago lagunarteko jolasik. Sortu talderik gabeko partida bat eta hemen agertuko da.';
+
+  @override
+  String get tabJugadores => 'Jokalariak';
+
+  @override
+  String get accWhatsapp => 'WhatsApp';
+
+  @override
+  String get accMensaje => 'Barne-mezua';
+
+  @override
+  String get accRetar => 'Partida batera erronka egin';
+
+  @override
+  String get accAnadirAmigo => 'Gehitu nire lagunetara';
+
+  @override
+  String sinWhatsapp(String nombre) {
+    return '$nombre(e)k ez du bere telefonoa partekatu WhatsApp-erako.';
+  }
+
+  @override
+  String get errWhatsapp => 'Ezin izan da WhatsApp ireki.';
+
+  @override
+  String get amigoAnadido => 'Zure lagunetara gehitu da';
+
+  @override
+  String get buscarPorNombre => 'Bilatu izenez';
+
+  @override
+  String get filtroProvincia => 'Probintzia';
+
+  @override
+  String get filtroTodasProvincias => 'Probintzia guztiak';
+
+  @override
+  String get filtroLocalidad => 'Herria';
+
+  @override
+  String get btnBuscar => 'Bilatu';
+
+  @override
+  String get buscaJugadoresHint =>
+      'Bilatu jokalariak izenez, probintziaz edo herriz.';
+
+  @override
+  String get sinJugadoresZona =>
+      'Ez dago irizpide horiekin jokalaririk. Ezarpenetan ikusgarritasuna aktibatzen dutenak soilik ageri dira.';
+
+  @override
+  String get escribeMensaje => 'Idatzi mezu bat…';
+
+  @override
+  String get mensajesTitulo => 'Mezuak';
+
+  @override
+  String get sinMensajes => 'Oraindik ez duzu mezurik.';
+
+  @override
+  String get chatVacio => 'Hasi elkarrizketa.';
+
+  @override
+  String get errMensaje => 'Ezin izan da mezua bidali.';
+
+  @override
+  String get telefonoWhatsapp => 'Telefonoa (WhatsApp)';
+
+  @override
+  String get buscableTitulo => 'Agertu jokalarien bilaketan';
+
+  @override
+  String get buscableDetalle =>
+      'Beste jokalariek izenez edo eremuz aurkitu eta idatzi ahal izango dizute.';
+
+  @override
+  String get telVisibleTitulo => 'Partekatu nire telefonoa WhatsApp-erako';
+
+  @override
+  String get telVisibleDetalle =>
+      'Zure lagunek, taldekideek eta bilaketan aurkitzen zaituztenek soilik ikusiko dute.';
+
+  @override
+  String get seccionJugadores => 'Jokalariak';
 }

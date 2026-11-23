@@ -376,5 +376,43 @@
   "estPuntosDe": "Markagailuarekin puntuatutako {n} partidatako puntuak",
   "estSinPartidos": "Oraindik ez duzu partida baieztaturik.",
   "estSinPuntos": "Oraindik ez dago punturik gordeta: puntuatu partida bat markagailuarekin.",
-  "estGanadosPerdidos": "{g} irabazita · {p} galduta"
+  "estGanadosPerdidos": "{g} irabazita · {p} galduta",
+  "tusAmigos": "Zure lagunak",
+  "amigosSub": "Aplikaziotik gonbidatu edo harremanetan jarri zaren jendea",
+  "sinAmigosHome": "Oraindik ez duzu lagunik: gonbidatu norbait talde batetik eta hemen agertuko da, talderik izan zein ez.",
+  "amigosTab": "Lagunak",
+  "sinAmistososHome": "Oraindik ez dago lagunarteko jolasik. Sortu talderik gabeko partida bat eta hemen agertuko da.",
+  "tabJugadores": "Jokalariak",
+  "accWhatsapp": "WhatsApp",
+  "accMensaje": "Barne-mezua",
+  "accRetar": "Partida batera erronka egin",
+  "accAnadirAmigo": "Gehitu nire lagunetara",
+  "sinWhatsapp": "{nombre}(e)k ez du bere telefonoa partekatu WhatsApp-erako.",
+  "@sinWhatsapp": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "errWhatsapp": "Ezin izan da WhatsApp ireki.",
+  "amigoAnadido": "Zure lagunetara gehitu da",
+  "buscarPorNombre": "Bilatu izenez",
+  "filtroProvincia": "Probintzia",
+  "filtroTodasProvincias": "Probintzia guztiak",
+  "filtroLocalidad": "Herria",
+  "btnBuscar": "Bilatu",
+  "buscaJugadoresHint": "Bilatu jokalariak izenez, probintziaz edo herriz.",
+  "sinJugadoresZona": "Ez dago irizpide horiekin jokalaririk. Ezarpenetan ikusgarritasuna aktibatzen dutenak soilik ageri dira.",
+  "escribeMensaje": "Idatzi mezu bat…",
+  "mensajesTitulo": "Mezuak",
+  "sinMensajes": "Oraindik ez duzu mezurik.",
+  "chatVacio": "Hasi elkarrizketa.",
+  "errMensaje": "Ezin izan da mezua bidali.",
+  "telefonoWhatsapp": "Telefonoa (WhatsApp)",
+  "buscableTitulo": "Agertu jokalarien bilaketan",
+  "buscableDetalle": "Beste jokalariek izenez edo eremuz aurkitu eta idatzi ahal izango dizute.",
+  "telVisibleTitulo": "Partekatu nire telefonoa WhatsApp-erako",
+  "telVisibleDetalle": "Zure lagunek, taldekideek eta bilaketan aurkitzen zaituztenek soilik ikusiko dute.",
+  "seccionJugadores": "Jokalariak"
 }

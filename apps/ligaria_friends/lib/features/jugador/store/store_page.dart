@@ -33,7 +33,7 @@ class _StorePageState extends State<StorePage> {
       future: _comercios,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: Cargando());
         }
         if (snap.hasError) {
           return EstadoVacio(
@@ -233,7 +233,7 @@ class _Lista<T> extends StatelessWidget {
     future: futuro,
     builder: (context, snap) {
       if (snap.connectionState != ConnectionState.done) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: Cargando());
       }
       if (snap.hasError) {
         return EstadoVacio(icono: Icons.error_outline, texto: '${snap.error}');
@@ -337,7 +337,7 @@ class _Cuadricula extends StatelessWidget {
     future: futuro,
     builder: (context, snap) {
       if (snap.connectionState != ConnectionState.done) {
-        return const Center(child: CircularProgressIndicator());
+        return const Center(child: Cargando());
       }
       if (snap.hasError) {
         return EstadoVacio(icono: Icons.error_outline, texto: '${snap.error}');

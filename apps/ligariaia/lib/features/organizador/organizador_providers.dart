@@ -94,10 +94,12 @@ String mensajeError(Object e, {String? defecto}) {
     return l.errRondaGenerada;
   }
   if (t.contains('pase directo')) return l.errPaseDirecto;
-  if (t.contains('fase de grupos no ha terminado'))
+  if (t.contains('fase de grupos no ha terminado')) {
     return l.errGruposNoTerminada;
-  if (t.contains('primero hay que generar el calendario'))
+  }
+  if (t.contains('primero hay que generar el calendario')) {
     return l.errPrimeroCalendario;
+  }
   if (t.contains('playoff ya tiene resultados')) return l.errPlayoffResultados;
   if (t.contains('genera el cuadro')) return l.errGeneraCuadro;
   if (t.contains('no es de eliminatoria') ||
@@ -108,8 +110,9 @@ String mensajeError(Object e, {String? defecto}) {
   if (t.contains('no hay equipos suficientes')) return l.errEquiposPlayoff;
   if (t.contains('usuario no encontrado')) return l.errSinCuenta;
   if (t.contains('correo no válido')) return l.errCorreoValido;
-  if (t.contains('ya está invitado como organizador'))
+  if (t.contains('ya está invitado como organizador')) {
     return l.errYaInvitadaLiga;
+  }
   if (t.contains('invitación no encontrada')) return l.errInvNoEncontrada;
   if (t.contains('ya organiza las ligas')) return l.errYaOrgTodas;
   if (t.contains('ya es organizador')) return l.errYaOrgLiga;
@@ -132,8 +135,9 @@ String mensajeError(Object e, {String? defecto}) {
   if (t.contains('ya está resuelta')) return l.errSolResuelta;
   if (t.contains('calendario ya está generado')) return l.errCalendarioEquipos;
   if (t.contains('al menos 2 equipos')) return l.errMin2;
-  if (t.contains('no admite') || t.contains('ya no admite'))
+  if (t.contains('no admite') || t.contains('ya no admite')) {
     return l.errNoCambios;
+  }
   if (t.contains('sin permiso') ||
       t.contains('row-level security') ||
       t.contains('42501')) {

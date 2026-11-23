@@ -376,5 +376,43 @@
   "estPuntosDe": "Punts de {n} partits puntuats amb el marcador",
   "estSinPartidos": "Encara no tens partits confirmats.",
   "estSinPuntos": "Encara no hi ha punts desats: puntua un partit amb el marcador.",
-  "estGanadosPerdidos": "{g} guanyats · {p} perduts"
+  "estGanadosPerdidos": "{g} guanyats · {p} perduts",
+  "tusAmigos": "Els teus amics",
+  "amigosSub": "Gent amb qui has contactat o has convidat des de l'app",
+  "sinAmigosHome": "Encara no tens amics: convida algú des d'un grup i apareixerà aquí, tingui grup o no.",
+  "amigosTab": "Amics",
+  "sinAmistososHome": "Encara no hi ha amistosos entre amics. Crea un partit sense grup i apareixerà aquí.",
+  "tabJugadores": "Jugadors",
+  "accWhatsapp": "WhatsApp",
+  "accMensaje": "Missatge intern",
+  "accRetar": "Reptar a un partit",
+  "accAnadirAmigo": "Afegir als meus amics",
+  "sinWhatsapp": "{nombre} no ha compartit el seu telèfon per a WhatsApp.",
+  "@sinWhatsapp": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "errWhatsapp": "No s'ha pogut obrir WhatsApp.",
+  "amigoAnadido": "Afegit als teus amics",
+  "buscarPorNombre": "Cerca per nom",
+  "filtroProvincia": "Província",
+  "filtroTodasProvincias": "Totes les províncies",
+  "filtroLocalidad": "Localitat",
+  "btnBuscar": "Cerca",
+  "buscaJugadoresHint": "Cerca jugadors per nom, província o localitat.",
+  "sinJugadoresZona": "No hi ha jugadors amb aquests criteris. Només apareixen els qui activen la visibilitat a Ajustos.",
+  "escribeMensaje": "Escriu un missatge…",
+  "mensajesTitulo": "Missatges",
+  "sinMensajes": "Encara no tens missatges.",
+  "chatVacio": "Comença la conversa.",
+  "errMensaje": "No s'ha pogut enviar el missatge.",
+  "telefonoWhatsapp": "Telèfon (WhatsApp)",
+  "buscableTitulo": "Aparèixer a la cerca de jugadors",
+  "buscableDetalle": "Altres jugadors et podran trobar per nom o zona i escriure't.",
+  "telVisibleTitulo": "Compartir el meu telèfon per a WhatsApp",
+  "telVisibleDetalle": "Només el veuran els teus amics, companys de grup i qui et trobi a la cerca.",
+  "seccionJugadores": "Jugadors"
 }

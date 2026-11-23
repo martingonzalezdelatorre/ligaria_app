@@ -376,5 +376,43 @@
   "estPuntosDe": "Points from {n} matches scored with the scoreboard",
   "estSinPartidos": "You have no confirmed matches yet.",
   "estSinPuntos": "No points saved yet: score a match with the scoreboard.",
-  "estGanadosPerdidos": "{g} won · {p} lost"
+  "estGanadosPerdidos": "{g} won · {p} lost",
+  "tusAmigos": "Your friends",
+  "amigosSub": "People you have invited or contacted through the app",
+  "sinAmigosHome": "You have no friends yet: invite someone from a group and they will appear here, whether or not they are in a group.",
+  "amigosTab": "Friends",
+  "sinAmistososHome": "No friendlies among friends yet. Create a match without a group and it will appear here.",
+  "tabJugadores": "Players",
+  "accWhatsapp": "WhatsApp",
+  "accMensaje": "In-app message",
+  "accRetar": "Challenge to a match",
+  "accAnadirAmigo": "Add to my friends",
+  "sinWhatsapp": "{nombre} has not shared their phone for WhatsApp.",
+  "@sinWhatsapp": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "errWhatsapp": "Could not open WhatsApp.",
+  "amigoAnadido": "Added to your friends",
+  "buscarPorNombre": "Search by name",
+  "filtroProvincia": "Province",
+  "filtroTodasProvincias": "All provinces",
+  "filtroLocalidad": "Town",
+  "btnBuscar": "Search",
+  "buscaJugadoresHint": "Search players by name, province or town.",
+  "sinJugadoresZona": "No players match. Only people who turn on their visibility in Settings appear.",
+  "escribeMensaje": "Write a message…",
+  "mensajesTitulo": "Messages",
+  "sinMensajes": "You have no messages yet.",
+  "chatVacio": "Start the conversation.",
+  "errMensaje": "The message could not be sent.",
+  "telefonoWhatsapp": "Phone (WhatsApp)",
+  "buscableTitulo": "Appear in player search",
+  "buscableDetalle": "Other players can find you by name or area and message you.",
+  "telVisibleTitulo": "Share my phone for WhatsApp",
+  "telVisibleDetalle": "Only your friends, group mates and people who find you in search will see it.",
+  "seccionJugadores": "Players"
 }

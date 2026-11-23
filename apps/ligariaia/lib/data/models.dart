@@ -397,8 +397,9 @@ class EncuentroVista {
           )
           .toList()
         ..sort((a, b) => a.jornada.compareTo(b.jornada));
-  if (mias.isEmpty)
+  if (mias.isEmpty) {
     return (ronda: '—', estado: pasoDirecto ? 'pase_directo' : 'sin_cuadro');
+  }
   final e = mias.last;
   if (!e.confirmado) return (ronda: e.etiquetaJornada, estado: 'en_juego');
   final local = e.partidosLocal ?? 0, visitante = e.partidosVisitante ?? 0;

@@ -2,6 +2,8 @@
 library;
 
 export 'src/area_tabs.dart';
+export 'src/campo_texto.dart';
+export 'src/cargando.dart';
 export 'src/formulario.dart';
 export 'src/ilustraciones.dart';
 export 'src/logo.dart';

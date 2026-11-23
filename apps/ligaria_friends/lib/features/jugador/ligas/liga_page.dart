@@ -220,7 +220,7 @@ class _LigaPageState extends State<LigaPage> {
               future: _datos,
               builder: (context, snap) {
                 if (snap.connectionState != ConnectionState.done) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: Cargando());
                 }
                 if (snap.hasError) {
                   return EstadoVacio(

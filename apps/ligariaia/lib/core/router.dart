@@ -23,11 +23,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       final autenticado = sesion.value != null;
       final ruta = state.matchedLocation;
       final recuperando = ref.read(recuperacionProvider);
-      if (!autenticado)
+      if (!autenticado) {
         return (ruta == '/login' || ruta == '/recuperar') ? null : '/login';
+      }
       // Llegó por el enlace de recuperación: solo puede elegir contraseña nueva.
-      if (recuperando)
+      if (recuperando) {
         return ruta == '/nueva-password' ? null : '/nueva-password';
+      }
       if (ruta == '/nueva-password') return '/';
       return (ruta == '/login' || ruta == '/recuperar') ? '/' : null;
     },

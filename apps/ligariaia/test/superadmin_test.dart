@@ -15,7 +15,7 @@ Widget _app(MockRepo repo) => ProviderScope(
   child: const MaterialApp(
     localizationsDelegates: AppL10n.localizationsDelegates,
     supportedLocales: AppL10n.supportedLocales,
-    locale: const Locale('es'),
+    locale: Locale('es'),
     home: Scaffold(body: SuperadminHome()),
   ),
 );

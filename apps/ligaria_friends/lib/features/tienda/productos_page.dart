@@ -44,7 +44,7 @@ class _ProductosPageState extends State<ProductosPage> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                TextFormField(
+                CampoTextoForm(
                   controller: nombre,
                   autofocus: true,
                   decoration: InputDecoration(labelText: c.l10n.nombre),
@@ -53,7 +53,7 @@ class _ProductosPageState extends State<ProductosPage> {
                       : null,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
+                CampoTextoForm(
                   controller: precio,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
@@ -63,18 +63,18 @@ class _ProductosPageState extends State<ProductosPage> {
                       _parsear(v) == null ? c.l10n.precioNoValido : null,
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
+                CampoTextoForm(
                   controller: categoria,
                   decoration: InputDecoration(labelText: c.l10n.categoriaOpc),
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
+                CampoTextoForm(
                   controller: descripcion,
                   maxLines: 2,
                   decoration: InputDecoration(labelText: c.l10n.descripcionOpc),
                 ),
                 const SizedBox(height: 12),
-                TextFormField(
+                CampoTextoForm(
                   controller: imagen,
                   keyboardType: TextInputType.url,
                   decoration: InputDecoration(labelText: c.l10n.urlImagenOpc),
@@ -145,7 +145,7 @@ class _ProductosPageState extends State<ProductosPage> {
       future: _productos,
       builder: (context, snap) {
         if (snap.connectionState != ConnectionState.done) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: Cargando());
         }
         if (snap.hasError) {
           return EstadoVacio(

@@ -376,5 +376,43 @@
   "estPuntosDe": "Puntos de {n} partidos puntuados co marcador",
   "estSinPartidos": "Aínda non tes partidos confirmados.",
   "estSinPuntos": "Aínda non hai puntos gardados: puntúa un partido co marcador.",
-  "estGanadosPerdidos": "{g} gañados · {p} perdidos"
+  "estGanadosPerdidos": "{g} gañados · {p} perdidos",
+  "tusAmigos": "Os teus amigos",
+  "amigosSub": "Xente coa que contactaches ou convidaches desde a app",
+  "sinAmigosHome": "Aínda non tes amigos: convida a alguén desde un grupo e aparecerá aquí, teña grupo ou non.",
+  "amigosTab": "Amigos",
+  "sinAmistososHome": "Aínda non hai amigables entre amigos. Crea un partido sen grupo e aparecerá aquí.",
+  "tabJugadores": "Xogadores",
+  "accWhatsapp": "WhatsApp",
+  "accMensaje": "Mensaxe interna",
+  "accRetar": "Retar a un partido",
+  "accAnadirAmigo": "Engadir aos meus amigos",
+  "sinWhatsapp": "{nombre} non compartiu o seu teléfono para WhatsApp.",
+  "@sinWhatsapp": {
+    "placeholders": {
+      "nombre": {
+        "type": "String"
+      }
+    }
+  },
+  "errWhatsapp": "Non se puido abrir WhatsApp.",
+  "amigoAnadido": "Engadido aos teus amigos",
+  "buscarPorNombre": "Buscar por nome",
+  "filtroProvincia": "Provincia",
+  "filtroTodasProvincias": "Todas as provincias",
+  "filtroLocalidad": "Localidade",
+  "btnBuscar": "Buscar",
+  "buscaJugadoresHint": "Busca xogadores por nome, provincia ou localidade.",
+  "sinJugadoresZona": "Non hai xogadores con eses criterios. Só aparecen quen activa a visibilidade en Axustes.",
+  "escribeMensaje": "Escribe unha mensaxe…",
+  "mensajesTitulo": "Mensaxes",
+  "sinMensajes": "Aínda non tes mensaxes.",
+  "chatVacio": "Comeza a conversa.",
+  "errMensaje": "Non se puido enviar a mensaxe.",
+  "telefonoWhatsapp": "Teléfono (WhatsApp)",
+  "buscableTitulo": "Aparecer na busca de xogadores",
+  "buscableDetalle": "Outros xogadores poderán atoparte por nome ou zona e escribirche.",
+  "telVisibleTitulo": "Compartir o meu teléfono para WhatsApp",
+  "telVisibleDetalle": "Só o verán os teus amigos, compañeiros de grupo e quen te atope na busca.",
+  "seccionJugadores": "Xogadores"
 }

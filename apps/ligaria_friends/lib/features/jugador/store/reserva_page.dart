@@ -117,7 +117,7 @@ class _ReservaPageState extends State<ReservaPage> {
                     if (snap.connectionState != ConnectionState.done) {
                       return const Padding(
                         padding: EdgeInsets.all(32),
-                        child: Center(child: CircularProgressIndicator()),
+                        child: Center(child: Cargando()),
                       );
                     }
                     if (snap.hasError) {
@@ -236,7 +236,7 @@ class _MisReservasPageState extends State<MisReservasPage> {
               future: _reservas,
               builder: (context, snap) {
                 if (snap.connectionState != ConnectionState.done) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(child: Cargando());
                 }
                 if (snap.hasError) {
                   return EstadoVacio(

@@ -89,7 +89,7 @@ class _LigasSeccionState extends State<LigasSeccion> {
             if (snap.connectionState != ConnectionState.done) {
               return const Padding(
                 padding: EdgeInsets.all(24),
-                child: Center(child: CircularProgressIndicator()),
+                child: Center(child: Cargando()),
               );
             }
             if (snap.hasError) {
@@ -288,7 +288,7 @@ class _DialogoNuevaLigaState extends State<_DialogoNuevaLiga> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
+            CampoTexto(
               controller: _nombre,
               autofocus: true,
               onChanged: (_) => setState(() {}),

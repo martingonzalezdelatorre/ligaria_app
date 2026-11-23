@@ -13,6 +13,7 @@ Map<String, String> get tiposNotificacion {
     'pedido_cancelado': l.notifPedidoCancelado,
     'pedido_estado': l.notifPedidoEstado,
     'reserva_nueva': l.notifReservaNueva,
+    'mensaje': l.accMensaje,
   };
 }
 

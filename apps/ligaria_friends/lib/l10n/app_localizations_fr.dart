@@ -1267,4 +1267,106 @@ class AppL10nFr extends AppL10n {
   String estGanadosPerdidos(int g, int p) {
     return '$g gagnés · $p perdus';
   }
+
+  @override
+  String get tusAmigos => 'Tes amis';
+
+  @override
+  String get amigosSub =>
+      'Les personnes que tu as invitées ou contactées via l\'app';
+
+  @override
+  String get sinAmigosHome =>
+      'Tu n\'as pas encore d\'amis : invite quelqu\'un depuis un groupe et il apparaîtra ici, avec ou sans groupe.';
+
+  @override
+  String get amigosTab => 'Amis';
+
+  @override
+  String get sinAmistososHome =>
+      'Aucun match amical entre amis pour le moment. Crée un match sans groupe et il apparaîtra ici.';
+
+  @override
+  String get tabJugadores => 'Joueurs';
+
+  @override
+  String get accWhatsapp => 'WhatsApp';
+
+  @override
+  String get accMensaje => 'Message interne';
+
+  @override
+  String get accRetar => 'Défier à un match';
+
+  @override
+  String get accAnadirAmigo => 'Ajouter à mes amis';
+
+  @override
+  String sinWhatsapp(String nombre) {
+    return '$nombre n\'a pas partagé son téléphone pour WhatsApp.';
+  }
+
+  @override
+  String get errWhatsapp => 'Impossible d\'ouvrir WhatsApp.';
+
+  @override
+  String get amigoAnadido => 'Ajouté à tes amis';
+
+  @override
+  String get buscarPorNombre => 'Rechercher par nom';
+
+  @override
+  String get filtroProvincia => 'Province';
+
+  @override
+  String get filtroTodasProvincias => 'Toutes les provinces';
+
+  @override
+  String get filtroLocalidad => 'Ville';
+
+  @override
+  String get btnBuscar => 'Rechercher';
+
+  @override
+  String get buscaJugadoresHint =>
+      'Cherche des joueurs par nom, province ou ville.';
+
+  @override
+  String get sinJugadoresZona =>
+      'Aucun joueur ne correspond. Seules les personnes qui activent leur visibilité dans les réglages apparaissent.';
+
+  @override
+  String get escribeMensaje => 'Écris un message…';
+
+  @override
+  String get mensajesTitulo => 'Messages';
+
+  @override
+  String get sinMensajes => 'Tu n\'as pas encore de messages.';
+
+  @override
+  String get chatVacio => 'Commence la conversation.';
+
+  @override
+  String get errMensaje => 'Le message n\'a pas pu être envoyé.';
+
+  @override
+  String get telefonoWhatsapp => 'Téléphone (WhatsApp)';
+
+  @override
+  String get buscableTitulo => 'Apparaître dans la recherche de joueurs';
+
+  @override
+  String get buscableDetalle =>
+      'Les autres joueurs pourront te trouver par nom ou zone et t\'écrire.';
+
+  @override
+  String get telVisibleTitulo => 'Partager mon téléphone pour WhatsApp';
+
+  @override
+  String get telVisibleDetalle =>
+      'Seuls tes amis, camarades de groupe et ceux qui te trouvent dans la recherche le verront.';
+
+  @override
+  String get seccionJugadores => 'Joueurs';
 }
