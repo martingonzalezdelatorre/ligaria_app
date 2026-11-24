@@ -5,6 +5,8 @@ import '../../auth/auth_widgets.dart' show validarPassword;
 import '../ligas/ligas_repositorio.dart';
 import 'ajustes_repositorio.dart';
 import 'localidades_espana.dart';
+import '../../../core/config.dart';
+import '../../../core/enlaces_legales.dart';
 import '../../../core/idioma.dart';
 
 /// Ajustes de la cuenta: datos personales, contraseña, rankings y notificaciones.
@@ -340,6 +342,34 @@ class _AjustesPageState extends State<AjustesPage> {
               leading: const Icon(Icons.language),
               title: Text(context.l10n.idioma),
               trailing: const SelectorIdioma(),
+            ),
+          ),
+        ],
+      ),
+      (
+        context.l10n.legal,
+        [
+          Text(context.l10n.legal, style: t.titleLarge),
+          const SizedBox(height: 12),
+          Card(
+            margin: EdgeInsets.zero,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.privacy_tip_outlined),
+                  title: Text(context.l10n.politicaPrivacidad),
+                  trailing: const Icon(Icons.open_in_new, size: 18),
+                  onTap: () =>
+                      abrirEnlaceLegal(context, AppConfig.urlPrivacidad),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.description_outlined),
+                  title: Text(context.l10n.terminosUso),
+                  trailing: const Icon(Icons.open_in_new, size: 18),
+                  onTap: () => abrirEnlaceLegal(context, AppConfig.urlTerminos),
+                ),
+              ],
             ),
           ),
         ],

@@ -546,6 +546,18 @@ class AppL10nCa extends AppL10n {
   String get idiomaApp => 'Idioma de l\'aplicació';
 
   @override
+  String get legal => 'Legal';
+
+  @override
+  String get politicaPrivacidad => 'Política de privadesa';
+
+  @override
+  String get terminosUso => 'Condicions d\'ús';
+
+  @override
+  String get noSePudoAbrirEnlace => 'No s\'ha pogut obrir l\'enllaç';
+
+  @override
   String get grupos => 'Grups';
 
   @override
@@ -1117,6 +1129,20 @@ class AppL10nCa extends AppL10n {
 
   @override
   String get amistosos => 'Amistosos';
+
+  @override
+  String get vistaMia => 'La meva posició';
+
+  @override
+  String get descMia => 'El teu lloc a cada rànquing';
+
+  @override
+  String get sinPuesto => 'Sense lloc: no hi surts o no està disponible';
+
+  @override
+  String deTotal(int n) {
+    return 'de $n';
+  }
 
   @override
   String get vistaGlobal => 'Global';

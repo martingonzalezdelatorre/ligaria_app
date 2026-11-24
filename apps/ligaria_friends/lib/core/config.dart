@@ -23,6 +23,15 @@ class AppConfig {
     // Clave publishable: pública por diseño (la seguridad la da RLS).
     defaultValue: 'sb_publishable_rAVjP_DsvQTPAiqVeAu21Q_375OFQbq',
   );
+  /// Páginas legales publicadas en la web de Friends.
+  static const urlPrivacidad = String.fromEnvironment(
+    'URL_PRIVACIDAD',
+    defaultValue: 'https://ligariafriends.app/privacidad.html',
+  );
+  static const urlTerminos = String.fromEnvironment(
+    'URL_TERMINOS',
+    defaultValue: 'https://ligariafriends.app/terminos.html',
+  );
   static bool get configurada =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 }

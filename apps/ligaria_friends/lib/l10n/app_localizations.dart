@@ -1101,6 +1101,30 @@ abstract class AppL10n {
   /// **'Idioma de la aplicación'**
   String get idiomaApp;
 
+  /// No description provided for @legal.
+  ///
+  /// In es, this message translates to:
+  /// **'Legal'**
+  String get legal;
+
+  /// No description provided for @politicaPrivacidad.
+  ///
+  /// In es, this message translates to:
+  /// **'Política de privacidad'**
+  String get politicaPrivacidad;
+
+  /// No description provided for @terminosUso.
+  ///
+  /// In es, this message translates to:
+  /// **'Términos de uso'**
+  String get terminosUso;
+
+  /// No description provided for @noSePudoAbrirEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el enlace'**
+  String get noSePudoAbrirEnlace;
+
   /// No description provided for @grupos.
   ///
   /// In es, this message translates to:
@@ -2120,6 +2144,30 @@ abstract class AppL10n {
   /// In es, this message translates to:
   /// **'Amistosos'**
   String get amistosos;
+
+  /// No description provided for @vistaMia.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi posición'**
+  String get vistaMia;
+
+  /// No description provided for @descMia.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu puesto en cada ranking'**
+  String get descMia;
+
+  /// No description provided for @sinPuesto.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin puesto: no apareces o no está disponible'**
+  String get sinPuesto;
+
+  /// No description provided for @deTotal.
+  ///
+  /// In es, this message translates to:
+  /// **'de {n}'**
+  String deTotal(int n);
 
   /// No description provided for @vistaGlobal.
   ///

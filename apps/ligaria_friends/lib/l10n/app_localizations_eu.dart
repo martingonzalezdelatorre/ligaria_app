@@ -547,6 +547,18 @@ class AppL10nEu extends AppL10n {
   String get idiomaApp => 'Aplikazioaren hizkuntza';
 
   @override
+  String get legal => 'Legala';
+
+  @override
+  String get politicaPrivacidad => 'Pribatutasun-politika';
+
+  @override
+  String get terminosUso => 'Erabilera-baldintzak';
+
+  @override
+  String get noSePudoAbrirEnlace => 'Ezin izan da esteka ireki';
+
+  @override
   String get grupos => 'Taldeak';
 
   @override
@@ -1119,6 +1131,21 @@ class AppL10nEu extends AppL10n {
 
   @override
   String get amistosos => 'Lagunartekoak';
+
+  @override
+  String get vistaMia => 'Nire postua';
+
+  @override
+  String get descMia => 'Zure postua sailkapen bakoitzean';
+
+  @override
+  String get sinPuesto =>
+      'Postu gabe: ez zara agertzen edo ez dago eskuragarri';
+
+  @override
+  String deTotal(int n) {
+    return '${n}tik';
+  }
 
   @override
   String get vistaGlobal => 'Globala';
