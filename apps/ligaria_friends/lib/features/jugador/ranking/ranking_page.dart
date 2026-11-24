@@ -11,7 +11,8 @@ enum _Vista {
   global(Icons.public, Preferencia.rankingGlobal),
   provincia(Icons.map_outlined, Preferencia.rankingProvincia),
   localidad(Icons.location_city_outlined, Preferencia.rankingLocalidad),
-  grupo(Icons.groups_outlined, null);
+  grupo(Icons.groups_outlined, null),
+  mia(Icons.person_outline, null);
 
   const _Vista(this.icono, this.preferencia);
   final IconData icono;
@@ -21,6 +22,7 @@ enum _Vista {
     provincia => l.vistaProvincia,
     localidad => l.vistaLocalidad,
     grupo => l.vistaGrupos,
+    mia => l.vistaMia,
   };
 
   /// Ajuste que hay que activar para aparecer en ese ranking (`null`: siempre).
@@ -61,6 +63,7 @@ class _RankingPageState extends State<RankingPage> {
   void _cargar() {
     // Los ajustes pueden haber cambiado desde el engranaje de la barra superior.
     _perfil = _cargarPerfil();
+    if (_vista == _Vista.mia) _futuroMio = _cargarMias();
     _futuro = switch (_vista) {
       _Vista.global => _repo.ranking(),
       _Vista.provincia => _repo.rankingProvincia(),
@@ -69,7 +72,43 @@ class _RankingPageState extends State<RankingPage> {
         _grupo == null
             ? Future.value(const [])
             : _repo.rankingGrupo(_grupo!.id),
+      _Vista.mia => Future.value(const []),
     };
+  }
+
+  Future<List<_Posicion>> _futuroMio = Future.value(const []);
+
+  /// Mi puesto en cada ranking; `null` si no aparezco o el ranking no está disponible.
+  Future<List<_Posicion>> _cargarMias() async {
+    final yo = _repo.miId;
+    final grupos = await _grupos;
+    Future<_Posicion> pos(
+      String? etiqueta,
+      _Vista v,
+      Future<List<PuestoRanking>> f,
+    ) async {
+      try {
+        final lista = await f;
+        final i = lista.indexWhere((e) => e.usuarioId == yo);
+        return _Posicion(
+          v,
+          etiqueta,
+          i < 0 ? null : i + 1,
+          lista.length,
+          i < 0 ? null : lista[i],
+        );
+      } catch (_) {
+        return _Posicion(v, etiqueta, null, 0, null);
+      }
+    }
+
+    return Future.wait([
+      pos(null, _Vista.global, _repo.ranking()),
+      pos(null, _Vista.provincia, _repo.rankingProvincia()),
+      pos(null, _Vista.localidad, _repo.rankingLocalidad()),
+      for (final g in grupos)
+        pos(g.nombre, _Vista.grupo, _repo.rankingGrupo(g.id)),
+    ]);
   }
 
   Future<void> _ajustes() async {
@@ -84,11 +123,14 @@ class _RankingPageState extends State<RankingPage> {
     _Vista.provincia => context.l10n.descProvincia,
     _Vista.localidad => context.l10n.descLocalidad,
     _Vista.grupo => context.l10n.descGrupo,
+    _Vista.mia => context.l10n.descMia,
   };
 
   /// Aviso cuando el usuario no aparece en el ranking o falta su ubicación.
   Widget _aviso(PerfilUsuario? p) {
-    if (p == null || _vista == _Vista.grupo) return const SizedBox.shrink();
+    if (p == null || _vista == _Vista.grupo || _vista == _Vista.mia) {
+      return const SizedBox.shrink();
+    }
     String? titulo, detalle;
     if (_vista == _Vista.provincia && !p.tieneProvincia) {
       titulo = context.l10n.indicaTuProvincia;
@@ -200,7 +242,29 @@ class _RankingPageState extends State<RankingPage> {
                 builder: (context, p) => _aviso(p.data),
               ),
               const SizedBox(height: 20),
-              if (_vista == _Vista.grupo && grupos.isEmpty)
+              if (_vista == _Vista.mia)
+                FutureBuilder<List<_Posicion>>(
+                  future: _futuroMio,
+                  builder: (context, snap) {
+                    if (snap.connectionState != ConnectionState.done) {
+                      return const Padding(
+                        padding: EdgeInsets.all(32),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+                    final lista = snap.data ?? const <_Posicion>[];
+                    return Column(
+                      children: [
+                        for (final x in lista)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: _FilaPosicion(datos: x),
+                          ),
+                      ],
+                    );
+                  },
+                )
+              else if (_vista == _Vista.grupo && grupos.isEmpty)
                 EstadoVacio(
                   icono: Icons.groups_outlined,
                   texto: context.l10n.unetePorRanking,
@@ -249,6 +313,62 @@ class _RankingPageState extends State<RankingPage> {
           ),
         );
       },
+    );
+  }
+}
+
+class _Posicion {
+  const _Posicion(this.vista, this.grupo, this.puesto, this.total, this.datos);
+  final _Vista vista;
+  final String? grupo;
+  final int? puesto;
+  final int total;
+  final PuestoRanking? datos;
+}
+
+class _FilaPosicion extends StatelessWidget {
+  const _FilaPosicion({required this.datos});
+  final _Posicion datos;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final l = context.l10n;
+    final titulo = datos.grupo ?? datos.vista.etiqueta(l);
+    final d = datos.datos;
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(datos.vista.icono, color: cs.primary),
+        title: Text(
+          titulo,
+          style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        subtitle: Text(
+          d == null ? l.sinPuesto : l.ganadosDeJugados(d.ganados, d.jugados),
+          style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+        ),
+        trailing: datos.puesto == null
+            ? null
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    '#${datos.puesto}',
+                    style: t.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: cs.primary,
+                    ),
+                  ),
+                  Text(
+                    l.deTotal(datos.total),
+                    style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }
