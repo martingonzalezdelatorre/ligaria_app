@@ -127,7 +127,12 @@ void main() {
     expect(find.text('Lucía'), findsOneWidget); // global
     expect(find.text('No apareces en este ranking'), findsOneWidget);
 
-    await tester.tap(find.text('Provincia'));
+    await tester.tap(find.text('Mi posición'));
+    await _pump(tester);
+    expect(find.text('#4'), findsWidgets); // Demo es 4.º en el global
+    expect(find.text('Viernes'), findsOneWidget);
+
+    await tester.tap(find.widgetWithText(ChoiceChip, 'Provincia'));
     await _pump(tester);
     expect(find.text('Carlos'), findsOneWidget);
     expect(find.text('Lucía'), findsNothing);

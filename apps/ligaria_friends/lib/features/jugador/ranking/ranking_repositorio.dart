@@ -44,9 +44,15 @@ abstract class RankingRepositorio {
 
   /// De un grupo: todos sus miembros, con los partidos jugados en ese grupo.
   Future<List<PuestoRanking>> rankingGrupo(String grupoId);
+
+  /// Id del usuario actual, para localizarlo en cada ranking.
+  String? get miId;
 }
 
 class RankingSupabase implements RankingRepositorio {
+  @override
+  String? get miId => Supabase.instance.client.auth.currentUser?.id;
+
   Future<List<PuestoRanking>> _rpc(
     String funcion, [
     Map<String, dynamic>? params,
@@ -77,6 +83,9 @@ class RankingSupabase implements RankingRepositorio {
 }
 
 class RankingDemo implements RankingRepositorio {
+  @override
+  String? get miId => 'u4';
+
   @override
   Future<List<PuestoRanking>> ranking() async => const [
     PuestoRanking(usuarioId: 'u1', nombre: 'Lucía', jugados: 12, ganados: 10),

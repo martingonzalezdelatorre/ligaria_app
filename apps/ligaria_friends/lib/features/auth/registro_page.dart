@@ -3,6 +3,7 @@ import 'package:ligaria_ui/ligaria_ui.dart';
 import '../../core/invitacion.dart';
 import 'auth_repositorio.dart';
 import 'auth_widgets.dart';
+import '../../core/enlaces_legales.dart';
 import '../../core/idioma.dart';
 
 class RegistroPage extends StatefulWidget {
@@ -229,6 +230,7 @@ class _RegistroPageState extends State<RegistroPage> {
                       onChanged: (v) => setState(() => _acepto = v ?? false),
                       title: Text(context.l10n.acepto, style: t.bodySmall),
                     ),
+                    const EnlacesLegales(),
                     const SizedBox(height: 8),
                     BotonPrincipal(
                       texto: context.l10n.registrarme,

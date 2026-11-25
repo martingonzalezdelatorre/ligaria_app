@@ -6,6 +6,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["--yes", "http-server", "landing", "-p", "8080", "-c-1"],
       "port": 8080
+    },
+    {
+      "name": "landing-friends",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "http-server", "landing_friends", "-p", "8081", "-c-1"],
+      "port": 8081
     }
   ]
 }
