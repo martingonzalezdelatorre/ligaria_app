@@ -12,12 +12,28 @@ Ligaria es una plataforma multi-escuela de competiciones deportivas para ligas i
 ## Perfiles
 Superadmin de plataforma, organizador, administrador de escuela, ayuntamiento o entidad municipal, entrenador, tutor/familia y alumno. Cada uno ve únicamente lo que necesita.
 
+## Soluciones por segmento (con demostración, funcionalidades, ventajas y solicitud de presentación)
+- Ligas de pádel: https://ligaria.app/software-ligas-padel/ — parejas y equipos, calendario automático, resultados desde el móvil, clasificación.
+- Ligas de tenis: https://ligaria.app/software-ligas-tenis/ — ligas, cuadros eliminatorios, fase de grupos y playoff, desempates configurables.
+- Clubes: https://ligaria.app/gestion-competiciones-clubes/ — ligas y torneos internos o abiertos, inscripciones, programación y clasificación.
+- Escuelas deportivas: https://ligaria.app/gestion-escuelas-deportivas/ — jugadores, tutores, equipos, ligas entre escuelas y privacidad de menores.
+- Ayuntamientos: https://ligaria.app/software-deportivo-ayuntamientos/ — ligas municipales entre escuelas, aprobación de inscripciones y seguimiento online.
+
+## Tarifas
+Ligaria se contrata por club, con 30 días de prueba gratuita y sin compromiso.
+- Mensual: 29,90 €/mes, sin permanencia (cancelación libre).
+- Anual: 299 €/año, pago anticipado (equivale a 2 meses gratis frente al plan mensual).
+- Club fundador: 19,90 €/mes durante 12 meses, para los 10 primeros clubes.
+Incluido en todas las tarifas: competiciones ilimitadas (ligas y torneos), tenis y pádel, acceso web y móvil. Sin comisiones por inscripción ni por partido.
+Detalle: https://ligaria.app/#tarifas
+
 ## Privacidad y menores
 Consentimiento del tutor para menores de 14 años; visibilidad de la ficha configurable; registro de accesos a fichas de menores; datos aislados por escuela.
 
 ## Preguntas frecuentes
 - ¿Qué es Ligaria? Una plataforma para organizar ligas de tenis y pádel entre escuelas.
 - ¿Se pueden ver los resultados online? Sí: al introducirse y confirmarse un resultado aparece online con la clasificación actualizada.
+- ¿Cuánto cuesta? 29,90 €/mes, 299 €/año o 19,90 €/mes (club fundador, primeros 10 clubes, 12 meses). 30 días de prueba gratuita.
 - ¿Hay que instalar algo? No, funciona desde el navegador.
 - ¿Cómo me registro? En https://ligaria.app/#registro, eligiendo tu perfil.
 
