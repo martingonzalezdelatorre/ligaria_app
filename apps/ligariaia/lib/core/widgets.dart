@@ -19,6 +19,18 @@ String fechaHoraCorta(DateTime? d, {bool conHora = false}) => d == null
     ? fechaCorta(d)
     : '${fechaCorta(d)}${conHora ? ' · ${horaCorta(d)}' : ''}';
 
+bool mismoDia(DateTime a, DateTime b) =>
+    a.year == b.year && a.month == b.month && a.day == b.day;
+
+/// «Hoy», «Mañana» o «sáb 5 dic» (con el año si no es el actual).
+String etiquetaDia(DateTime d, {DateTime? ahora}) {
+  final hoy = ahora ?? DateTime.now();
+  if (mismoDia(d, hoy)) return _l.hoy;
+  if (mismoDia(d, hoy.add(const Duration(days: 1)))) return _l.manana;
+  final base = fechaCorta(d);
+  return d.year == hoy.year ? base : '$base ${d.year}';
+}
+
 String fechaLarga(DateTime d) =>
     '${d.day} ${_l.mesesCortos.split(',')[d.month - 1]} ${d.year}';
 

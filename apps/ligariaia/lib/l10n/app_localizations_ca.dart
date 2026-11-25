@@ -2172,4 +2172,98 @@ class AppL10nCa extends AppL10n {
   @override
   String get resAjustesCierre =>
       'Per tancar o reobrir la lliga, fes servir els botons de sota.';
+
+  @override
+  String get secCalendario => 'Calendari';
+
+  @override
+  String get entrenoEtiqueta => 'Entrenament';
+
+  @override
+  String get partidoEtiqueta => 'Partit';
+
+  @override
+  String get agendaVacia =>
+      'Encara no hi ha entrenaments ni partits al teu calendari.';
+
+  @override
+  String get hoy => 'Avui';
+
+  @override
+  String get manana => 'Demà';
+
+  @override
+  String get horaPorConfirmar => 'Hora per confirmar';
+
+  @override
+  String get lugarPorConfirmar => 'Lloc per confirmar';
+
+  @override
+  String get detallePartido => 'Detall del partit';
+
+  @override
+  String get fechaYHoraTitulo => 'Data i hora';
+
+  @override
+  String get lugarTitulo => 'Lloc';
+
+  @override
+  String get jugadoresTitulo => 'Jugadors';
+
+  @override
+  String get alineacionPendiente =>
+      'L\'alineació es coneixerà quan l\'entrenador la registri.';
+
+  @override
+  String get agendaProximos => 'Propers';
+
+  @override
+  String get agendaAnteriores => 'Anteriors';
+
+  @override
+  String get notasTitulo => 'Notes';
+
+  @override
+  String get tabEntrenos => 'Entrenaments';
+
+  @override
+  String get nuevoEntreno => 'Nou entrenament';
+
+  @override
+  String get equipoCampo => 'Equip';
+
+  @override
+  String get duracionCampo => 'Durada (min)';
+
+  @override
+  String get notasCampo => 'Notes (opcional)';
+
+  @override
+  String get sinEntrenosEntrenador =>
+      'Encara no has assignat entrenaments als teus equips.';
+
+  @override
+  String get entrenoGuardado => 'Entrenament assignat.';
+
+  @override
+  String get entrenoEliminado => 'Entrenament eliminat.';
+
+  @override
+  String get errGuardarEntreno =>
+      'No s\'ha pogut desar l\'entrenament. Torna-ho a provar.';
+
+  @override
+  String get eliminarEntreno => 'Eliminar entrenament';
+
+  @override
+  String get eliminarEntrenoPregunta =>
+      'Deixarà de aparèixer al calendari de l\'equip.';
+
+  @override
+  String get fechaEntrenoObligatoria => 'Tria la data i l\'hora.';
+
+  @override
+  String duracionMin(int n) {
+    return '$n min';
+  }
 }

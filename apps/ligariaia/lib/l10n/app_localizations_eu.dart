@@ -2170,4 +2170,98 @@ class AppL10nEu extends AppL10n {
   @override
   String get resAjustesCierre =>
       'Liga ixteko edo berriz irekitzeko, erabili beheko botoiak.';
+
+  @override
+  String get secCalendario => 'Egutegia';
+
+  @override
+  String get entrenoEtiqueta => 'Entrenamendua';
+
+  @override
+  String get partidoEtiqueta => 'Partida';
+
+  @override
+  String get agendaVacia =>
+      'Oraindik ez dago entrenamendurik edo partidarik zure egutegian.';
+
+  @override
+  String get hoy => 'Gaur';
+
+  @override
+  String get manana => 'Bihar';
+
+  @override
+  String get horaPorConfirmar => 'Ordua zehazteke';
+
+  @override
+  String get lugarPorConfirmar => 'Lekua zehazteke';
+
+  @override
+  String get detallePartido => 'Partidaren xehetasunak';
+
+  @override
+  String get fechaYHoraTitulo => 'Data eta ordua';
+
+  @override
+  String get lugarTitulo => 'Lekua';
+
+  @override
+  String get jugadoresTitulo => 'Jokalariak';
+
+  @override
+  String get alineacionPendiente =>
+      'Aldaketa-zerrenda entrenatzaileak erregistratzen duenean jakingo da.';
+
+  @override
+  String get agendaProximos => 'Hurrengoak';
+
+  @override
+  String get agendaAnteriores => 'Aurrekoak';
+
+  @override
+  String get notasTitulo => 'Oharrak';
+
+  @override
+  String get tabEntrenos => 'Entrenamenduak';
+
+  @override
+  String get nuevoEntreno => 'Entrenamendu berria';
+
+  @override
+  String get equipoCampo => 'Taldea';
+
+  @override
+  String get duracionCampo => 'Iraupena (min)';
+
+  @override
+  String get notasCampo => 'Oharrak (aukerakoa)';
+
+  @override
+  String get sinEntrenosEntrenador =>
+      'Oraindik ez diozu entrenamendurik esleitu zure taldeei.';
+
+  @override
+  String get entrenoGuardado => 'Entrenamendua esleituta.';
+
+  @override
+  String get entrenoEliminado => 'Entrenamendua ezabatuta.';
+
+  @override
+  String get errGuardarEntreno =>
+      'Ezin izan da entrenamendua gorde. Saiatu berriro.';
+
+  @override
+  String get eliminarEntreno => 'Entrenamendua ezabatu';
+
+  @override
+  String get eliminarEntrenoPregunta =>
+      'Taldearen egutegian ez da gehiago agertuko.';
+
+  @override
+  String get fechaEntrenoObligatoria => 'Aukeratu data eta ordua.';
+
+  @override
+  String duracionMin(int n) {
+    return '$n min';
+  }
 }

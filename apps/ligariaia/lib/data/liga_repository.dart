@@ -16,7 +16,19 @@ abstract class LigaRepository {
   Future<List<FilaClasificacion>> clasificacion(String ligaId);
   Future<List<Ficha>> misFichas();
 
+  /// Entrenos de mis equipos (como jugador, familia o entrenador), por fecha.
+  Future<List<Entreno>> misEntrenos();
+
   // ── Entrenador ──
+  /// Asigna un entreno a un equipo que entreno (o de mi escuela si la administro).
+  Future<void> crearEntreno(
+    String equipoId,
+    DateTime fecha, {
+    int? duracionMin,
+    String? lugar,
+    String? notas,
+  });
+  Future<void> eliminarEntreno(String entrenoId);
   Future<List<Jugador>> jugadores(String equipoId);
   Future<DetalleEncuentro> detalleEncuentro(String encuentroId);
 
@@ -248,6 +260,30 @@ class SupabaseLigaRepository implements LigaRepository {
   Future<List<Ficha>> misFichas() async => _rows(
     await _c.from('v_mis_fichas').select().order('nombre'),
   ).map(Ficha.fromRow).toList();
+
+  @override
+  Future<List<Entreno>> misEntrenos() async => _rows(
+    await _c.from('v_entrenos').select().order('fecha'),
+  ).map(Entreno.fromRow).toList();
+
+  @override
+  Future<void> crearEntreno(
+    String equipoId,
+    DateTime fecha, {
+    int? duracionMin,
+    String? lugar,
+    String? notas,
+  }) => _c.from('entreno').insert({
+    'equipo_id': equipoId,
+    'fecha_hora': fecha.toUtc().toIso8601String(),
+    'duracion_min': duracionMin,
+    'lugar': (lugar == null || lugar.trim().isEmpty) ? null : lugar.trim(),
+    'notas': (notas == null || notas.trim().isEmpty) ? null : notas.trim(),
+  });
+
+  @override
+  Future<void> eliminarEntreno(String entrenoId) =>
+      _c.from('entreno').delete().eq('id', entrenoId);
 
   @override
   Future<List<Jugador>> jugadores(String equipoId) async => _rows(

@@ -1109,5 +1109,41 @@
   "resUltimos": "Últimos resultados",
   "resSinProximos": "No quedan partidos por jugar.",
   "resSinResultados": "Aún no hay resultados.",
-  "resAjustesCierre": "Para cerrar o reabrir la liga, usa los botones de abajo."
+  "resAjustesCierre": "Para cerrar o reabrir la liga, usa los botones de abajo.",
+  "secCalendario": "Calendario",
+  "entrenoEtiqueta": "Entreno",
+  "partidoEtiqueta": "Partido",
+  "agendaVacia": "Aún no hay entrenos ni partidos en tu calendario.",
+  "hoy": "Hoy",
+  "manana": "Mañana",
+  "horaPorConfirmar": "Hora por confirmar",
+  "lugarPorConfirmar": "Lugar por confirmar",
+  "detallePartido": "Detalle del partido",
+  "fechaYHoraTitulo": "Fecha y hora",
+  "lugarTitulo": "Lugar",
+  "jugadoresTitulo": "Jugadores",
+  "alineacionPendiente": "La alineación se conocerá cuando el entrenador la registre.",
+  "agendaProximos": "Próximos",
+  "agendaAnteriores": "Anteriores",
+  "notasTitulo": "Notas",
+  "tabEntrenos": "Entrenos",
+  "nuevoEntreno": "Nuevo entreno",
+  "equipoCampo": "Equipo",
+  "duracionCampo": "Duración (min)",
+  "notasCampo": "Notas (opcional)",
+  "sinEntrenosEntrenador": "Aún no has asignado entrenos a tus equipos.",
+  "entrenoGuardado": "Entreno asignado.",
+  "entrenoEliminado": "Entreno eliminado.",
+  "errGuardarEntreno": "No se pudo guardar el entreno. Inténtalo de nuevo.",
+  "eliminarEntreno": "Eliminar entreno",
+  "eliminarEntrenoPregunta": "Dejará de aparecer en el calendario del equipo.",
+  "fechaEntrenoObligatoria": "Elige la fecha y la hora.",
+  "duracionMin": "{n} min",
+  "@duracionMin": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  }
 }

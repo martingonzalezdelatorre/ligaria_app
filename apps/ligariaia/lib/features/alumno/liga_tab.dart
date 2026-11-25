@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/cuadro.dart';
 import '../../core/widgets.dart';
 import '../../data/models.dart';
+import '../partido/detalle_partido_page.dart';
 import 'alumno_providers.dart';
 
 /// Lista desplazable con pull-to-refresh (también cuando está vacía).
@@ -157,6 +158,14 @@ Set<String> _misEquiposIds(WidgetRef ref, Liga liga) =>
         .map((e) => e.equipoId)
         .toSet();
 
+/// Abre el detalle de un partido (equipos y jugadores, fecha y hora, lugar).
+void _abrirDetalle(BuildContext context, EncuentroVista e, Set<String> mios) =>
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => DetallePartidoPage(encuentro: e, destacados: mios),
+      ),
+    );
+
 class _MiEquipo extends ConsumerWidget {
   const _MiEquipo({required this.liga});
   final Liga liga;
@@ -275,7 +284,11 @@ class _CalendarioState extends ConsumerState<_Calendario> {
                   ),
                 ),
                 for (final e in j.encuentros)
-                  TarjetaEncuentro(encuentro: e, destacados: mios),
+                  TarjetaEncuentro(
+                    encuentro: e,
+                    destacados: mios,
+                    onTap: () => _abrirDetalle(context, e, mios),
+                  ),
                 if (j.esEliminatoria && j.jornada == 1)
                   for (final b in byes.where(
                     (b) => b.jornada == 1 && (b.categoria ?? '') == j.categoria,
@@ -351,7 +364,11 @@ class _Resultados extends ConsumerWidget {
                 context.l10n.sinResultadosConfirmados,
               ),
             for (final e in jugados)
-              TarjetaEncuentro(encuentro: e, destacados: mios),
+              TarjetaEncuentro(
+                encuentro: e,
+                destacados: mios,
+                onTap: () => _abrirDetalle(context, e, mios),
+              ),
             const SizedBox(height: 16),
           ],
         );

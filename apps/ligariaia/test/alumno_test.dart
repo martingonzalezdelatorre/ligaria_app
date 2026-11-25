@@ -126,14 +126,14 @@ void main() {
     ).thenAnswer((_) async => [enc('b', 'l2', 'Cobras', 'Delfines')]);
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Calendario'));
+    await tester.tap(find.descendant(of: find.byType(TabBar), matching: find.text('Calendario')));
     await tester.pumpAndSettle();
     expect(find.text('Aguilas'), findsOneWidget);
     expect(find.text('Cobras'), findsNothing);
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'Liga 2'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Calendario'));
+    await tester.tap(find.descendant(of: find.byType(TabBar), matching: find.text('Calendario')));
     await tester.pumpAndSettle();
     expect(find.text('Cobras'), findsOneWidget);
     expect(find.text('Aguilas'), findsNothing);
@@ -275,7 +275,10 @@ void main() {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
       expect(find.text('Clasificación'), findsNothing);
-      expect(find.text('Calendario'), findsNothing);
+      expect(
+        find.descendant(of: find.byType(TabBar), matching: find.text('Calendario')),
+        findsNothing,
+      );
       // mi equipo tiene pase directo: lo dice el resumen (y no hay puesto ni puntos)
       expect(find.text('RONDA'), findsOneWidget);
       expect(find.text('Pase directo'), findsOneWidget);

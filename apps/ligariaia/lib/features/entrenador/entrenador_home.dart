@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/widgets.dart';
 import '../../data/models.dart';
 import 'entrenador_providers.dart';
+import 'entrenos_tab.dart';
 import 'resultado_form_page.dart';
 
 /// Área entrenador: mis equipos, próxima jornada y formulario rápido de resultado.
@@ -25,6 +26,12 @@ class EntrenadorHome extends ConsumerWidget {
         context.l10n.tabProximaJornada,
         const _ProximaJornadaTab(),
         iconoActivo: Icons.event,
+      ),
+      SeccionArea(
+        Icons.fitness_center_outlined,
+        context.l10n.tabEntrenos,
+        const EntrenosTab(),
+        iconoActivo: Icons.fitness_center,
       ),
     ],
   );

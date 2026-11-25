@@ -2,6 +2,7 @@ import '../../core/idioma.dart';
 import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../calendario/calendario.dart';
 import 'ficha_tab.dart';
 import 'liga_tab.dart';
 
@@ -17,6 +18,12 @@ class AlumnoHome extends ConsumerWidget {
         context.l10n.secLiga,
         const LigaTab(),
         iconoActivo: Icons.emoji_events,
+      ),
+      SeccionArea(
+        Icons.calendar_month_outlined,
+        context.l10n.secCalendario,
+        const CalendarioTab(),
+        iconoActivo: Icons.calendar_month,
       ),
       SeccionArea(
         Icons.badge_outlined,

@@ -2172,4 +2172,97 @@ class AppL10nEs extends AppL10n {
   @override
   String get resAjustesCierre =>
       'Para cerrar o reabrir la liga, usa los botones de abajo.';
+
+  @override
+  String get secCalendario => 'Calendario';
+
+  @override
+  String get entrenoEtiqueta => 'Entreno';
+
+  @override
+  String get partidoEtiqueta => 'Partido';
+
+  @override
+  String get agendaVacia => 'Aún no hay entrenos ni partidos en tu calendario.';
+
+  @override
+  String get hoy => 'Hoy';
+
+  @override
+  String get manana => 'Mañana';
+
+  @override
+  String get horaPorConfirmar => 'Hora por confirmar';
+
+  @override
+  String get lugarPorConfirmar => 'Lugar por confirmar';
+
+  @override
+  String get detallePartido => 'Detalle del partido';
+
+  @override
+  String get fechaYHoraTitulo => 'Fecha y hora';
+
+  @override
+  String get lugarTitulo => 'Lugar';
+
+  @override
+  String get jugadoresTitulo => 'Jugadores';
+
+  @override
+  String get alineacionPendiente =>
+      'La alineación se conocerá cuando el entrenador la registre.';
+
+  @override
+  String get agendaProximos => 'Próximos';
+
+  @override
+  String get agendaAnteriores => 'Anteriores';
+
+  @override
+  String get notasTitulo => 'Notas';
+
+  @override
+  String get tabEntrenos => 'Entrenos';
+
+  @override
+  String get nuevoEntreno => 'Nuevo entreno';
+
+  @override
+  String get equipoCampo => 'Equipo';
+
+  @override
+  String get duracionCampo => 'Duración (min)';
+
+  @override
+  String get notasCampo => 'Notas (opcional)';
+
+  @override
+  String get sinEntrenosEntrenador =>
+      'Aún no has asignado entrenos a tus equipos.';
+
+  @override
+  String get entrenoGuardado => 'Entreno asignado.';
+
+  @override
+  String get entrenoEliminado => 'Entreno eliminado.';
+
+  @override
+  String get errGuardarEntreno =>
+      'No se pudo guardar el entreno. Inténtalo de nuevo.';
+
+  @override
+  String get eliminarEntreno => 'Eliminar entreno';
+
+  @override
+  String get eliminarEntrenoPregunta =>
+      'Dejará de aparecer en el calendario del equipo.';
+
+  @override
+  String get fechaEntrenoObligatoria => 'Elige la fecha y la hora.';
+
+  @override
+  String duracionMin(int n) {
+    return '$n min';
+  }
 }

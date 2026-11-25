@@ -379,6 +379,32 @@ class EncuentroVista {
   );
 }
 
+/// Sesión de entrenamiento que el entrenador asigna a un equipo (aparece en el calendario).
+class Entreno {
+  const Entreno({
+    required this.id,
+    required this.equipoId,
+    required this.equipo,
+    required this.fecha,
+    this.duracionMin,
+    this.lugar,
+    this.notas,
+  });
+  final String id, equipoId, equipo;
+  final DateTime fecha; // hora local
+  final int? duracionMin;
+  final String? lugar, notas;
+  factory Entreno.fromRow(Map<String, dynamic> r) => Entreno(
+    id: r['entreno_id'] as String,
+    equipoId: r['equipo_id'] as String,
+    equipo: r['equipo'] as String,
+    fecha: _fecha(r['fecha'])!.toLocal(),
+    duracionMin: _int(r['duracion_min']),
+    lugar: r['lugar'] as String?,
+    notas: r['notas'] as String?,
+  );
+}
+
 /// Dónde está mi equipo en un cuadro de eliminatoria, a partir de los encuentros visibles:
 /// `estado` es `en_juego`, `clasificado` (ganó y espera la siguiente ronda), `campeon`, `eliminado`,
 /// `pase_directo` (descansa en la primera ronda) o `sin_cuadro` (aún no hay cuadro).

@@ -3992,6 +3992,180 @@ abstract class AppL10n {
   /// In es, this message translates to:
   /// **'Para cerrar o reabrir la liga, usa los botones de abajo.'**
   String get resAjustesCierre;
+
+  /// No description provided for @secCalendario.
+  ///
+  /// In es, this message translates to:
+  /// **'Calendario'**
+  String get secCalendario;
+
+  /// No description provided for @entrenoEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Entreno'**
+  String get entrenoEtiqueta;
+
+  /// No description provided for @partidoEtiqueta.
+  ///
+  /// In es, this message translates to:
+  /// **'Partido'**
+  String get partidoEtiqueta;
+
+  /// No description provided for @agendaVacia.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no hay entrenos ni partidos en tu calendario.'**
+  String get agendaVacia;
+
+  /// No description provided for @hoy.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get hoy;
+
+  /// No description provided for @manana.
+  ///
+  /// In es, this message translates to:
+  /// **'Mañana'**
+  String get manana;
+
+  /// No description provided for @horaPorConfirmar.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora por confirmar'**
+  String get horaPorConfirmar;
+
+  /// No description provided for @lugarPorConfirmar.
+  ///
+  /// In es, this message translates to:
+  /// **'Lugar por confirmar'**
+  String get lugarPorConfirmar;
+
+  /// No description provided for @detallePartido.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalle del partido'**
+  String get detallePartido;
+
+  /// No description provided for @fechaYHoraTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha y hora'**
+  String get fechaYHoraTitulo;
+
+  /// No description provided for @lugarTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Lugar'**
+  String get lugarTitulo;
+
+  /// No description provided for @jugadoresTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Jugadores'**
+  String get jugadoresTitulo;
+
+  /// No description provided for @alineacionPendiente.
+  ///
+  /// In es, this message translates to:
+  /// **'La alineación se conocerá cuando el entrenador la registre.'**
+  String get alineacionPendiente;
+
+  /// No description provided for @agendaProximos.
+  ///
+  /// In es, this message translates to:
+  /// **'Próximos'**
+  String get agendaProximos;
+
+  /// No description provided for @agendaAnteriores.
+  ///
+  /// In es, this message translates to:
+  /// **'Anteriores'**
+  String get agendaAnteriores;
+
+  /// No description provided for @notasTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas'**
+  String get notasTitulo;
+
+  /// No description provided for @tabEntrenos.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrenos'**
+  String get tabEntrenos;
+
+  /// No description provided for @nuevoEntreno.
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo entreno'**
+  String get nuevoEntreno;
+
+  /// No description provided for @equipoCampo.
+  ///
+  /// In es, this message translates to:
+  /// **'Equipo'**
+  String get equipoCampo;
+
+  /// No description provided for @duracionCampo.
+  ///
+  /// In es, this message translates to:
+  /// **'Duración (min)'**
+  String get duracionCampo;
+
+  /// No description provided for @notasCampo.
+  ///
+  /// In es, this message translates to:
+  /// **'Notas (opcional)'**
+  String get notasCampo;
+
+  /// No description provided for @sinEntrenosEntrenador.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has asignado entrenos a tus equipos.'**
+  String get sinEntrenosEntrenador;
+
+  /// No description provided for @entrenoGuardado.
+  ///
+  /// In es, this message translates to:
+  /// **'Entreno asignado.'**
+  String get entrenoGuardado;
+
+  /// No description provided for @entrenoEliminado.
+  ///
+  /// In es, this message translates to:
+  /// **'Entreno eliminado.'**
+  String get entrenoEliminado;
+
+  /// No description provided for @errGuardarEntreno.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar el entreno. Inténtalo de nuevo.'**
+  String get errGuardarEntreno;
+
+  /// No description provided for @eliminarEntreno.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar entreno'**
+  String get eliminarEntreno;
+
+  /// No description provided for @eliminarEntrenoPregunta.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejará de aparecer en el calendario del equipo.'**
+  String get eliminarEntrenoPregunta;
+
+  /// No description provided for @fechaEntrenoObligatoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige la fecha y la hora.'**
+  String get fechaEntrenoObligatoria;
+
+  /// No description provided for @duracionMin.
+  ///
+  /// In es, this message translates to:
+  /// **'{n} min'**
+  String duracionMin(int n);
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {
