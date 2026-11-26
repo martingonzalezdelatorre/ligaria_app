@@ -266,7 +266,8 @@ void main() {
     ).thenAnswer((_) async => 'pendiente');
     await abrir(tester, repo);
 
-    await tester.tap(find.text('Ligas'));
+    await tester.ensureVisible(find.text('Inscribirme en ligas'));
+    await tester.tap(find.text('Inscribirme en ligas'));
     await tester.pumpAndSettle();
     expect(find.text('Liga infantil'), findsOneWidget);
     await tester.tap(find.byKey(const Key('inscribir-L1')));
@@ -302,7 +303,8 @@ void main() {
       ),
     );
     await abrir(tester, repo);
-    await tester.tap(find.text('Ligas'));
+    await tester.ensureVisible(find.text('Inscribirme en ligas'));
+    await tester.tap(find.text('Inscribirme en ligas'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('inscribir-L1')));
     await tester.pumpAndSettle();
@@ -350,7 +352,8 @@ void main() {
       () => repo.inscribirEquipo('L1', 'eqT', categoriaId: 'c2'),
     ).thenAnswer((_) async => 'pendiente');
     await abrir(tester, repo);
-    await tester.tap(find.text('Ligas'));
+    await tester.ensureVisible(find.text('Inscribirme en ligas'));
+    await tester.tap(find.text('Inscribirme en ligas'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('inscribir-L1')));
     await tester.pumpAndSettle();
@@ -439,7 +442,8 @@ void main() {
       respondida = true;
     });
     await abrir(tester, repo);
-    await tester.tap(find.text('Ligas'));
+    await tester.ensureVisible(find.text('Inscribirme en ligas'));
+    await tester.tap(find.text('Inscribirme en ligas'));
     await tester.pumpAndSettle();
 
     expect(find.text('Copa Municipal'), findsOneWidget);
@@ -475,7 +479,8 @@ void main() {
       () => repo.responderInvitacion('L9', 'esc1', aceptar: false),
     ).thenAnswer((_) async {});
     await abrir(tester, repo);
-    await tester.tap(find.text('Ligas'));
+    await tester.ensureVisible(find.text('Inscribirme en ligas'));
+    await tester.tap(find.text('Inscribirme en ligas'));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('rechazar-invitacion-L9')));
     await tester.pumpAndSettle();
@@ -501,7 +506,8 @@ void main() {
         ],
       );
       await abrir(tester, repo);
-      await tester.tap(find.text('Ligas'));
+      await tester.ensureVisible(find.text('Inscribirme en ligas'));
+      await tester.tap(find.text('Inscribirme en ligas'));
       await tester.pumpAndSettle();
       expect(find.textContaining('por invitación'), findsOneWidget);
     },

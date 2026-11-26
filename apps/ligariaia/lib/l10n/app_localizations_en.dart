@@ -2267,4 +2267,329 @@ class AppL10nEn extends AppL10n {
   String duracionMin(int n) {
     return '$n min';
   }
+
+  @override
+  String get loginPrimeraVez => 'First time on Ligaria?';
+
+  @override
+  String get loginRegistrar => 'School or town council? Sign up';
+
+  @override
+  String get loginInvitacion => 'I have an invitation';
+
+  @override
+  String get errAbrirEnlace =>
+      'Couldn\'t open the link. Try from your browser.';
+
+  @override
+  String sinOrgConectado(String email) {
+    return 'Signed in as $email';
+  }
+
+  @override
+  String get sinOrgActualizar => 'I\'ve been invited, refresh';
+
+  @override
+  String get sinOrgSigue => 'There is still no invitation for this email.';
+
+  @override
+  String get sinOrgOtroCorreo => 'Use another email';
+
+  @override
+  String get sinOrgAviso =>
+      'Did you sign up with a different email than the invitation\'s? Sign out and sign in with the one it was sent to.';
+
+  @override
+  String get pasosTitulo => 'Getting started';
+
+  @override
+  String pasosProgreso(int hechos, int total) {
+    return '$hechos of $total done';
+  }
+
+  @override
+  String get pasosOcultar => 'Hide guide';
+
+  @override
+  String get paso1T => 'Add players';
+
+  @override
+  String get paso1D => 'Register your players and their guardians.';
+
+  @override
+  String get paso2T => 'Create teams';
+
+  @override
+  String get paso2D => 'Group your players into tennis or padel teams.';
+
+  @override
+  String get paso3T => 'Invite the coach';
+
+  @override
+  String get paso3D => 'So they can enter results and schedule training.';
+
+  @override
+  String get paso4T => 'Join a league';
+
+  @override
+  String get paso4D => 'Enter a team in an open league.';
+
+  @override
+  String get tabInscribirme => 'Join leagues';
+
+  @override
+  String get tabLigasOrganizo => 'Leagues I run';
+
+  @override
+  String get cerrar => 'Close';
+
+  @override
+  String get plantillasTitulo => 'Start from a template';
+
+  @override
+  String get plantillasNota =>
+      'Fills in the name, format and dates. You can change anything afterwards.';
+
+  @override
+  String plantillaNombreOtono(int anio) {
+    return 'Autumn league $anio';
+  }
+
+  @override
+  String plantillaNombrePrimavera(int anio) {
+    return 'Spring league $anio';
+  }
+
+  @override
+  String plantillaNombreTorneo(int anio) {
+    return 'Express tournament $anio';
+  }
+
+  @override
+  String plantillaNombreGrupos(int anio) {
+    return 'Groups and playoff $anio';
+  }
+
+  @override
+  String get plantillaDescOtono =>
+      'Round robin, from mid-September to mid-December.';
+
+  @override
+  String get plantillaDescPrimavera => 'Round robin, from March to mid-June.';
+
+  @override
+  String get plantillaDescTorneo =>
+      'Knockout in a single weekend: lose and you\'re out.';
+
+  @override
+  String get plantillaDescGrupos =>
+      'Group stage and a final bracket with the best teams, from April to June.';
+
+  @override
+  String get importarLista => 'Import list';
+
+  @override
+  String get impTitulo => 'Import players';
+
+  @override
+  String get impSub => 'From Excel or CSV: one row per player.';
+
+  @override
+  String get impAyuda =>
+      'Columns: first name, last name, date of birth (dd/mm/yyyy), guardian and guardian email. Only name and date are required. If you give the guardian\'s email, they will be invited to create an account.';
+
+  @override
+  String get impPegar => 'Paste rows copied from Excel or the CSV text here';
+
+  @override
+  String get impElegirArchivo => 'Choose CSV file';
+
+  @override
+  String get impArchivoError => 'Couldn\'t read the file.';
+
+  @override
+  String get impCopiarModelo => 'Copy example';
+
+  @override
+  String get impModeloCopiado =>
+      'Example copied: paste it into Excel and fill it in.';
+
+  @override
+  String get impSinFilas => 'No rows with data were found.';
+
+  @override
+  String get impRevisar => 'Review';
+
+  @override
+  String get impVolver => 'Back';
+
+  @override
+  String impListos(int n) {
+    return 'Ready to import: $n';
+  }
+
+  @override
+  String impYaExisten(int n) {
+    return 'Already in your school (skipped): $n';
+  }
+
+  @override
+  String impConErrores(int n) {
+    return 'With errors (skipped): $n';
+  }
+
+  @override
+  String impFamiliasCorreo(int n) {
+    return 'Families who will get an email to create their account: $n';
+  }
+
+  @override
+  String impFila(int linea, String nombre, String motivo) {
+    return 'Row $linea: $nombre — $motivo';
+  }
+
+  @override
+  String impYOtras(int n) {
+    return 'and $n more…';
+  }
+
+  @override
+  String impBoton(int n) {
+    return 'Import $n players';
+  }
+
+  @override
+  String get impImportando => 'Importing…';
+
+  @override
+  String impProgreso(int hechas, int total) {
+    return 'Importing $hechas of $total…';
+  }
+
+  @override
+  String impCreados(int n) {
+    return 'Players added: $n';
+  }
+
+  @override
+  String impFallidos(int n) {
+    return 'Couldn\'t be added: $n';
+  }
+
+  @override
+  String get impCorreosOk =>
+      'Families have received the email to create their account.';
+
+  @override
+  String get impCorreosFallo =>
+      'Not all emails could be sent. You can resend them from each player\'s record.';
+
+  @override
+  String get impErrNombre => 'name is missing';
+
+  @override
+  String get impErrFecha => 'invalid date of birth';
+
+  @override
+  String get impErrCorreo => 'invalid guardian email';
+
+  @override
+  String get impErrRepetida => 'repeated in the list';
+
+  @override
+  String get impErrExiste => 'already in your school';
+
+  @override
+  String get invitarEnBloque => 'Invite in bulk';
+
+  @override
+  String get bloqueTitulo => 'Invite in bulk';
+
+  @override
+  String get bloqueSub =>
+      'Paste the emails and an invitation is saved for each one.';
+
+  @override
+  String get bloqueCorreos => 'Emails';
+
+  @override
+  String get bloqueAyuda => 'Separated by commas, spaces or lines';
+
+  @override
+  String bloqueValidos(int n) {
+    return 'Valid emails: $n';
+  }
+
+  @override
+  String bloqueRepetidos(int n) {
+    return 'Repeated (ignored): $n';
+  }
+
+  @override
+  String bloqueInvalidos(String lista) {
+    return 'Not valid: $lista';
+  }
+
+  @override
+  String bloqueBoton(int n) {
+    return 'Invite $n';
+  }
+
+  @override
+  String bloqueGuardadas(int n) {
+    return 'Invitations saved: $n';
+  }
+
+  @override
+  String bloqueFallidas(int n) {
+    return 'Couldn\'t be invited: $n';
+  }
+
+  @override
+  String get bloqueAvisales => 'Now let them know';
+
+  @override
+  String get bloqueAvisalesAyuda =>
+      'The invitation is saved. Send them the sign-up link: they must create their account with that same email.';
+
+  @override
+  String get bloqueAbrirCorreo => 'Open in my email';
+
+  @override
+  String get bloqueCopiarMensaje => 'Copy message';
+
+  @override
+  String get bloqueAsunto => 'You\'re invited to Ligaria';
+
+  @override
+  String bloqueMensaje(String url) {
+    return 'Hi, we\'ve invited you to Ligaria. Create your account at $url with this same email and your invitation will be applied.';
+  }
+
+  @override
+  String get pasosOrg1T => 'Create your first league';
+
+  @override
+  String get pasosOrg1D =>
+      'Choose the sport, format and dates, or start from a template.';
+
+  @override
+  String get pasosOrg2T => 'Open it for sign-ups';
+
+  @override
+  String get pasosOrg2D => 'Publish it so teams can sign up.';
+
+  @override
+  String get pasosOrg3T => 'Gather teams';
+
+  @override
+  String get pasosOrg3D =>
+      'Add teams, accept sign-ups or invite schools from «View league».';
+
+  @override
+  String get pasosOrg4T => 'Generate the schedule';
+
+  @override
+  String get pasosOrg4D =>
+      'Once the teams are in, create the matchdays and start recording results.';
 }

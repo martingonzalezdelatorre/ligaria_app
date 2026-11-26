@@ -1145,5 +1145,266 @@
         "type": "int"
       }
     }
-  }
+  },
+  "loginPrimeraVez": "¿Primera vez en Ligaria?",
+  "loginRegistrar": "¿Eres escuela o ayuntamiento? Regístrate",
+  "loginInvitacion": "Tengo una invitación",
+  "errAbrirEnlace": "No se pudo abrir el enlace. Inténtalo desde tu navegador.",
+  "sinOrgConectado": "Has entrado como {email}",
+  "@sinOrgConectado": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "sinOrgActualizar": "Ya me han invitado, actualizar",
+  "sinOrgSigue": "Todavía no hay ninguna invitación para este correo.",
+  "sinOrgOtroCorreo": "Usar otro correo",
+  "sinOrgAviso": "¿Te registraste con un correo distinto al de la invitación? Cierra sesión y entra con el correo al que llegó.",
+  "pasosTitulo": "Primeros pasos",
+  "pasosProgreso": "{hechos} de {total} completados",
+  "@pasosProgreso": {
+    "placeholders": {
+      "hechos": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "pasosOcultar": "Ocultar guía",
+  "paso1T": "Añade jugadores",
+  "paso1D": "Da de alta a tus jugadores y a sus tutores.",
+  "paso2T": "Crea equipos",
+  "paso2D": "Agrupa a tus jugadores en equipos de tenis o pádel.",
+  "paso3T": "Invita al entrenador",
+  "paso3D": "Para que registre resultados y asigne entrenos.",
+  "paso4T": "Apúntate a una liga",
+  "paso4D": "Inscribe un equipo en una liga abierta.",
+  "tabInscribirme": "Inscribirme en ligas",
+  "tabLigasOrganizo": "Ligas que organizo",
+  "cerrar": "Cerrar",
+  "plantillasTitulo": "Empieza con una plantilla",
+  "plantillasNota": "Rellena el nombre, el formato y las fechas. Después puedes cambiar lo que quieras.",
+  "plantillaNombreOtono": "Liga de otoño {anio}",
+  "@plantillaNombreOtono": {
+    "placeholders": {
+      "anio": {
+        "type": "int"
+      }
+    }
+  },
+  "plantillaNombrePrimavera": "Liga de primavera {anio}",
+  "@plantillaNombrePrimavera": {
+    "placeholders": {
+      "anio": {
+        "type": "int"
+      }
+    }
+  },
+  "plantillaNombreTorneo": "Torneo exprés {anio}",
+  "@plantillaNombreTorneo": {
+    "placeholders": {
+      "anio": {
+        "type": "int"
+      }
+    }
+  },
+  "plantillaNombreGrupos": "Grupos y playoff {anio}",
+  "@plantillaNombreGrupos": {
+    "placeholders": {
+      "anio": {
+        "type": "int"
+      }
+    }
+  },
+  "plantillaDescOtono": "Todos contra todos, de mediados de septiembre a mediados de diciembre.",
+  "plantillaDescPrimavera": "Todos contra todos, de marzo a mediados de junio.",
+  "plantillaDescTorneo": "Eliminatoria en un solo fin de semana: quien pierde queda fuera.",
+  "plantillaDescGrupos": "Fase de grupos y cuadro final con los mejores, de abril a junio.",
+  "importarLista": "Importar lista",
+  "impTitulo": "Importar jugadores",
+  "impSub": "Desde Excel o CSV: una fila por jugador.",
+  "impAyuda": "Columnas: nombre, apellidos, fecha de nacimiento (dd/mm/aaaa), tutor y correo del tutor. Solo el nombre y la fecha son obligatorios. Si indicas el correo del tutor, recibirá una invitación para crear su cuenta.",
+  "impPegar": "Pega aquí las filas copiadas de Excel o el texto del CSV",
+  "impElegirArchivo": "Elegir archivo CSV",
+  "impArchivoError": "No se pudo leer el archivo.",
+  "impCopiarModelo": "Copiar modelo",
+  "impModeloCopiado": "Modelo copiado: pégalo en Excel y rellénalo.",
+  "impSinFilas": "No se ha encontrado ninguna fila con datos.",
+  "impRevisar": "Revisar",
+  "impVolver": "Volver",
+  "impListos": "Listos para importar: {n}",
+  "@impListos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impYaExisten": "Ya existen en tu escuela (se omiten): {n}",
+  "@impYaExisten": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impConErrores": "Con errores (se omiten): {n}",
+  "@impConErrores": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impFamiliasCorreo": "Familias que recibirán un correo para crear su cuenta: {n}",
+  "@impFamiliasCorreo": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impFila": "Fila {linea}: {nombre} — {motivo}",
+  "@impFila": {
+    "placeholders": {
+      "linea": {
+        "type": "int"
+      },
+      "nombre": {
+        "type": "String"
+      },
+      "motivo": {
+        "type": "String"
+      }
+    }
+  },
+  "impYOtras": "y {n} más…",
+  "@impYOtras": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impBoton": "Importar {n} jugadores",
+  "@impBoton": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impImportando": "Importando…",
+  "impProgreso": "Importando {hechas} de {total}…",
+  "@impProgreso": {
+    "placeholders": {
+      "hechas": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "impCreados": "Jugadores dados de alta: {n}",
+  "@impCreados": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impFallidos": "No se pudieron dar de alta: {n}",
+  "@impFallidos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "impCorreosOk": "Las familias han recibido el correo para crear su cuenta.",
+  "impCorreosFallo": "No se pudieron enviar todos los correos. Puedes reenviarlos desde la ficha de cada jugador.",
+  "impErrNombre": "falta el nombre",
+  "impErrFecha": "fecha de nacimiento no válida",
+  "impErrCorreo": "correo del tutor no válido",
+  "impErrRepetida": "repetida en la lista",
+  "impErrExiste": "ya existe en tu escuela",
+  "invitarEnBloque": "Invitar en bloque",
+  "bloqueTitulo": "Invitar en bloque",
+  "bloqueSub": "Pega los correos y se guarda una invitación para cada uno.",
+  "bloqueCorreos": "Correos",
+  "bloqueAyuda": "Separados por comas, espacios o líneas",
+  "bloqueValidos": "Correos válidos: {n}",
+  "@bloqueValidos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "bloqueRepetidos": "Repetidos (se ignoran): {n}",
+  "@bloqueRepetidos": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "bloqueInvalidos": "No válidos: {lista}",
+  "@bloqueInvalidos": {
+    "placeholders": {
+      "lista": {
+        "type": "String"
+      }
+    }
+  },
+  "bloqueBoton": "Invitar a {n}",
+  "@bloqueBoton": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "bloqueGuardadas": "Invitaciones guardadas: {n}",
+  "@bloqueGuardadas": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "bloqueFallidas": "No se pudieron invitar: {n}",
+  "@bloqueFallidas": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "bloqueAvisales": "Ahora avísales",
+  "bloqueAvisalesAyuda": "La invitación ya está guardada. Envíales el enlace de registro: tienen que crear su cuenta con ese mismo correo.",
+  "bloqueAbrirCorreo": "Abrir en mi correo",
+  "bloqueCopiarMensaje": "Copiar mensaje",
+  "bloqueAsunto": "Te invitamos a Ligaria",
+  "bloqueMensaje": "Hola, te hemos invitado a Ligaria. Crea tu cuenta en {url} con este mismo correo y tu invitación quedará aplicada.",
+  "@bloqueMensaje": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "pasosOrg1T": "Crea tu primera liga",
+  "pasosOrg1D": "Elige deporte, formato y fechas, o parte de una plantilla.",
+  "pasosOrg2T": "Ábrela a la inscripción",
+  "pasosOrg2D": "Publícala para que los equipos puedan apuntarse.",
+  "pasosOrg3T": "Reúne equipos",
+  "pasosOrg3D": "Añade equipos, acepta inscripciones o invita a escuelas desde «Ver liga».",
+  "pasosOrg4T": "Genera el calendario",
+  "pasosOrg4D": "Cuando estén los equipos, crea las jornadas y empieza a registrar resultados."
 }

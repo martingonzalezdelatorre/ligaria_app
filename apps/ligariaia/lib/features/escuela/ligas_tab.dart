@@ -6,6 +6,7 @@ import '../../core/widgets.dart';
 import '../../data/liga_repository.dart';
 import '../../data/models.dart';
 import 'escuela_providers.dart';
+import 'primeros_pasos.dart';
 
 /// Ligas abiertas a inscripción (inscribir uno de mis equipos del mismo deporte) e
 /// invitaciones de otras organizaciones pendientes de responder.
@@ -97,6 +98,7 @@ class LigasTab extends ConsumerWidget {
       final estado = cat.id == null
           ? await repo.inscribirEquipo(liga.id, id)
           : await repo.inscribirEquipo(liga.id, id, categoriaId: cat.id);
+      ref.invalidate(inscripcionesOrgProvider(escuelaId));
       if (context.mounted) {
         avisar(
           context,

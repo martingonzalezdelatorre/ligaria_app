@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:ligaria_ui/ligaria_ui.dart';
 import 'equipo_tab.dart';
 import 'ligas_tab.dart';
+import 'primeros_pasos_organizador.dart';
 
 /// Área organizador: crear ligas, abrir inscripción, generar calendario y registrar o corregir resultados.
 /// Sirve para cualquier organización que pueda organizar competiciones (escuela, ayuntamiento, grupo).
 /// Con la pestaña «Equipo» el organizador invita a otros organizadores de su organización.
+/// Mientras no ha completado el arranque, arriba aparece la guía «Primeros pasos».
 class OrganizadorHome extends StatelessWidget {
   const OrganizadorHome({
     super.key,
@@ -29,26 +31,33 @@ class OrganizadorHome extends StatelessWidget {
       coorganizador: coorganizador,
     );
     if (coorganizador) return ligas;
-    return DefaultTabController(
-      length: 2,
-      child: Column(
-        children: [
-          const PestanasPildora(
-            tabs: [
-              Tab(text: 'Ligas'),
-              Tab(text: 'Equipo'),
-            ],
-          ),
-          Expanded(
-            child: TabBarView(
+    return Column(
+      children: [
+        PrimerosPasosOrganizador(escuelaId: escuelaId, orgTipo: orgTipo),
+        Expanded(
+          child: DefaultTabController(
+            length: 2,
+            child: Column(
               children: [
-                ligas,
-                EquipoTab(orgId: escuelaId),
+                const PestanasPildora(
+                  tabs: [
+                    Tab(text: 'Ligas'),
+                    Tab(text: 'Equipo'),
+                  ],
+                ),
+                Expanded(
+                  child: TabBarView(
+                    children: [
+                      ligas,
+                      EquipoTab(orgId: escuelaId),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

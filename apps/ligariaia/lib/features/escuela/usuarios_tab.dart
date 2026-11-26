@@ -6,6 +6,7 @@ import '../../core/auth.dart';
 import '../../core/widgets.dart';
 import '../../data/models.dart';
 import 'escuela_providers.dart';
+import 'invitar_bloque.dart';
 import 'invitar_dialog.dart';
 
 class UsuariosTab extends ConsumerWidget {
@@ -22,33 +23,56 @@ class UsuariosTab extends ConsumerWidget {
         icon: const Icon(Icons.person_add_alt),
         label: Text(context.l10n.invitar),
       ),
-      body: AsyncView<List<UsuarioEscuela>>(
-        value: datos,
-        onRetry: () => ref.invalidate(usuariosEscuelaProvider(escuelaId)),
-        builder: (lista) => lista.isEmpty
-            ? EstadoVacio(
-                icono: Icons.people_outline,
-                texto: context.l10n.sinUsuarios,
-              )
-            : RefreshIndicator(
-                onRefresh: () async =>
-                    ref.invalidate(usuariosEscuelaProvider(escuelaId)),
-                child: ListView(
-                  padding: const EdgeInsets.only(bottom: 88),
-                  children: [
-                    for (final u in lista)
-                      ListTile(
-                        leading: const CircleAvatar(
-                          child: Icon(Icons.person_outline),
-                        ),
-                        title: Text(
-                          u.nombre?.isNotEmpty == true ? u.nombre! : u.email,
-                        ),
-                        subtitle: Text('${u.email} · ${_rolLegible(u.rol)}'),
-                      ),
-                  ],
-                ),
+      body: Column(
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+              child: TextButton.icon(
+                key: const Key('invitar-bloque'),
+                onPressed: () =>
+                    mostrarInvitarEnBloque(context, ref, escuelaId),
+                icon: const Icon(Icons.group_add_outlined),
+                label: Text(context.l10n.invitarEnBloque),
               ),
+            ),
+          ),
+          Expanded(
+            child: AsyncView<List<UsuarioEscuela>>(
+              value: datos,
+              onRetry: () => ref.invalidate(usuariosEscuelaProvider(escuelaId)),
+              builder: (lista) => lista.isEmpty
+                  ? EstadoVacio(
+                      icono: Icons.people_outline,
+                      texto: context.l10n.sinUsuarios,
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () async =>
+                          ref.invalidate(usuariosEscuelaProvider(escuelaId)),
+                      child: ListView(
+                        padding: const EdgeInsets.only(bottom: 88),
+                        children: [
+                          for (final u in lista)
+                            ListTile(
+                              leading: const CircleAvatar(
+                                child: Icon(Icons.person_outline),
+                              ),
+                              title: Text(
+                                u.nombre?.isNotEmpty == true
+                                    ? u.nombre!
+                                    : u.email,
+                              ),
+                              subtitle: Text(
+                                '${u.email} · ${_rolLegible(u.rol)}',
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }

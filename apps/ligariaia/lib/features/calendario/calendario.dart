@@ -45,7 +45,9 @@ final agendaProvider = FutureProvider<List<ItemAgenda>>((ref) async {
     final encs = await ref.watch(encuentrosProvider(id).future);
     items.addAll(
       encs
-          .where((e) => mios.contains(e.localId) || mios.contains(e.visitanteId))
+          .where(
+            (e) => mios.contains(e.localId) || mios.contains(e.visitanteId),
+          )
           .map(ItemAgenda.partido),
     );
   }

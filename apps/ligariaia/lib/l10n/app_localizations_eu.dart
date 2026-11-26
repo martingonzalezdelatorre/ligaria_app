@@ -2264,4 +2264,331 @@ class AppL10nEu extends AppL10n {
   String duracionMin(int n) {
     return '$n min';
   }
+
+  @override
+  String get loginPrimeraVez => 'Ligarian lehen aldia?';
+
+  @override
+  String get loginRegistrar => 'Eskola edo udala zara? Eman izena';
+
+  @override
+  String get loginInvitacion => 'Gonbidapena dut';
+
+  @override
+  String get errAbrirEnlace =>
+      'Ezin izan da esteka ireki. Saiatu nabigatzailetik.';
+
+  @override
+  String sinOrgConectado(String email) {
+    return '$email gisa sartu zara';
+  }
+
+  @override
+  String get sinOrgActualizar => 'Gonbidatu naute, eguneratu';
+
+  @override
+  String get sinOrgSigue => 'Oraindik ez dago gonbidapenik posta honetarako.';
+
+  @override
+  String get sinOrgOtroCorreo => 'Beste posta bat erabili';
+
+  @override
+  String get sinOrgAviso =>
+      'Gonbidapena iritsi zen postaz bestearekin eman duzu izena? Itxi saioa eta sartu gonbidapena jaso zuen postarekin.';
+
+  @override
+  String get pasosTitulo => 'Lehen urratsak';
+
+  @override
+  String pasosProgreso(int hechos, int total) {
+    return '${total}tik $hechos osatuta';
+  }
+
+  @override
+  String get pasosOcultar => 'Gida ezkutatu';
+
+  @override
+  String get paso1T => 'Gehitu jokalariak';
+
+  @override
+  String get paso1D => 'Eman alta zure jokalariak eta haien tutoreak.';
+
+  @override
+  String get paso2T => 'Sortu taldeak';
+
+  @override
+  String get paso2D => 'Taldekatu zure jokalariak tenis edo padel taldeetan.';
+
+  @override
+  String get paso3T => 'Gonbidatu entrenatzailea';
+
+  @override
+  String get paso3D =>
+      'Emaitzak erregistratu eta entrenamenduak esleitu ditzan.';
+
+  @override
+  String get paso4T => 'Apuntatu liga batean';
+
+  @override
+  String get paso4D => 'Eman izena talde bat liga ireki batean.';
+
+  @override
+  String get tabInscribirme => 'Ligetan izena eman';
+
+  @override
+  String get tabLigasOrganizo => 'Antolatzen ditudan ligak';
+
+  @override
+  String get cerrar => 'Itxi';
+
+  @override
+  String get plantillasTitulo => 'Hasi txantiloi batekin';
+
+  @override
+  String get plantillasNota =>
+      'Izena, formatua eta datak betetzen ditu. Gero nahi duzuna alda dezakezu.';
+
+  @override
+  String plantillaNombreOtono(int anio) {
+    return '${anio}ko udazkeneko liga';
+  }
+
+  @override
+  String plantillaNombrePrimavera(int anio) {
+    return '${anio}ko udaberriko liga';
+  }
+
+  @override
+  String plantillaNombreTorneo(int anio) {
+    return '${anio}ko txapelketa azkarra';
+  }
+
+  @override
+  String plantillaNombreGrupos(int anio) {
+    return '${anio}ko taldeak eta playoff-a';
+  }
+
+  @override
+  String get plantillaDescOtono =>
+      'Guztiak guztien aurka, irailaren erdialdetik abenduaren erdialdera.';
+
+  @override
+  String get plantillaDescPrimavera =>
+      'Guztiak guztien aurka, martxotik ekainaren erdialdera.';
+
+  @override
+  String get plantillaDescTorneo =>
+      'Asteburu bakarreko kanporaketa: galtzen duenak kanpoan geratzen da.';
+
+  @override
+  String get plantillaDescGrupos =>
+      'Talde fasea eta onenen azken koadroa, apiriletik ekainera.';
+
+  @override
+  String get importarLista => 'Zerrenda inportatu';
+
+  @override
+  String get impTitulo => 'Jokalariak inportatu';
+
+  @override
+  String get impSub => 'Excel edo CSVtik: jokalari bakoitzeko lerro bat.';
+
+  @override
+  String get impAyuda =>
+      'Zutabeak: izena, abizenak, jaiotze-data (uu/hh/uuuu), tutorea eta tutorearen posta. Izena eta data soilik dira derrigorrezkoak. Tutorearen posta adierazten baduzu, kontua sortzeko gonbidapena jasoko du.';
+
+  @override
+  String get impPegar =>
+      'Itsatsi hemen Exceletik kopiatutako lerroak edo CSV testua';
+
+  @override
+  String get impElegirArchivo => 'Aukeratu CSV fitxategia';
+
+  @override
+  String get impArchivoError => 'Ezin izan da fitxategia irakurri.';
+
+  @override
+  String get impCopiarModelo => 'Eredua kopiatu';
+
+  @override
+  String get impModeloCopiado =>
+      'Eredua kopiatu da: itsatsi Excelen eta bete ezazu.';
+
+  @override
+  String get impSinFilas => 'Ez da daturik duen lerrorik aurkitu.';
+
+  @override
+  String get impRevisar => 'Berrikusi';
+
+  @override
+  String get impVolver => 'Itzuli';
+
+  @override
+  String impListos(int n) {
+    return 'Inportatzeko prest: $n';
+  }
+
+  @override
+  String impYaExisten(int n) {
+    return 'Zure eskolan badaude jada (ez dira sartuko): $n';
+  }
+
+  @override
+  String impConErrores(int n) {
+    return 'Akatsekin (ez dira sartuko): $n';
+  }
+
+  @override
+  String impFamiliasCorreo(int n) {
+    return 'Kontua sortzeko posta jasoko duten familiak: $n';
+  }
+
+  @override
+  String impFila(int linea, String nombre, String motivo) {
+    return '$linea. lerroa: $nombre — $motivo';
+  }
+
+  @override
+  String impYOtras(int n) {
+    return 'eta $n gehiago…';
+  }
+
+  @override
+  String impBoton(int n) {
+    return '$n jokalari inportatu';
+  }
+
+  @override
+  String get impImportando => 'Inportatzen…';
+
+  @override
+  String impProgreso(int hechas, int total) {
+    return '${total}tik $hechas inportatzen…';
+  }
+
+  @override
+  String impCreados(int n) {
+    return 'Alta eman zaien jokalariak: $n';
+  }
+
+  @override
+  String impFallidos(int n) {
+    return 'Ezin izan zaie alta eman: $n';
+  }
+
+  @override
+  String get impCorreosOk => 'Familiek kontua sortzeko posta jaso dute.';
+
+  @override
+  String get impCorreosFallo =>
+      'Ezin izan dira posta guztiak bidali. Jokalari bakoitzaren fitxatik birbidal ditzakezu.';
+
+  @override
+  String get impErrNombre => 'izena falta da';
+
+  @override
+  String get impErrFecha => 'jaiotze-data baliogabea';
+
+  @override
+  String get impErrCorreo => 'tutorearen posta baliogabea';
+
+  @override
+  String get impErrRepetida => 'zerrendan errepikatuta';
+
+  @override
+  String get impErrExiste => 'zure eskolan badago jada';
+
+  @override
+  String get invitarEnBloque => 'Multzoka gonbidatu';
+
+  @override
+  String get bloqueTitulo => 'Multzoka gonbidatu';
+
+  @override
+  String get bloqueSub =>
+      'Itsatsi postak eta bakoitzarentzat gonbidapen bat gordeko da.';
+
+  @override
+  String get bloqueCorreos => 'Postak';
+
+  @override
+  String get bloqueAyuda => 'Komaz, zuriunez edo lerroz bananduta';
+
+  @override
+  String bloqueValidos(int n) {
+    return 'Posta baliodunak: $n';
+  }
+
+  @override
+  String bloqueRepetidos(int n) {
+    return 'Errepikatuak (ez dira kontuan hartuko): $n';
+  }
+
+  @override
+  String bloqueInvalidos(String lista) {
+    return 'Baliogabeak: $lista';
+  }
+
+  @override
+  String bloqueBoton(int n) {
+    return '$n gonbidatu';
+  }
+
+  @override
+  String bloqueGuardadas(int n) {
+    return 'Gordetako gonbidapenak: $n';
+  }
+
+  @override
+  String bloqueFallidas(int n) {
+    return 'Ezin izan dira gonbidatu: $n';
+  }
+
+  @override
+  String get bloqueAvisales => 'Orain jakinarazi';
+
+  @override
+  String get bloqueAvisalesAyuda =>
+      'Gonbidapena gordeta dago. Bidali erregistro-esteka: kontua posta berarekin sortu behar dute.';
+
+  @override
+  String get bloqueAbrirCorreo => 'Ireki nire postan';
+
+  @override
+  String get bloqueCopiarMensaje => 'Mezua kopiatu';
+
+  @override
+  String get bloqueAsunto => 'Ligariara gonbidatzen zaitugu';
+
+  @override
+  String bloqueMensaje(String url) {
+    return 'Kaixo, Ligariara gonbidatu zaitugu. Sortu zure kontua $url helbidean posta berarekin eta zure gonbidapena aplikatuko da.';
+  }
+
+  @override
+  String get pasosOrg1T => 'Sortu zure lehen liga';
+
+  @override
+  String get pasosOrg1D =>
+      'Aukeratu kirola, formatua eta datak, edo hasi txantiloi batekin.';
+
+  @override
+  String get pasosOrg2T => 'Ireki izen-emateetarako';
+
+  @override
+  String get pasosOrg2D => 'Argitaratu taldeak apuntatu ahal izateko.';
+
+  @override
+  String get pasosOrg3T => 'Bildu taldeak';
+
+  @override
+  String get pasosOrg3D =>
+      '«Ikusi liga» atalean, gehitu taldeak, onartu izen-emateak edo gonbidatu eskolak.';
+
+  @override
+  String get pasosOrg4T => 'Sortu egutegia';
+
+  @override
+  String get pasosOrg4D =>
+      'Taldeak sartu direnean, sortu jardunaldiak eta hasi emaitzak erregistratzen.';
 }

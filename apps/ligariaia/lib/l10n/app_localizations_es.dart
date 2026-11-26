@@ -2265,4 +2265,331 @@ class AppL10nEs extends AppL10n {
   String duracionMin(int n) {
     return '$n min';
   }
+
+  @override
+  String get loginPrimeraVez => '¿Primera vez en Ligaria?';
+
+  @override
+  String get loginRegistrar => '¿Eres escuela o ayuntamiento? Regístrate';
+
+  @override
+  String get loginInvitacion => 'Tengo una invitación';
+
+  @override
+  String get errAbrirEnlace =>
+      'No se pudo abrir el enlace. Inténtalo desde tu navegador.';
+
+  @override
+  String sinOrgConectado(String email) {
+    return 'Has entrado como $email';
+  }
+
+  @override
+  String get sinOrgActualizar => 'Ya me han invitado, actualizar';
+
+  @override
+  String get sinOrgSigue =>
+      'Todavía no hay ninguna invitación para este correo.';
+
+  @override
+  String get sinOrgOtroCorreo => 'Usar otro correo';
+
+  @override
+  String get sinOrgAviso =>
+      '¿Te registraste con un correo distinto al de la invitación? Cierra sesión y entra con el correo al que llegó.';
+
+  @override
+  String get pasosTitulo => 'Primeros pasos';
+
+  @override
+  String pasosProgreso(int hechos, int total) {
+    return '$hechos de $total completados';
+  }
+
+  @override
+  String get pasosOcultar => 'Ocultar guía';
+
+  @override
+  String get paso1T => 'Añade jugadores';
+
+  @override
+  String get paso1D => 'Da de alta a tus jugadores y a sus tutores.';
+
+  @override
+  String get paso2T => 'Crea equipos';
+
+  @override
+  String get paso2D => 'Agrupa a tus jugadores en equipos de tenis o pádel.';
+
+  @override
+  String get paso3T => 'Invita al entrenador';
+
+  @override
+  String get paso3D => 'Para que registre resultados y asigne entrenos.';
+
+  @override
+  String get paso4T => 'Apúntate a una liga';
+
+  @override
+  String get paso4D => 'Inscribe un equipo en una liga abierta.';
+
+  @override
+  String get tabInscribirme => 'Inscribirme en ligas';
+
+  @override
+  String get tabLigasOrganizo => 'Ligas que organizo';
+
+  @override
+  String get cerrar => 'Cerrar';
+
+  @override
+  String get plantillasTitulo => 'Empieza con una plantilla';
+
+  @override
+  String get plantillasNota =>
+      'Rellena el nombre, el formato y las fechas. Después puedes cambiar lo que quieras.';
+
+  @override
+  String plantillaNombreOtono(int anio) {
+    return 'Liga de otoño $anio';
+  }
+
+  @override
+  String plantillaNombrePrimavera(int anio) {
+    return 'Liga de primavera $anio';
+  }
+
+  @override
+  String plantillaNombreTorneo(int anio) {
+    return 'Torneo exprés $anio';
+  }
+
+  @override
+  String plantillaNombreGrupos(int anio) {
+    return 'Grupos y playoff $anio';
+  }
+
+  @override
+  String get plantillaDescOtono =>
+      'Todos contra todos, de mediados de septiembre a mediados de diciembre.';
+
+  @override
+  String get plantillaDescPrimavera =>
+      'Todos contra todos, de marzo a mediados de junio.';
+
+  @override
+  String get plantillaDescTorneo =>
+      'Eliminatoria en un solo fin de semana: quien pierde queda fuera.';
+
+  @override
+  String get plantillaDescGrupos =>
+      'Fase de grupos y cuadro final con los mejores, de abril a junio.';
+
+  @override
+  String get importarLista => 'Importar lista';
+
+  @override
+  String get impTitulo => 'Importar jugadores';
+
+  @override
+  String get impSub => 'Desde Excel o CSV: una fila por jugador.';
+
+  @override
+  String get impAyuda =>
+      'Columnas: nombre, apellidos, fecha de nacimiento (dd/mm/aaaa), tutor y correo del tutor. Solo el nombre y la fecha son obligatorios. Si indicas el correo del tutor, recibirá una invitación para crear su cuenta.';
+
+  @override
+  String get impPegar =>
+      'Pega aquí las filas copiadas de Excel o el texto del CSV';
+
+  @override
+  String get impElegirArchivo => 'Elegir archivo CSV';
+
+  @override
+  String get impArchivoError => 'No se pudo leer el archivo.';
+
+  @override
+  String get impCopiarModelo => 'Copiar modelo';
+
+  @override
+  String get impModeloCopiado => 'Modelo copiado: pégalo en Excel y rellénalo.';
+
+  @override
+  String get impSinFilas => 'No se ha encontrado ninguna fila con datos.';
+
+  @override
+  String get impRevisar => 'Revisar';
+
+  @override
+  String get impVolver => 'Volver';
+
+  @override
+  String impListos(int n) {
+    return 'Listos para importar: $n';
+  }
+
+  @override
+  String impYaExisten(int n) {
+    return 'Ya existen en tu escuela (se omiten): $n';
+  }
+
+  @override
+  String impConErrores(int n) {
+    return 'Con errores (se omiten): $n';
+  }
+
+  @override
+  String impFamiliasCorreo(int n) {
+    return 'Familias que recibirán un correo para crear su cuenta: $n';
+  }
+
+  @override
+  String impFila(int linea, String nombre, String motivo) {
+    return 'Fila $linea: $nombre — $motivo';
+  }
+
+  @override
+  String impYOtras(int n) {
+    return 'y $n más…';
+  }
+
+  @override
+  String impBoton(int n) {
+    return 'Importar $n jugadores';
+  }
+
+  @override
+  String get impImportando => 'Importando…';
+
+  @override
+  String impProgreso(int hechas, int total) {
+    return 'Importando $hechas de $total…';
+  }
+
+  @override
+  String impCreados(int n) {
+    return 'Jugadores dados de alta: $n';
+  }
+
+  @override
+  String impFallidos(int n) {
+    return 'No se pudieron dar de alta: $n';
+  }
+
+  @override
+  String get impCorreosOk =>
+      'Las familias han recibido el correo para crear su cuenta.';
+
+  @override
+  String get impCorreosFallo =>
+      'No se pudieron enviar todos los correos. Puedes reenviarlos desde la ficha de cada jugador.';
+
+  @override
+  String get impErrNombre => 'falta el nombre';
+
+  @override
+  String get impErrFecha => 'fecha de nacimiento no válida';
+
+  @override
+  String get impErrCorreo => 'correo del tutor no válido';
+
+  @override
+  String get impErrRepetida => 'repetida en la lista';
+
+  @override
+  String get impErrExiste => 'ya existe en tu escuela';
+
+  @override
+  String get invitarEnBloque => 'Invitar en bloque';
+
+  @override
+  String get bloqueTitulo => 'Invitar en bloque';
+
+  @override
+  String get bloqueSub =>
+      'Pega los correos y se guarda una invitación para cada uno.';
+
+  @override
+  String get bloqueCorreos => 'Correos';
+
+  @override
+  String get bloqueAyuda => 'Separados por comas, espacios o líneas';
+
+  @override
+  String bloqueValidos(int n) {
+    return 'Correos válidos: $n';
+  }
+
+  @override
+  String bloqueRepetidos(int n) {
+    return 'Repetidos (se ignoran): $n';
+  }
+
+  @override
+  String bloqueInvalidos(String lista) {
+    return 'No válidos: $lista';
+  }
+
+  @override
+  String bloqueBoton(int n) {
+    return 'Invitar a $n';
+  }
+
+  @override
+  String bloqueGuardadas(int n) {
+    return 'Invitaciones guardadas: $n';
+  }
+
+  @override
+  String bloqueFallidas(int n) {
+    return 'No se pudieron invitar: $n';
+  }
+
+  @override
+  String get bloqueAvisales => 'Ahora avísales';
+
+  @override
+  String get bloqueAvisalesAyuda =>
+      'La invitación ya está guardada. Envíales el enlace de registro: tienen que crear su cuenta con ese mismo correo.';
+
+  @override
+  String get bloqueAbrirCorreo => 'Abrir en mi correo';
+
+  @override
+  String get bloqueCopiarMensaje => 'Copiar mensaje';
+
+  @override
+  String get bloqueAsunto => 'Te invitamos a Ligaria';
+
+  @override
+  String bloqueMensaje(String url) {
+    return 'Hola, te hemos invitado a Ligaria. Crea tu cuenta en $url con este mismo correo y tu invitación quedará aplicada.';
+  }
+
+  @override
+  String get pasosOrg1T => 'Crea tu primera liga';
+
+  @override
+  String get pasosOrg1D =>
+      'Elige deporte, formato y fechas, o parte de una plantilla.';
+
+  @override
+  String get pasosOrg2T => 'Ábrela a la inscripción';
+
+  @override
+  String get pasosOrg2D => 'Publícala para que los equipos puedan apuntarse.';
+
+  @override
+  String get pasosOrg3T => 'Reúne equipos';
+
+  @override
+  String get pasosOrg3D =>
+      'Añade equipos, acepta inscripciones o invita a escuelas desde «Ver liga».';
+
+  @override
+  String get pasosOrg4T => 'Genera el calendario';
+
+  @override
+  String get pasosOrg4D =>
+      'Cuando estén los equipos, crea las jornadas y empieza a registrar resultados.';
 }

@@ -16,6 +16,12 @@ class AppConfig {
     'FAMILIAS_URL',
     defaultValue: 'https://ligaria.app/familias.html',
   );
+
+  /// Formulario de alta de escuelas, ayuntamientos y organizadores (landing).
+  static const registroUrl = String.fromEnvironment(
+    'REGISTRO_URL',
+    defaultValue: 'https://ligaria.app/#registro',
+  );
   static bool get configurada =>
       supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
 }

@@ -106,33 +106,34 @@ void main() {
     when(() => repo.jugadores(any())).thenAnswer((_) async => const []);
   });
 
-  testWidgets('el calendario muestra entrenos y partidos con fecha, hora y lugar', (
-    tester,
-  ) async {
-    await tester.pumpWidget(envuelve(const CalendarioTab()));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'el calendario muestra entrenos y partidos con fecha, hora y lugar',
+    (tester) async {
+      await tester.pumpWidget(envuelve(const CalendarioTab()));
+      await tester.pumpAndSettle();
 
-    // entreno: hora, duración, lugar y notas
-    expect(find.text('Entreno'), findsOneWidget);
-    expect(find.text('17:00'), findsOneWidget);
-    expect(find.text('90 min'), findsOneWidget);
-    expect(find.text('Pista 1'), findsOneWidget);
-    expect(find.text('Traer palas'), findsOneWidget);
-    // partido: hora, lugar y los dos equipos; el ajeno no aparece
-    expect(find.text('Partido'), findsOneWidget);
-    expect(find.text('18:30'), findsOneWidget);
-    expect(find.text('Polideportivo Norte · Pista 3'), findsOneWidget);
-    expect(find.text('Águilas'), findsNWidgets(2)); // entreno y partido
-    expect(find.text('Bravos'), findsOneWidget);
-    expect(find.text('Cobras'), findsNothing);
-    // «Mañana» agrupa los dos
-    expect(find.text('MAÑANA'), findsOneWidget);
-    // el entreno (17:00) va antes que el partido (18:30)
-    expect(
-      tester.getTopLeft(find.text('17:00')).dy,
-      lessThan(tester.getTopLeft(find.text('18:30')).dy),
-    );
-  });
+      // entreno: hora, duración, lugar y notas
+      expect(find.text('Entreno'), findsOneWidget);
+      expect(find.text('17:00'), findsOneWidget);
+      expect(find.text('90 min'), findsOneWidget);
+      expect(find.text('Pista 1'), findsOneWidget);
+      expect(find.text('Traer palas'), findsOneWidget);
+      // partido: hora, lugar y los dos equipos; el ajeno no aparece
+      expect(find.text('Partido'), findsOneWidget);
+      expect(find.text('18:30'), findsOneWidget);
+      expect(find.text('Polideportivo Norte · Pista 3'), findsOneWidget);
+      expect(find.text('Águilas'), findsNWidgets(2)); // entreno y partido
+      expect(find.text('Bravos'), findsOneWidget);
+      expect(find.text('Cobras'), findsNothing);
+      // «Mañana» agrupa los dos
+      expect(find.text('MAÑANA'), findsOneWidget);
+      // el entreno (17:00) va antes que el partido (18:30)
+      expect(
+        tester.getTopLeft(find.text('17:00')).dy,
+        lessThan(tester.getTopLeft(find.text('18:30')).dy),
+      );
+    },
+  );
 
   testWidgets('sin entrenos ni partidos se explica', (tester) async {
     when(() => repo.misEntrenos()).thenAnswer((_) async => const []);
@@ -155,34 +156,35 @@ void main() {
     expect(find.text('Entreno'), findsNothing);
   });
 
-  testWidgets('tocar un partido abre su detalle: jugadores, fecha, hora y lugar', (
-    tester,
-  ) async {
-    await tester.pumpWidget(envuelve(const CalendarioTab()));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Bravos'));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'tocar un partido abre su detalle: jugadores, fecha, hora y lugar',
+    (tester) async {
+      await tester.pumpWidget(envuelve(const CalendarioTab()));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Bravos'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Detalle del partido'), findsOneWidget);
-    // equipos y jugadores arriba
-    expect(find.text('Águilas'), findsOneWidget);
-    expect(find.text('Bravos'), findsOneWidget);
-    expect(find.text('Ana Pérez'), findsWidgets);
-    expect(find.text('Leo G.'), findsWidgets);
-    // fecha y hora, y lugar
-    expect(find.text('Mañana · 18:30'), findsOneWidget);
-    expect(find.text('Polideportivo Norte · Pista 3'), findsOneWidget);
-    // los jugadores quedan por encima de la fecha
-    expect(
-      tester.getTopLeft(find.text('Ana Pérez').first).dy,
-      lessThan(tester.getTopLeft(find.text('Fecha y hora')).dy),
-    );
-  });
+      expect(find.text('Detalle del partido'), findsOneWidget);
+      // equipos y jugadores arriba
+      expect(find.text('Águilas'), findsOneWidget);
+      expect(find.text('Bravos'), findsOneWidget);
+      expect(find.text('Ana Pérez'), findsWidgets);
+      expect(find.text('Leo G.'), findsWidgets);
+      // fecha y hora, y lugar
+      expect(find.text('Mañana · 18:30'), findsOneWidget);
+      expect(find.text('Polideportivo Norte · Pista 3'), findsOneWidget);
+      // los jugadores quedan por encima de la fecha
+      expect(
+        tester.getTopLeft(find.text('Ana Pérez').first).dy,
+        lessThan(tester.getTopLeft(find.text('Fecha y hora')).dy),
+      );
+    },
+  );
 
   testWidgets('un partido sin hora ni lugar lo indica', (tester) async {
-    when(() => repo.detalleEncuentro('e1')).thenAnswer(
-      (_) async => const DetalleEncuentro(partidos: []),
-    );
+    when(
+      () => repo.detalleEncuentro('e1'),
+    ).thenAnswer((_) async => const DetalleEncuentro(partidos: []));
     final e = EncuentroVista(
       id: 'e1',
       ligaId: 'l1',

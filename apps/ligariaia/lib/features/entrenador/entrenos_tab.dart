@@ -34,7 +34,9 @@ class EntrenosTab extends ConsumerWidget {
         builder: (lista) {
           final hoy = DateTime.now();
           final desde = DateTime(hoy.year, hoy.month, hoy.day);
-          final proximos = lista.where((e) => !e.fecha.isBefore(desde)).toList();
+          final proximos = lista
+              .where((e) => !e.fecha.isBefore(desde))
+              .toList();
           final pasados = lista
               .where((e) => e.fecha.isBefore(desde))
               .toList()
@@ -100,17 +102,15 @@ class EntrenosTab extends ConsumerWidget {
     }
   }
 
-  Future<void> _eliminar(
-    BuildContext context,
-    WidgetRef ref,
-    Entreno e,
-  ) async {
+  Future<void> _eliminar(BuildContext context, WidgetRef ref, Entreno e) async {
     final l = context.l10n;
     final seguro = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.eliminarEntrenoPregunta),
-        content: Text('${e.equipo} · ${fechaHoraCorta(e.fecha, conHora: true)}'),
+        content: Text(
+          '${e.equipo} · ${fechaHoraCorta(e.fecha, conHora: true)}',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),

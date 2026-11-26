@@ -9,6 +9,7 @@ import '../../data/liga_repository.dart';
 import '../../data/tutores_repository.dart';
 import '../../data/models.dart';
 import 'escuela_providers.dart';
+import 'importar_dialog.dart';
 import 'invitar_dialog.dart';
 
 /// Tutores de todos los jugadores de la escuela. Si no se pueden leer (p. ej. sin la migración), se muestra la lista sin ellos.
@@ -41,27 +42,53 @@ class PersonasTab extends ConsumerWidget {
         icon: const Icon(Icons.add),
         label: Text(context.l10n.nuevaPersona),
       ),
-      body: AsyncView<List<JugadorLite>>(
-        value: datos,
-        onRetry: () => ref.invalidate(jugadoresOrgProvider(escuelaId)),
-        builder: (lista) => lista.isEmpty
-            ? EstadoVacio(
-                icono: Icons.child_care,
-                texto: context.l10n.sinJugadores,
-              )
-            : RefreshIndicator(
-                onRefresh: () async =>
-                    ref.invalidate(jugadoresOrgProvider(escuelaId)),
-                child: ListView(
-                  padding: const EdgeInsets.only(bottom: 88),
-                  children: [
-                    for (final p in lista)
-                      _fila(context, ref, p, tutores[p.id] ?? const []),
-                  ],
-                ),
+      body: Column(
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+              child: TextButton.icon(
+                key: const Key('importar-lista'),
+                onPressed: () => _importar(context, ref),
+                icon: const Icon(Icons.upload_file_outlined),
+                label: Text(context.l10n.importarLista),
               ),
+            ),
+          ),
+          Expanded(
+            child: AsyncView<List<JugadorLite>>(
+              value: datos,
+              onRetry: () => ref.invalidate(jugadoresOrgProvider(escuelaId)),
+              builder: (lista) => lista.isEmpty
+                  ? EstadoVacio(
+                      icono: Icons.child_care,
+                      texto: context.l10n.sinJugadores,
+                    )
+                  : RefreshIndicator(
+                      onRefresh: () async =>
+                          ref.invalidate(jugadoresOrgProvider(escuelaId)),
+                      child: ListView(
+                        padding: const EdgeInsets.only(bottom: 88),
+                        children: [
+                          for (final p in lista)
+                            _fila(context, ref, p, tutores[p.id] ?? const []),
+                        ],
+                      ),
+                    ),
+            ),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _importar(BuildContext context, WidgetRef ref) async {
+    final alguno = await mostrarImportarJugadores(context, escuelaId);
+    if (alguno) {
+      ref.invalidate(jugadoresOrgProvider(escuelaId));
+      ref.invalidate(tutoresOrgProvider(escuelaId));
+    }
   }
 
   Widget _fila(

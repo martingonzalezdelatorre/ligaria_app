@@ -174,7 +174,8 @@ class _ConBorrar extends StatefulWidget {
 class _ConBorrarState extends State<_ConBorrar> {
   TextEditingController? _propio;
   TextEditingController get _ctrl =>
-      widget.controller ?? (_propio ??= TextEditingController(text: widget.initialValue));
+      widget.controller ??
+      (_propio ??= TextEditingController(text: widget.initialValue));
 
   @override
   void dispose() {

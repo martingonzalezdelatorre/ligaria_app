@@ -115,6 +115,21 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   String? _areaId;
 
+  /// Tras pulsar «Ya me han invitado» y volver a consultar, sigue sin haber organización.
+  /// Vive aquí y no en la pantalla vacía porque ésta se reconstruye mientras se recarga.
+  bool _sigueSinInvitacion = false;
+
+  Future<void> _comprobarInvitacion() async {
+    setState(() => _sigueSinInvitacion = false);
+    ref.invalidate(pertenenciasProvider);
+    try {
+      final lista = await ref.read(pertenenciasProvider.future);
+      if (mounted) setState(() => _sigueSinInvitacion = areasDe(lista).isEmpty);
+    } catch (_) {
+      // El error de carga ya lo muestra el propio proveedor con su botón de reintento.
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final perts = ref.watch(pertenenciasProvider);
@@ -133,9 +148,12 @@ class _HomePageState extends ConsumerState<HomePage> {
         if (areas.isEmpty) {
           return Scaffold(
             appBar: _barra(context, 'Ligaria'),
-            body: EstadoVacio(
-              icono: Icons.school_outlined,
-              texto: context.l10n.homeSinOrg,
+            body: _SinOrganizacion(
+              email: ref.read(authRepositoryProvider).email,
+              sigueSinInvitacion: _sigueSinInvitacion,
+              onActualizar: _comprobarInvitacion,
+              onOtroCorreo: () =>
+                  ref.read(authRepositoryProvider).cerrarSesion(),
             ),
           );
         }
@@ -353,6 +371,85 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Cuenta sin ninguna organización: explica por qué, con qué correo se ha entrado
+/// y permite volver a comprobar la invitación o entrar con otro correo.
+class _SinOrganizacion extends StatelessWidget {
+  const _SinOrganizacion({
+    required this.email,
+    required this.sigueSinInvitacion,
+    required this.onActualizar,
+    required this.onOtroCorreo,
+  });
+  final String? email;
+  final bool sigueSinInvitacion;
+  final VoidCallback onActualizar, onOtroCorreo;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = context.l10n;
+    final tema = Theme.of(context);
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Center(child: MedallonVacio(icono: Icons.school_outlined)),
+              const SizedBox(height: 16),
+              Text(
+                l.homeSinOrg,
+                textAlign: TextAlign.center,
+                style: tema.textTheme.bodyLarge,
+              ),
+              if (email != null && email!.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  l.sinOrgConectado(email!),
+                  key: const Key('sin-org-email'),
+                  textAlign: TextAlign.center,
+                  style: tema.textTheme.titleSmall,
+                ),
+              ],
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                key: const Key('sin-org-actualizar'),
+                onPressed: onActualizar,
+                icon: const Icon(Icons.refresh),
+                label: Text(l.sinOrgActualizar),
+              ),
+              if (sigueSinInvitacion) ...[
+                const SizedBox(height: 12),
+                Text(
+                  l.sinOrgSigue,
+                  key: const Key('sin-org-sigue'),
+                  textAlign: TextAlign.center,
+                  style: tema.textTheme.bodyMedium?.copyWith(
+                    color: tema.colorScheme.error,
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              Text(
+                l.sinOrgAviso,
+                textAlign: TextAlign.center,
+                style: tema.textTheme.bodySmall,
+              ),
+              TextButton(
+                key: const Key('sin-org-otro-correo'),
+                onPressed: onOtroCorreo,
+                child: Text(l.sinOrgOtroCorreo),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

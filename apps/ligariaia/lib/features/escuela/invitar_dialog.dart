@@ -9,6 +9,7 @@ import '../../core/config.dart';
 import '../../data/liga_repository.dart';
 import '../../data/models.dart';
 import 'escuela_providers.dart';
+import 'primeros_pasos.dart';
 
 /// Diálogo para invitar a un usuario por email con un rol.
 /// Con [rolFijo] y [jugadorFijo] (desde la ficha de una persona) solo pide el correo.
@@ -29,6 +30,7 @@ Future<void> mostrarInvitar(
   );
   if (ok == true) {
     ref.invalidate(usuariosEscuelaProvider(escuelaId));
+    ref.invalidate(entrenadorInvitadoProvider(escuelaId));
     if (context.mounted) avisar(context, context.l10n.invitacionEnviada);
   }
 }

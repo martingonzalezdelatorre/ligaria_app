@@ -7,6 +7,7 @@ import '../../core/widgets.dart';
 import '../../data/liga_repository.dart';
 import '../../data/models.dart';
 import 'organizador_providers.dart';
+import 'plantillas_liga.dart';
 
 /// Alta y edición (solo en borrador) de una liga: nombre, deporte, tipo y fechas.
 /// El calendario se genera después, cuando ya están inscritos los equipos.
@@ -177,6 +178,58 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
     ),
   );
 
+  String? _plantilla;
+
+  /// Rellena nombre, formato y fechas con la plantilla; todo sigue siendo editable.
+  void _aplicarPlantilla(PlantillaLiga p) {
+    final (ini, fin) = p.fechas(DateTime.now());
+    setState(() {
+      _plantilla = p.id;
+      _nombre.text = p.nombre(context.l10n, ini.year);
+      _formato = p.formato;
+      _inicio = ini;
+      _fin = fin;
+      _errorFechas = null;
+      _errorPuntos = null;
+    });
+  }
+
+  Widget _plantillas(BuildContext context) {
+    final l = context.l10n;
+    final elegida = plantillasLiga.where((p) => p.id == _plantilla).firstOrNull;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final p in plantillasLiga)
+              ChoiceChip(
+                key: Key('plantilla-${p.id}'),
+                avatar: Icon(switch (p.formato) {
+                  'ELIMINATORIA' => Icons.account_tree_outlined,
+                  'MIXTO' => Icons.view_module_outlined,
+                  _ => Icons.format_list_numbered_rounded,
+                }, size: 18),
+                label: Text(p.nombre(l, p.fechas(DateTime.now()).$1.year)),
+                selected: _plantilla == p.id,
+                onSelected: (_) => _aplicarPlantilla(p),
+              ),
+          ],
+        ),
+        if (elegida != null) ...[
+          const SizedBox(height: 10),
+          Text(
+            elegida.descripcion(l),
+            key: const Key('plantilla-descripcion'),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ],
+    );
+  }
+
   /// Los selectores no se pueden cambiar al editar (deporte y tipo quedan fijados al crear la liga).
   Widget _bloqueable(Widget hijo) =>
       _edita ? Opacity(opacity: .55, child: IgnorePointer(child: hijo)) : hijo;
@@ -276,6 +329,19 @@ class _CrearLigaPageState extends ConsumerState<CrearLigaPage> {
               children: [
                 Aparece(desplazamiento: 8, child: _Cabecera(edita: _edita)),
                 const SizedBox(height: 16),
+                if (!_edita) ...[
+                  Aparece(
+                    retardo: 30,
+                    desplazamiento: 8,
+                    child: _Seccion(
+                      icono: Icons.auto_awesome_outlined,
+                      titulo: context.l10n.plantillasTitulo,
+                      nota: context.l10n.plantillasNota,
+                      hijo: _plantillas(context),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 Aparece(
                   retardo: 60,
                   desplazamiento: 8,

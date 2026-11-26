@@ -22,7 +22,8 @@ class Cargando extends StatefulWidget {
   State<Cargando> createState() => _CargandoState();
 }
 
-class _CargandoState extends State<Cargando> with SingleTickerProviderStateMixin {
+class _CargandoState extends State<Cargando>
+    with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 1500),
@@ -86,7 +87,11 @@ class _CargandoState extends State<Cargando> with SingleTickerProviderStateMixin
                     height: radioBola * 2,
                     child: Transform(
                       alignment: Alignment.bottomCenter,
-                      transform: Matrix4.diagonal3Values(1 + aplasta, 1 - aplasta, 1),
+                      transform: Matrix4.diagonal3Values(
+                        1 + aplasta,
+                        1 - aplasta,
+                        1,
+                      ),
                       child: BolaTenis(tam: radioBola * 2),
                     ),
                   ),
@@ -162,7 +167,11 @@ class _AroPainter extends CustomPainter {
 }
 
 class _SombraPainter extends CustomPainter {
-  _SombraPainter({required this.centro, required this.ancho, required this.alfa});
+  _SombraPainter({
+    required this.centro,
+    required this.ancho,
+    required this.alfa,
+  });
   final Offset centro;
   final double ancho;
   final double alfa;
@@ -178,7 +187,8 @@ class _SombraPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_SombraPainter o) => o.centro != centro || o.ancho != ancho || o.alfa != alfa;
+  bool shouldRepaint(_SombraPainter o) =>
+      o.centro != centro || o.ancho != ancho || o.alfa != alfa;
 }
 
 /// Verdes del fondo de la pantalla de carga: verde de marca → verde profundo, de la paleta de la app.
@@ -203,8 +213,12 @@ class PantallaCarga extends StatefulWidget {
   State<PantallaCarga> createState() => _PantallaCargaState();
 }
 
-class _PantallaCargaState extends State<PantallaCarga> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(seconds: 4));
+class _PantallaCargaState extends State<PantallaCarga>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 4),
+  );
 
   @override
   void didChangeDependencies() {
@@ -234,7 +248,8 @@ class _PantallaCargaState extends State<PantallaCarga> with SingleTickerProvider
           RepaintBoundary(
             child: AnimatedBuilder(
               animation: _c,
-              builder: (_, _) => CustomPaint(painter: _FondoVerdePainter(_c.value)),
+              builder: (_, _) =>
+                  CustomPaint(painter: _FondoVerdePainter(_c.value)),
             ),
           ),
           SafeArea(
@@ -255,7 +270,9 @@ class _PantallaCargaState extends State<PantallaCarga> with SingleTickerProvider
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
                           letterSpacing: -.2,
-                          shadows: const [Shadow(color: Color(0x66000000), blurRadius: 12)],
+                          shadows: const [
+                            Shadow(color: Color(0x66000000), blurRadius: 12),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -279,25 +296,32 @@ class _Puntos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
-        animation: animation,
-        builder: (_, _) => Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (var i = 0; i < 3; i++)
-              Container(
-                width: 9,
-                height: 9,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: lima.withValues(
-                    alpha: .3 + .7 * (math.sin(((animation.value * 4) - i * .18) * 2 * math.pi) + 1) / 2,
-                  ),
-                ),
+    animation: animation,
+    builder: (_, _) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < 3; i++)
+          Container(
+            width: 9,
+            height: 9,
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: lima.withValues(
+                alpha:
+                    .3 +
+                    .7 *
+                        (math.sin(
+                              ((animation.value * 4) - i * .18) * 2 * math.pi,
+                            ) +
+                            1) /
+                        2,
               ),
-          ],
-        ),
-      );
+            ),
+          ),
+      ],
+    ),
+  );
 }
 
 class _FondoVerdePainter extends CustomPainter {
@@ -319,12 +343,18 @@ class _FondoVerdePainter extends CustomPainter {
     final a = t * 2 * math.pi;
     final lado = math.max(s.width, s.height);
     void destello(double fx, double fy, double r, Color c, double fase) {
-      final centro = Offset(s.width * fx + math.sin(a + fase) * s.width * .1, s.height * fy + math.cos(a + fase) * s.height * .08);
+      final centro = Offset(
+        s.width * fx + math.sin(a + fase) * s.width * .1,
+        s.height * fy + math.cos(a + fase) * s.height * .08,
+      );
       final radio = r * lado;
       canvas.drawCircle(
         centro,
         radio,
-        Paint()..shader = RadialGradient(colors: [c, c.withValues(alpha: 0)]).createShader(Rect.fromCircle(center: centro, radius: radio)),
+        Paint()
+          ..shader = RadialGradient(
+            colors: [c, c.withValues(alpha: 0)],
+          ).createShader(Rect.fromCircle(center: centro, radius: radio)),
       );
     }
 
@@ -349,16 +379,20 @@ class _FondoVerdePainter extends CustomPainter {
 /// App mínima con la [PantallaCarga], para mostrarla con `runApp` mientras `main()` inicializa
 /// servicios (Supabase, preferencias…) y antes de que exista la app real.
 class AppCargaInicial extends StatelessWidget {
-  const AppCargaInicial({super.key, this.nombre = 'Ligaria', this.acento = acentoNaranja});
+  const AppCargaInicial({
+    super.key,
+    this.nombre = 'Ligaria',
+    this.acento = acentoNaranja,
+  });
   final String nombre;
   final Color acento;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: temaOscuro(acento: acento),
-        darkTheme: temaOscuro(acento: acento),
-        themeMode: ThemeMode.dark,
-        home: PantallaCarga(nombre: nombre),
-      );
+    debugShowCheckedModeBanner: false,
+    theme: temaOscuro(acento: acento),
+    darkTheme: temaOscuro(acento: acento),
+    themeMode: ThemeMode.dark,
+    home: PantallaCarga(nombre: nombre),
+  );
 }

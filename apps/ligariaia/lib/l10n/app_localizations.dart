@@ -4166,6 +4166,534 @@ abstract class AppL10n {
   /// In es, this message translates to:
   /// **'{n} min'**
   String duracionMin(int n);
+
+  /// No description provided for @loginPrimeraVez.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Primera vez en Ligaria?'**
+  String get loginPrimeraVez;
+
+  /// No description provided for @loginRegistrar.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Eres escuela o ayuntamiento? Regístrate'**
+  String get loginRegistrar;
+
+  /// No description provided for @loginInvitacion.
+  ///
+  /// In es, this message translates to:
+  /// **'Tengo una invitación'**
+  String get loginInvitacion;
+
+  /// No description provided for @errAbrirEnlace.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo abrir el enlace. Inténtalo desde tu navegador.'**
+  String get errAbrirEnlace;
+
+  /// No description provided for @sinOrgConectado.
+  ///
+  /// In es, this message translates to:
+  /// **'Has entrado como {email}'**
+  String sinOrgConectado(String email);
+
+  /// No description provided for @sinOrgActualizar.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya me han invitado, actualizar'**
+  String get sinOrgActualizar;
+
+  /// No description provided for @sinOrgSigue.
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay ninguna invitación para este correo.'**
+  String get sinOrgSigue;
+
+  /// No description provided for @sinOrgOtroCorreo.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar otro correo'**
+  String get sinOrgOtroCorreo;
+
+  /// No description provided for @sinOrgAviso.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Te registraste con un correo distinto al de la invitación? Cierra sesión y entra con el correo al que llegó.'**
+  String get sinOrgAviso;
+
+  /// No description provided for @pasosTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Primeros pasos'**
+  String get pasosTitulo;
+
+  /// No description provided for @pasosProgreso.
+  ///
+  /// In es, this message translates to:
+  /// **'{hechos} de {total} completados'**
+  String pasosProgreso(int hechos, int total);
+
+  /// No description provided for @pasosOcultar.
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar guía'**
+  String get pasosOcultar;
+
+  /// No description provided for @paso1T.
+  ///
+  /// In es, this message translates to:
+  /// **'Añade jugadores'**
+  String get paso1T;
+
+  /// No description provided for @paso1D.
+  ///
+  /// In es, this message translates to:
+  /// **'Da de alta a tus jugadores y a sus tutores.'**
+  String get paso1D;
+
+  /// No description provided for @paso2T.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea equipos'**
+  String get paso2T;
+
+  /// No description provided for @paso2D.
+  ///
+  /// In es, this message translates to:
+  /// **'Agrupa a tus jugadores en equipos de tenis o pádel.'**
+  String get paso2D;
+
+  /// No description provided for @paso3T.
+  ///
+  /// In es, this message translates to:
+  /// **'Invita al entrenador'**
+  String get paso3T;
+
+  /// No description provided for @paso3D.
+  ///
+  /// In es, this message translates to:
+  /// **'Para que registre resultados y asigne entrenos.'**
+  String get paso3D;
+
+  /// No description provided for @paso4T.
+  ///
+  /// In es, this message translates to:
+  /// **'Apúntate a una liga'**
+  String get paso4T;
+
+  /// No description provided for @paso4D.
+  ///
+  /// In es, this message translates to:
+  /// **'Inscribe un equipo en una liga abierta.'**
+  String get paso4D;
+
+  /// No description provided for @tabInscribirme.
+  ///
+  /// In es, this message translates to:
+  /// **'Inscribirme en ligas'**
+  String get tabInscribirme;
+
+  /// No description provided for @tabLigasOrganizo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ligas que organizo'**
+  String get tabLigasOrganizo;
+
+  /// No description provided for @cerrar.
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar'**
+  String get cerrar;
+
+  /// No description provided for @plantillasTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Empieza con una plantilla'**
+  String get plantillasTitulo;
+
+  /// No description provided for @plantillasNota.
+  ///
+  /// In es, this message translates to:
+  /// **'Rellena el nombre, el formato y las fechas. Después puedes cambiar lo que quieras.'**
+  String get plantillasNota;
+
+  /// No description provided for @plantillaNombreOtono.
+  ///
+  /// In es, this message translates to:
+  /// **'Liga de otoño {anio}'**
+  String plantillaNombreOtono(int anio);
+
+  /// No description provided for @plantillaNombrePrimavera.
+  ///
+  /// In es, this message translates to:
+  /// **'Liga de primavera {anio}'**
+  String plantillaNombrePrimavera(int anio);
+
+  /// No description provided for @plantillaNombreTorneo.
+  ///
+  /// In es, this message translates to:
+  /// **'Torneo exprés {anio}'**
+  String plantillaNombreTorneo(int anio);
+
+  /// No description provided for @plantillaNombreGrupos.
+  ///
+  /// In es, this message translates to:
+  /// **'Grupos y playoff {anio}'**
+  String plantillaNombreGrupos(int anio);
+
+  /// No description provided for @plantillaDescOtono.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos contra todos, de mediados de septiembre a mediados de diciembre.'**
+  String get plantillaDescOtono;
+
+  /// No description provided for @plantillaDescPrimavera.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos contra todos, de marzo a mediados de junio.'**
+  String get plantillaDescPrimavera;
+
+  /// No description provided for @plantillaDescTorneo.
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminatoria en un solo fin de semana: quien pierde queda fuera.'**
+  String get plantillaDescTorneo;
+
+  /// No description provided for @plantillaDescGrupos.
+  ///
+  /// In es, this message translates to:
+  /// **'Fase de grupos y cuadro final con los mejores, de abril a junio.'**
+  String get plantillaDescGrupos;
+
+  /// No description provided for @importarLista.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar lista'**
+  String get importarLista;
+
+  /// No description provided for @impTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar jugadores'**
+  String get impTitulo;
+
+  /// No description provided for @impSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Desde Excel o CSV: una fila por jugador.'**
+  String get impSub;
+
+  /// No description provided for @impAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Columnas: nombre, apellidos, fecha de nacimiento (dd/mm/aaaa), tutor y correo del tutor. Solo el nombre y la fecha son obligatorios. Si indicas el correo del tutor, recibirá una invitación para crear su cuenta.'**
+  String get impAyuda;
+
+  /// No description provided for @impPegar.
+  ///
+  /// In es, this message translates to:
+  /// **'Pega aquí las filas copiadas de Excel o el texto del CSV'**
+  String get impPegar;
+
+  /// No description provided for @impElegirArchivo.
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir archivo CSV'**
+  String get impElegirArchivo;
+
+  /// No description provided for @impArchivoError.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo leer el archivo.'**
+  String get impArchivoError;
+
+  /// No description provided for @impCopiarModelo.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar modelo'**
+  String get impCopiarModelo;
+
+  /// No description provided for @impModeloCopiado.
+  ///
+  /// In es, this message translates to:
+  /// **'Modelo copiado: pégalo en Excel y rellénalo.'**
+  String get impModeloCopiado;
+
+  /// No description provided for @impSinFilas.
+  ///
+  /// In es, this message translates to:
+  /// **'No se ha encontrado ninguna fila con datos.'**
+  String get impSinFilas;
+
+  /// No description provided for @impRevisar.
+  ///
+  /// In es, this message translates to:
+  /// **'Revisar'**
+  String get impRevisar;
+
+  /// No description provided for @impVolver.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver'**
+  String get impVolver;
+
+  /// No description provided for @impListos.
+  ///
+  /// In es, this message translates to:
+  /// **'Listos para importar: {n}'**
+  String impListos(int n);
+
+  /// No description provided for @impYaExisten.
+  ///
+  /// In es, this message translates to:
+  /// **'Ya existen en tu escuela (se omiten): {n}'**
+  String impYaExisten(int n);
+
+  /// No description provided for @impConErrores.
+  ///
+  /// In es, this message translates to:
+  /// **'Con errores (se omiten): {n}'**
+  String impConErrores(int n);
+
+  /// No description provided for @impFamiliasCorreo.
+  ///
+  /// In es, this message translates to:
+  /// **'Familias que recibirán un correo para crear su cuenta: {n}'**
+  String impFamiliasCorreo(int n);
+
+  /// No description provided for @impFila.
+  ///
+  /// In es, this message translates to:
+  /// **'Fila {linea}: {nombre} — {motivo}'**
+  String impFila(int linea, String nombre, String motivo);
+
+  /// No description provided for @impYOtras.
+  ///
+  /// In es, this message translates to:
+  /// **'y {n} más…'**
+  String impYOtras(int n);
+
+  /// No description provided for @impBoton.
+  ///
+  /// In es, this message translates to:
+  /// **'Importar {n} jugadores'**
+  String impBoton(int n);
+
+  /// No description provided for @impImportando.
+  ///
+  /// In es, this message translates to:
+  /// **'Importando…'**
+  String get impImportando;
+
+  /// No description provided for @impProgreso.
+  ///
+  /// In es, this message translates to:
+  /// **'Importando {hechas} de {total}…'**
+  String impProgreso(int hechas, int total);
+
+  /// No description provided for @impCreados.
+  ///
+  /// In es, this message translates to:
+  /// **'Jugadores dados de alta: {n}'**
+  String impCreados(int n);
+
+  /// No description provided for @impFallidos.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron dar de alta: {n}'**
+  String impFallidos(int n);
+
+  /// No description provided for @impCorreosOk.
+  ///
+  /// In es, this message translates to:
+  /// **'Las familias han recibido el correo para crear su cuenta.'**
+  String get impCorreosOk;
+
+  /// No description provided for @impCorreosFallo.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron enviar todos los correos. Puedes reenviarlos desde la ficha de cada jugador.'**
+  String get impCorreosFallo;
+
+  /// No description provided for @impErrNombre.
+  ///
+  /// In es, this message translates to:
+  /// **'falta el nombre'**
+  String get impErrNombre;
+
+  /// No description provided for @impErrFecha.
+  ///
+  /// In es, this message translates to:
+  /// **'fecha de nacimiento no válida'**
+  String get impErrFecha;
+
+  /// No description provided for @impErrCorreo.
+  ///
+  /// In es, this message translates to:
+  /// **'correo del tutor no válido'**
+  String get impErrCorreo;
+
+  /// No description provided for @impErrRepetida.
+  ///
+  /// In es, this message translates to:
+  /// **'repetida en la lista'**
+  String get impErrRepetida;
+
+  /// No description provided for @impErrExiste.
+  ///
+  /// In es, this message translates to:
+  /// **'ya existe en tu escuela'**
+  String get impErrExiste;
+
+  /// No description provided for @invitarEnBloque.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitar en bloque'**
+  String get invitarEnBloque;
+
+  /// No description provided for @bloqueTitulo.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitar en bloque'**
+  String get bloqueTitulo;
+
+  /// No description provided for @bloqueSub.
+  ///
+  /// In es, this message translates to:
+  /// **'Pega los correos y se guarda una invitación para cada uno.'**
+  String get bloqueSub;
+
+  /// No description provided for @bloqueCorreos.
+  ///
+  /// In es, this message translates to:
+  /// **'Correos'**
+  String get bloqueCorreos;
+
+  /// No description provided for @bloqueAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'Separados por comas, espacios o líneas'**
+  String get bloqueAyuda;
+
+  /// No description provided for @bloqueValidos.
+  ///
+  /// In es, this message translates to:
+  /// **'Correos válidos: {n}'**
+  String bloqueValidos(int n);
+
+  /// No description provided for @bloqueRepetidos.
+  ///
+  /// In es, this message translates to:
+  /// **'Repetidos (se ignoran): {n}'**
+  String bloqueRepetidos(int n);
+
+  /// No description provided for @bloqueInvalidos.
+  ///
+  /// In es, this message translates to:
+  /// **'No válidos: {lista}'**
+  String bloqueInvalidos(String lista);
+
+  /// No description provided for @bloqueBoton.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitar a {n}'**
+  String bloqueBoton(int n);
+
+  /// No description provided for @bloqueGuardadas.
+  ///
+  /// In es, this message translates to:
+  /// **'Invitaciones guardadas: {n}'**
+  String bloqueGuardadas(int n);
+
+  /// No description provided for @bloqueFallidas.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron invitar: {n}'**
+  String bloqueFallidas(int n);
+
+  /// No description provided for @bloqueAvisales.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora avísales'**
+  String get bloqueAvisales;
+
+  /// No description provided for @bloqueAvisalesAyuda.
+  ///
+  /// In es, this message translates to:
+  /// **'La invitación ya está guardada. Envíales el enlace de registro: tienen que crear su cuenta con ese mismo correo.'**
+  String get bloqueAvisalesAyuda;
+
+  /// No description provided for @bloqueAbrirCorreo.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir en mi correo'**
+  String get bloqueAbrirCorreo;
+
+  /// No description provided for @bloqueCopiarMensaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Copiar mensaje'**
+  String get bloqueCopiarMensaje;
+
+  /// No description provided for @bloqueAsunto.
+  ///
+  /// In es, this message translates to:
+  /// **'Te invitamos a Ligaria'**
+  String get bloqueAsunto;
+
+  /// No description provided for @bloqueMensaje.
+  ///
+  /// In es, this message translates to:
+  /// **'Hola, te hemos invitado a Ligaria. Crea tu cuenta en {url} con este mismo correo y tu invitación quedará aplicada.'**
+  String bloqueMensaje(String url);
+
+  /// No description provided for @pasosOrg1T.
+  ///
+  /// In es, this message translates to:
+  /// **'Crea tu primera liga'**
+  String get pasosOrg1T;
+
+  /// No description provided for @pasosOrg1D.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige deporte, formato y fechas, o parte de una plantilla.'**
+  String get pasosOrg1D;
+
+  /// No description provided for @pasosOrg2T.
+  ///
+  /// In es, this message translates to:
+  /// **'Ábrela a la inscripción'**
+  String get pasosOrg2T;
+
+  /// No description provided for @pasosOrg2D.
+  ///
+  /// In es, this message translates to:
+  /// **'Publícala para que los equipos puedan apuntarse.'**
+  String get pasosOrg2D;
+
+  /// No description provided for @pasosOrg3T.
+  ///
+  /// In es, this message translates to:
+  /// **'Reúne equipos'**
+  String get pasosOrg3T;
+
+  /// No description provided for @pasosOrg3D.
+  ///
+  /// In es, this message translates to:
+  /// **'Añade equipos, acepta inscripciones o invita a escuelas desde «Ver liga».'**
+  String get pasosOrg3D;
+
+  /// No description provided for @pasosOrg4T.
+  ///
+  /// In es, this message translates to:
+  /// **'Genera el calendario'**
+  String get pasosOrg4T;
+
+  /// No description provided for @pasosOrg4D.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando estén los equipos, crea las jornadas y empieza a registrar resultados.'**
+  String get pasosOrg4D;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

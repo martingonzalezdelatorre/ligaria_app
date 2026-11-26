@@ -3,10 +3,13 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:ligariaia/data/liga_repository.dart';
 import 'package:ligariaia/core/auth.dart';
+import 'package:ligariaia/core/config.dart';
+import 'package:ligariaia/core/enlaces.dart';
 import 'package:ligariaia/features/auth/login_page.dart';
 import 'package:ligariaia/features/auth/recuperar_pages.dart';
 import 'package:ligariaia/features/cuenta/cuenta_page.dart';
@@ -15,7 +18,9 @@ import 'package:ligariaia/features/home/home_page.dart';
 class FakeAuth implements AuthRepository {
   FakeAuth({this.falla = false, this.perts = const []});
   final bool falla;
-  final List<Pertenencia> perts;
+  List<Pertenencia> perts;
+  int cierres = 0;
+  int consultas = 0;
   String? ultimoEmail;
   String? nuevaPass;
   final _c = StreamController<String?>.broadcast();
@@ -39,35 +44,43 @@ class FakeAuth implements AuthRepository {
   }
 
   @override
-  Future<void> cerrarSesion() async {}
+  Future<void> cerrarSesion() async => cierres++;
   @override
   Future<void> cambiarPassword(String nueva) async => nuevaPass = nueva;
   @override
-  Future<List<Pertenencia>> misPertenencias() async => perts;
+  Future<List<Pertenencia>> misPertenencias() async {
+    consultas++;
+    return perts;
+  }
 }
 
 class MockLigas extends Mock implements LigaRepository {}
 
 MockLigas ligasMock() => MockLigas();
 
-Widget app(FakeAuth repo, Widget home, {LigaRepository? ligas}) =>
-    ProviderScope(
-      overrides: [
-        authRepositoryProvider.overrideWithValue(repo),
-        ligaRepositoryProvider.overrideWithValue(ligas ?? ligasMock()),
-      ],
-      child: MaterialApp(
-        localizationsDelegates: const [
-          AppL10n.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: AppL10n.supportedLocales,
-        locale: const Locale('es'),
-        home: home,
-      ),
-    );
+Widget app(
+  FakeAuth repo,
+  Widget home, {
+  LigaRepository? ligas,
+  List<Override> overrides = const [],
+}) => ProviderScope(
+  overrides: [
+    authRepositoryProvider.overrideWithValue(repo),
+    ligaRepositoryProvider.overrideWithValue(ligas ?? ligasMock()),
+    ...overrides,
+  ],
+  child: MaterialApp(
+    localizationsDelegates: const [
+      AppL10n.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: AppL10n.supportedLocales,
+    locale: const Locale('es'),
+    home: home,
+  ),
+);
 
 void main() {
   testWidgets('login valida campos y llama al repositorio', (tester) async {
@@ -213,6 +226,126 @@ void main() {
       find.textContaining('no está asociada a ninguna organización'),
       findsOneWidget,
     );
+  });
+
+  group('primer contacto', () {
+    Widget inicioSinOrg(FakeAuth auth) => app(
+      auth,
+      const HomePage(),
+      overrides: [sesionProvider.overrideWith((ref) => Stream.value('u1'))],
+    );
+
+    testWidgets('login ofrece registrarse y entrar con una invitación', (
+      tester,
+    ) async {
+      final abiertas = <Uri>[];
+      await tester.pumpWidget(
+        app(
+          FakeAuth(),
+          const LoginPage(),
+          overrides: [
+            abrirUrlProvider.overrideWithValue((uri) async {
+              abiertas.add(uri);
+              return true;
+            }),
+          ],
+        ),
+      );
+
+      expect(
+        find.text('¿Eres escuela o ayuntamiento? Regístrate'),
+        findsOneWidget,
+      );
+      await tester.ensureVisible(find.byKey(const Key('login-registro')));
+      await tester.tap(find.byKey(const Key('login-registro')));
+      await tester.pump();
+      await tester.ensureVisible(find.byKey(const Key('login-invitacion')));
+      await tester.tap(find.byKey(const Key('login-invitacion')));
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.text('Tengo una invitación'), findsOneWidget);
+      expect(abiertas, [
+        Uri.parse(AppConfig.registroUrl),
+        Uri.parse(AppConfig.familiasUrl),
+      ]);
+    });
+
+    testWidgets('login avisa si no se puede abrir el enlace', (tester) async {
+      await tester.pumpWidget(
+        app(
+          FakeAuth(),
+          const LoginPage(),
+          overrides: [abrirUrlProvider.overrideWithValue((_) async => false)],
+        ),
+      );
+      await tester.ensureVisible(find.byKey(const Key('login-registro')));
+      await tester.tap(find.byKey(const Key('login-registro')));
+      await tester.pump(const Duration(seconds: 1));
+      expect(find.textContaining('No se pudo abrir el enlace'), findsOneWidget);
+    });
+
+    testWidgets('sin organización muestra el correo con el que se entró', (
+      tester,
+    ) async {
+      await tester.pumpWidget(inicioSinOrg(FakeAuth()));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Has entrado como ana@x.es'), findsOneWidget);
+      expect(find.byKey(const Key('sin-org-actualizar')), findsOneWidget);
+      expect(find.byKey(const Key('sin-org-sigue')), findsNothing);
+    });
+
+    testWidgets(
+      '«Ya me han invitado» vuelve a consultar y avisa si sigue igual',
+      (tester) async {
+        final auth = FakeAuth();
+        await tester.pumpWidget(inicioSinOrg(auth));
+        await tester.pumpAndSettle();
+        final antes = auth.consultas;
+
+        await tester.tap(find.byKey(const Key('sin-org-actualizar')));
+        await tester.pumpAndSettle();
+
+        expect(auth.consultas, antes + 1);
+        expect(
+          find.text('Todavía no hay ninguna invitación para este correo.'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('al llegar la invitación desaparece la pantalla de espera', (
+      tester,
+    ) async {
+      final auth = FakeAuth();
+      await tester.pumpWidget(inicioSinOrg(auth));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('sin-org-actualizar')), findsOneWidget);
+
+      auth.perts = [
+        const Pertenencia(
+          escuelaId: 'esc1',
+          escuela: 'Escuela A',
+          rol: Rol.superadmin,
+        ),
+      ];
+      await tester.tap(find.byKey(const Key('sin-org-actualizar')));
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.byKey(const Key('sin-org-actualizar')), findsNothing);
+      expect(find.byKey(const Key('sin-org-sigue')), findsNothing);
+    });
+
+    testWidgets('«Usar otro correo» cierra la sesión', (tester) async {
+      final auth = FakeAuth();
+      await tester.pumpWidget(inicioSinOrg(auth));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('sin-org-otro-correo')));
+      await tester.pump();
+      expect(auth.cierres, 1);
+    });
   });
 
   testWidgets('mi cuenta: exige 8 caracteres y cambia la contraseña', (

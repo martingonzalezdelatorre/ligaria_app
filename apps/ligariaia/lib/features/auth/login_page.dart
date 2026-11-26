@@ -4,6 +4,8 @@ import 'package:ligaria_ui/ligaria_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth.dart';
+import '../../core/config.dart';
+import '../../core/enlaces.dart';
 import '../../core/idioma.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -352,6 +354,45 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ],
                       ),
               ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              children: [
+                const Expanded(child: Divider(color: Colors.white24)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    context.l10n.loginPrimeraVez,
+                    style: t.bodySmall?.copyWith(color: Colors.white60),
+                  ),
+                ),
+                const Expanded(child: Divider(color: Colors.white24)),
+              ],
+            ),
+            const SizedBox(height: 14),
+            OutlinedButton.icon(
+              key: const Key('login-registro'),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size.fromHeight(52),
+                foregroundColor: Colors.white,
+                side: const BorderSide(color: Colors.white38),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon: const Icon(Icons.school_outlined, size: 20),
+              label: Text(
+                context.l10n.loginRegistrar,
+                textAlign: TextAlign.center,
+              ),
+              onPressed: () => abrirEnlace(context, ref, AppConfig.registroUrl),
+            ),
+            const SizedBox(height: 6),
+            TextButton.icon(
+              key: const Key('login-invitacion'),
+              icon: const Icon(Icons.mark_email_read_outlined, size: 20),
+              label: Text(context.l10n.loginInvitacion),
+              onPressed: () => abrirEnlace(context, ref, AppConfig.familiasUrl),
             ),
           ],
         ),
