@@ -783,5 +783,13 @@
   "pasosOrg3T": "Gather teams",
   "pasosOrg3D": "Add teams, accept sign-ups or invite schools from «View league».",
   "pasosOrg4T": "Generate the schedule",
-  "pasosOrg4D": "Once the teams are in, create the matchdays and start recording results."
+  "pasosOrg4D": "Once the teams are in, create the matchdays and start recording results.",
+  "catVeteranos": "Veterans",
+  "categoriaEdad": "Age category",
+  "todasLasEdades": "All ages",
+  "nacidosEntre": "Born {desde}–{hasta}",
+  "nacidosDesde": "Born in {anio} or later",
+  "nacidosHasta": "Born in {anio} or earlier",
+  "sinJugadoresCategoria": "There are no {c} players left to add. Check their dates of birth in «People».",
+  "sinCategoria": "No category"
 }

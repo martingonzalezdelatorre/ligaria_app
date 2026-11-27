@@ -2597,4 +2597,36 @@ class AppL10nEu extends AppL10n {
   @override
   String get pasosOrg4D =>
       'Taldeak sartu direnean, sortu jardunaldiak eta hasi emaitzak erregistratzen.';
+
+  @override
+  String get catVeteranos => 'Beteranoak';
+
+  @override
+  String get categoriaEdad => 'Adin-kategoria';
+
+  @override
+  String get todasLasEdades => 'Adin guztiak';
+
+  @override
+  String nacidosEntre(int desde, int hasta) {
+    return '$desde–$hasta urteetan jaioak';
+  }
+
+  @override
+  String nacidosDesde(int anio) {
+    return '${anio}an edo geroago jaioak';
+  }
+
+  @override
+  String nacidosHasta(int anio) {
+    return '${anio}an edo lehenago jaioak';
+  }
+
+  @override
+  String sinJugadoresCategoria(String c) {
+    return 'Ez dago $c kategoriako jokalaririk gehitzeko. Begiratu jaiotze-datak «Pertsonak» atalean.';
+  }
+
+  @override
+  String get sinCategoria => 'Kategoriarik gabe';
 }

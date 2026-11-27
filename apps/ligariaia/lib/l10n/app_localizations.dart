@@ -4706,6 +4706,54 @@ abstract class AppL10n {
   /// In es, this message translates to:
   /// **'Cuando estén los equipos, crea las jornadas y empieza a registrar resultados.'**
   String get pasosOrg4D;
+
+  /// No description provided for @catVeteranos.
+  ///
+  /// In es, this message translates to:
+  /// **'Veteranos'**
+  String get catVeteranos;
+
+  /// No description provided for @categoriaEdad.
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría de edad'**
+  String get categoriaEdad;
+
+  /// No description provided for @todasLasEdades.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas las edades'**
+  String get todasLasEdades;
+
+  /// No description provided for @nacidosEntre.
+  ///
+  /// In es, this message translates to:
+  /// **'Nacidos en {desde}–{hasta}'**
+  String nacidosEntre(int desde, int hasta);
+
+  /// No description provided for @nacidosDesde.
+  ///
+  /// In es, this message translates to:
+  /// **'Nacidos en {anio} o después'**
+  String nacidosDesde(int anio);
+
+  /// No description provided for @nacidosHasta.
+  ///
+  /// In es, this message translates to:
+  /// **'Nacidos en {anio} o antes'**
+  String nacidosHasta(int anio);
+
+  /// No description provided for @sinJugadoresCategoria.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay jugadores de la categoría {c} por añadir. Revisa sus fechas de nacimiento en «Personas».'**
+  String sinJugadoresCategoria(String c);
+
+  /// No description provided for @sinCategoria.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin categoría'**
+  String get sinCategoria;
 }
 
 class _AppL10nDelegate extends LocalizationsDelegate<AppL10n> {

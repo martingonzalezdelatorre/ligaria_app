@@ -783,5 +783,13 @@
   "pasosOrg3T": "Bildu taldeak",
   "pasosOrg3D": "«Ikusi liga» atalean, gehitu taldeak, onartu izen-emateak edo gonbidatu eskolak.",
   "pasosOrg4T": "Sortu egutegia",
-  "pasosOrg4D": "Taldeak sartu direnean, sortu jardunaldiak eta hasi emaitzak erregistratzen."
+  "pasosOrg4D": "Taldeak sartu direnean, sortu jardunaldiak eta hasi emaitzak erregistratzen.",
+  "catVeteranos": "Beteranoak",
+  "categoriaEdad": "Adin-kategoria",
+  "todasLasEdades": "Adin guztiak",
+  "nacidosEntre": "{desde}–{hasta} urteetan jaioak",
+  "nacidosDesde": "{anio}an edo geroago jaioak",
+  "nacidosHasta": "{anio}an edo lehenago jaioak",
+  "sinJugadoresCategoria": "Ez dago {c} kategoriako jokalaririk gehitzeko. Begiratu jaiotze-datak «Pertsonak» atalean.",
+  "sinCategoria": "Kategoriarik gabe"
 }

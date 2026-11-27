@@ -783,5 +783,13 @@
   "pasosOrg3T": "Reuneix equips",
   "pasosOrg3D": "Afegeix equips, accepta inscripcions o convida escoles des de «Veure lliga».",
   "pasosOrg4T": "Genera el calendari",
-  "pasosOrg4D": "Quan hi hagi els equips, crea les jornades i comença a registrar resultats."
+  "pasosOrg4D": "Quan hi hagi els equips, crea les jornades i comença a registrar resultats.",
+  "catVeteranos": "Veterans",
+  "categoriaEdad": "Categoria d'edat",
+  "todasLasEdades": "Totes les edats",
+  "nacidosEntre": "Nascuts el {desde}–{hasta}",
+  "nacidosDesde": "Nascuts el {anio} o després",
+  "nacidosHasta": "Nascuts el {anio} o abans",
+  "sinJugadoresCategoria": "No hi ha jugadors de la categoria {c} per afegir. Revisa les dates de naixement a «Persones».",
+  "sinCategoria": "Sense categoria"
 }

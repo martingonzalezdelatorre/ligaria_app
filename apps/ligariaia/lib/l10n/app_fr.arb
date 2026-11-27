@@ -783,5 +783,13 @@
   "pasosOrg3T": "Réunissez des équipes",
   "pasosOrg3D": "Ajoutez des équipes, acceptez des inscriptions ou invitez des écoles depuis «Voir la ligue».",
   "pasosOrg4T": "Générez le calendrier",
-  "pasosOrg4D": "Une fois les équipes inscrites, créez les journées et commencez à saisir les résultats."
+  "pasosOrg4D": "Une fois les équipes inscrites, créez les journées et commencez à saisir les résultats.",
+  "catVeteranos": "Vétérans",
+  "categoriaEdad": "Catégorie d'âge",
+  "todasLasEdades": "Tous âges",
+  "nacidosEntre": "Nés en {desde}–{hasta}",
+  "nacidosDesde": "Nés en {anio} ou après",
+  "nacidosHasta": "Nés en {anio} ou avant",
+  "sinJugadoresCategoria": "Aucun joueur de la catégorie {c} à ajouter. Vérifiez leurs dates de naissance dans «Personnes».",
+  "sinCategoria": "Sans catégorie"
 }

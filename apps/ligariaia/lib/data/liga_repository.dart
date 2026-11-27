@@ -58,7 +58,12 @@ abstract class LigaRepository {
 
   /// ¿Se ha invitado ya a algún entrenador a la organización (aunque aún no se haya registrado)?
   Future<bool> tieneInvitacionEntrenador(String orgId);
-  Future<void> crearEquipo(String orgId, String nombre, String deporteId);
+  Future<void> crearEquipo(
+    String orgId,
+    String nombre,
+    String deporteId, {
+    CategoriaEquipo? categoria,
+  });
   Future<void> anadirJugador(String equipoId, String jugadorId);
   Future<void> asignarEntrenador(String equipoId, String usuarioId);
   Future<List<UsuarioEscuela>> usuarios(String orgId);
@@ -411,7 +416,7 @@ class SupabaseLigaRepository implements LigaRepository {
   Future<List<EquipoLite>> equipos(String orgId) async => _rows(
     await _c
         .from('equipo')
-        .select('id, nombre, deporte')
+        .select('id, nombre, deporte, categoria')
         .eq('organizacion_id', orgId)
         .order('nombre'),
   ).map(EquipoLite.fromRow).toList();
@@ -462,12 +467,17 @@ class SupabaseLigaRepository implements LigaRepository {
   ).isNotEmpty;
 
   @override
-  Future<void> crearEquipo(String orgId, String nombre, String deporteId) =>
-      _c.from('equipo').insert({
-        'organizacion_id': orgId,
-        'nombre': nombre,
-        'deporte': deporteId,
-      });
+  Future<void> crearEquipo(
+    String orgId,
+    String nombre,
+    String deporteId, {
+    CategoriaEquipo? categoria,
+  }) => _c.from('equipo').insert({
+    'organizacion_id': orgId,
+    'nombre': nombre,
+    'deporte': deporteId,
+    'categoria': categoria?.codigo,
+  });
 
   @override
   Future<void> anadirJugador(String equipoId, String jugadorId) => _c

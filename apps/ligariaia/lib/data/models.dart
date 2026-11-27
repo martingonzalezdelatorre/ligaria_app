@@ -1,4 +1,6 @@
 import '../core/idioma.dart';
+import 'categoria_edad.dart';
+export 'categoria_edad.dart' show CategoriaEquipo;
 
 // Modelos de lectura de la app (reflejan las vistas/RPC de supabase/migrations).
 
@@ -732,13 +734,16 @@ class EquipoLite {
     required this.id,
     required this.nombre,
     required this.deporteId,
+    this.categoria,
   });
   final String id, nombre;
   final String deporteId; // TENIS | PADEL
+  final CategoriaEquipo? categoria; // null en equipos sin categoría (admiten a cualquiera)
   factory EquipoLite.fromRow(Map<String, dynamic> r) => EquipoLite(
     id: r['id'] as String,
     nombre: r['nombre'] as String,
     deporteId: r['deporte'] as String,
+    categoria: CategoriaEquipo.deCodigo(r['categoria'] as String?),
   );
 }
 

@@ -42,6 +42,11 @@ class EquiposTab extends ConsumerWidget {
                           child: Icon(Icons.groups_outlined),
                         ),
                         title: Text(e.nombre),
+                        subtitle: Text(
+                          e.categoria == null
+                              ? context.l10n.sinCategoria
+                              : '${e.categoria!.nombre} · ${e.categoria!.rotuloAnios()}',
+                        ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => Navigator.of(context).push(
                           MaterialPageRoute(
@@ -80,6 +85,7 @@ class _NuevoEquipoDialogState extends ConsumerState<_NuevoEquipoDialog> {
   final _form = GlobalKey<FormState>();
   final _nombre = TextEditingController();
   String? _deporteId;
+  CategoriaEquipo? _categoria;
   bool _enviando = false;
 
   @override
@@ -94,7 +100,12 @@ class _NuevoEquipoDialogState extends ConsumerState<_NuevoEquipoDialog> {
     try {
       await ref
           .read(ligaRepositoryProvider)
-          .crearEquipo(widget.escuelaId, _nombre.text.trim(), _deporteId!);
+          .crearEquipo(
+            widget.escuelaId,
+            _nombre.text.trim(),
+            _deporteId!,
+            categoria: _categoria,
+          );
       if (mounted) Navigator.of(context).pop(true);
     } catch (e) {
       if (mounted) {
@@ -145,6 +156,28 @@ class _NuevoEquipoDialogState extends ConsumerState<_NuevoEquipoDialog> {
           validator: (v) => (v == null || v.trim().isEmpty)
               ? context.l10n.introduceUnNombre
               : null,
+        ),
+        espacioCampo,
+        DropdownButtonFormField<CategoriaEquipo>(
+          key: const Key('equipo-categoria'),
+          initialValue: _categoria,
+          isExpanded: true,
+          decoration: decoracionCampo(
+            context.l10n.categoriaEdad,
+            Icons.cake_outlined,
+          ),
+          items: [
+            for (final c in CategoriaEquipo.values)
+              DropdownMenuItem(
+                value: c,
+                child: Text(
+                  '${c.nombre} · ${c.rotuloAnios()}',
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          validator: (v) => v == null ? context.l10n.eligeCategoria : null,
+          onChanged: (v) => setState(() => _categoria = v),
         ),
         espacioCampo,
         FormField<String>(
@@ -281,14 +314,34 @@ class EquipoPage extends ConsumerWidget {
       final actuales = (await ref.read(
         jugadoresEquipoEscuelaProvider(equipo.id).future,
       )).map((j) => j.jugadorId).toSet();
-      final libres = personas.where((p) => !actuales.contains(p.id)).toList();
+      // Solo los jugadores cuya edad (por año de nacimiento) encaja en la categoría del equipo.
+      final cat = equipo.categoria;
+      final libres = personas
+          .where(
+            (p) =>
+                !actuales.contains(p.id) &&
+                (cat == null || cat.admite(p.fechaNacimiento)),
+          )
+          .toList();
       if (!context.mounted) return;
-      final id = await _elegir(
+      final id = await elegirDeLista<String>(
         context,
-        context.l10n.anadirJugador,
-        Icons.person_add_alt_1_rounded,
-        [for (final p in libres) (p.id, p.nombreCompleto)],
-        context.l10n.noQuedanPersonas,
+        icono: Icons.person_add_alt_1_rounded,
+        titulo: context.l10n.anadirJugador,
+        subtitulo: cat == null
+            ? equipo.nombre
+            : '${equipo.nombre} · ${cat.nombre} (${cat.rotuloAnios()})',
+        opciones: [
+          for (final p in libres)
+            (
+              p.id,
+              p.nombreCompleto,
+              p.fechaNacimiento == null ? null : '${p.fechaNacimiento!.year}',
+            ),
+        ],
+        vacio: cat == null || cat == CategoriaEquipo.absoluto
+            ? context.l10n.noQuedanPersonas
+            : context.l10n.sinJugadoresCategoria(cat.nombre),
       );
       if (id == null) return;
       await repo.anadirJugador(equipo.id, id);

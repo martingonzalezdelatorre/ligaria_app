@@ -783,5 +783,13 @@
   "pasosOrg3T": "Reúne equipos",
   "pasosOrg3D": "Engade equipos, acepta inscricións ou convida escolas desde «Ver liga».",
   "pasosOrg4T": "Xera o calendario",
-  "pasosOrg4D": "Cando estean os equipos, crea as xornadas e comeza a rexistrar resultados."
+  "pasosOrg4D": "Cando estean os equipos, crea as xornadas e comeza a rexistrar resultados.",
+  "catVeteranos": "Veteranos",
+  "categoriaEdad": "Categoría de idade",
+  "todasLasEdades": "Todas as idades",
+  "nacidosEntre": "Nados en {desde}–{hasta}",
+  "nacidosDesde": "Nados en {anio} ou despois",
+  "nacidosHasta": "Nados en {anio} ou antes",
+  "sinJugadoresCategoria": "Non hai xogadores da categoría {c} por engadir. Revisa as datas de nacemento en «Persoas».",
+  "sinCategoria": "Sen categoría"
 }

@@ -33,3 +33,69 @@ String categoriaPorEdad(DateTime nacimiento, [DateTime? hoy]) {
   }
   return l10nActual.catAbsoluta;
 }
+
+/// Categoría de edad de un equipo. Los tramos van por edad deportiva (año actual − año de nacimiento):
+/// en 2026, Benjamín = nacidos en 2016 y después, Alevín = 2014–2015, Infantil = 2012–2013,
+/// Cadete = 2010–2011, Júnior = 2008–2009, Absoluto = todas las edades, Veteranos = 35 años o más.
+enum CategoriaEquipo {
+  benjamin('BENJAMIN', null, 10),
+  alevin('ALEVIN', 11, 12),
+  infantil('INFANTIL', 13, 14),
+  cadete('CADETE', 15, 16),
+  junior('JUNIOR', 17, 18),
+  absoluto('ABSOLUTO', null, null),
+  veteranos('VETERANOS', 35, null);
+
+  const CategoriaEquipo(this.codigo, this.edadMin, this.edadMax);
+
+  /// Valor guardado en la BD (equipo.categoria).
+  final String codigo;
+
+  /// Edad deportiva mínima y máxima (null = sin límite).
+  final int? edadMin, edadMax;
+
+  static CategoriaEquipo? deCodigo(String? codigo) {
+    for (final c in values) {
+      if (c.codigo == codigo) return c;
+    }
+    return null;
+  }
+
+  String get nombre => switch (this) {
+    benjamin => l10nActual.catBenjamin,
+    alevin => l10nActual.catAlevin,
+    infantil => l10nActual.catInfantil,
+    cadete => l10nActual.catCadete,
+    junior => l10nActual.catJunior,
+    absoluto => l10nActual.catAbsoluta,
+    veteranos => l10nActual.catVeteranos,
+  };
+
+  /// Primer y último año de nacimiento admitidos en la temporada de [hoy] (null = sin límite).
+  (int?, int?) aniosNacimiento([DateTime? hoy]) {
+    final y = (hoy ?? DateTime.now()).year;
+    return (
+      edadMax == null ? null : y - edadMax!,
+      edadMin == null ? null : y - edadMin!,
+    );
+  }
+
+  /// Texto con los años de nacimiento de la categoría, p. ej. «Nacidos en 2014–2015».
+  String rotuloAnios([DateTime? hoy]) {
+    final (desde, hasta) = aniosNacimiento(hoy);
+    if (desde == null && hasta == null) return l10nActual.todasLasEdades;
+    if (desde == null) return l10nActual.nacidosHasta(hasta!);
+    if (hasta == null) return l10nActual.nacidosDesde(desde);
+    return l10nActual.nacidosEntre(desde, hasta);
+  }
+
+  /// Si un jugador nacido en [nacimiento] puede jugar en esta categoría. Sin fecha de nacimiento solo
+  /// cabe en Absoluto.
+  bool admite(DateTime? nacimiento, [DateTime? hoy]) {
+    if (edadMin == null && edadMax == null) return true;
+    if (nacimiento == null) return false;
+    final e = edadDeportiva(nacimiento, hoy);
+    return (edadMin == null || e >= edadMin!) &&
+        (edadMax == null || e <= edadMax!);
+  }
+}

@@ -1408,5 +1408,44 @@
   "pasosOrg3T": "Reúne equipos",
   "pasosOrg3D": "Añade equipos, acepta inscripciones o invita a escuelas desde «Ver liga».",
   "pasosOrg4T": "Genera el calendario",
-  "pasosOrg4D": "Cuando estén los equipos, crea las jornadas y empieza a registrar resultados."
+  "pasosOrg4D": "Cuando estén los equipos, crea las jornadas y empieza a registrar resultados.",
+  "catVeteranos": "Veteranos",
+  "categoriaEdad": "Categoría de edad",
+  "todasLasEdades": "Todas las edades",
+  "nacidosEntre": "Nacidos en {desde}–{hasta}",
+  "@nacidosEntre": {
+    "placeholders": {
+      "desde": {
+        "type": "int"
+      },
+      "hasta": {
+        "type": "int"
+      }
+    }
+  },
+  "nacidosDesde": "Nacidos en {anio} o después",
+  "@nacidosDesde": {
+    "placeholders": {
+      "anio": {
+        "type": "int"
+      }
+    }
+  },
+  "nacidosHasta": "Nacidos en {anio} o antes",
+  "@nacidosHasta": {
+    "placeholders": {
+      "anio": {
+        "type": "int"
+      }
+    }
+  },
+  "sinJugadoresCategoria": "No hay jugadores de la categoría {c} por añadir. Revisa sus fechas de nacimiento en «Personas».",
+  "@sinJugadoresCategoria": {
+    "placeholders": {
+      "c": {
+        "type": "String"
+      }
+    }
+  },
+  "sinCategoria": "Sin categoría"
 }

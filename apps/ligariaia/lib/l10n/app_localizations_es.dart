@@ -2598,4 +2598,36 @@ class AppL10nEs extends AppL10n {
   @override
   String get pasosOrg4D =>
       'Cuando estén los equipos, crea las jornadas y empieza a registrar resultados.';
+
+  @override
+  String get catVeteranos => 'Veteranos';
+
+  @override
+  String get categoriaEdad => 'Categoría de edad';
+
+  @override
+  String get todasLasEdades => 'Todas las edades';
+
+  @override
+  String nacidosEntre(int desde, int hasta) {
+    return 'Nacidos en $desde–$hasta';
+  }
+
+  @override
+  String nacidosDesde(int anio) {
+    return 'Nacidos en $anio o después';
+  }
+
+  @override
+  String nacidosHasta(int anio) {
+    return 'Nacidos en $anio o antes';
+  }
+
+  @override
+  String sinJugadoresCategoria(String c) {
+    return 'No hay jugadores de la categoría $c por añadir. Revisa sus fechas de nacimiento en «Personas».';
+  }
+
+  @override
+  String get sinCategoria => 'Sin categoría';
 }

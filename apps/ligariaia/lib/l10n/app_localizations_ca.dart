@@ -2600,4 +2600,36 @@ class AppL10nCa extends AppL10n {
   @override
   String get pasosOrg4D =>
       'Quan hi hagi els equips, crea les jornades i comença a registrar resultats.';
+
+  @override
+  String get catVeteranos => 'Veterans';
+
+  @override
+  String get categoriaEdad => 'Categoria d\'edat';
+
+  @override
+  String get todasLasEdades => 'Totes les edats';
+
+  @override
+  String nacidosEntre(int desde, int hasta) {
+    return 'Nascuts el $desde–$hasta';
+  }
+
+  @override
+  String nacidosDesde(int anio) {
+    return 'Nascuts el $anio o després';
+  }
+
+  @override
+  String nacidosHasta(int anio) {
+    return 'Nascuts el $anio o abans';
+  }
+
+  @override
+  String sinJugadoresCategoria(String c) {
+    return 'No hi ha jugadors de la categoria $c per afegir. Revisa les dates de naixement a «Persones».';
+  }
+
+  @override
+  String get sinCategoria => 'Sense categoria';
 }

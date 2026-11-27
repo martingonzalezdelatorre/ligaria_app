@@ -2618,4 +2618,36 @@ class AppL10nFr extends AppL10n {
   @override
   String get pasosOrg4D =>
       'Une fois les équipes inscrites, créez les journées et commencez à saisir les résultats.';
+
+  @override
+  String get catVeteranos => 'Vétérans';
+
+  @override
+  String get categoriaEdad => 'Catégorie d\'âge';
+
+  @override
+  String get todasLasEdades => 'Tous âges';
+
+  @override
+  String nacidosEntre(int desde, int hasta) {
+    return 'Nés en $desde–$hasta';
+  }
+
+  @override
+  String nacidosDesde(int anio) {
+    return 'Nés en $anio ou après';
+  }
+
+  @override
+  String nacidosHasta(int anio) {
+    return 'Nés en $anio ou avant';
+  }
+
+  @override
+  String sinJugadoresCategoria(String c) {
+    return 'Aucun joueur de la catégorie $c à ajouter. Vérifiez leurs dates de naissance dans «Personnes».';
+  }
+
+  @override
+  String get sinCategoria => 'Sans catégorie';
 }
