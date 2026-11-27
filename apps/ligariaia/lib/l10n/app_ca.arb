@@ -231,6 +231,8 @@
   "sinLigasAbiertas": "No hi ha lligues obertes a inscripció ara mateix.",
   "invitacionesN": "Invitacions ({n})",
   "ligasAbiertas": "Lligues obertes",
+  "ligasParticipo": "Lligues on participo",
+  "equiposYaInscritos": "Equips ja inscrits",
   "organizaPor": "{deporte} · organitza {org}",
   "porInvitacion": "per invitació",
   "inscribir": "Inscriu",

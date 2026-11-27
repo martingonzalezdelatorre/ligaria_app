@@ -20,12 +20,27 @@ final persona = JugadorLite(
   fechaNacimiento: DateTime(2015, 3, 5),
 );
 
+InscripcionVista _insc(String liga, String eq, String nombre, String estado) =>
+    InscripcionVista(
+      id: 'i-$liga-$eq',
+      ligaId: liga,
+      equipoId: eq,
+      equipo: nombre,
+      escuelaId: 'esc1',
+      escuela: '',
+      estado: estado,
+    );
+
 MockRepo repoBase() {
   final repo = MockRepo();
   when(() => repo.usuarios('esc1')).thenAnswer((_) async => const []);
   when(() => repo.jugadoresOrg('esc1')).thenAnswer((_) async => [persona]);
   when(() => repo.equipos('esc1')).thenAnswer((_) async => const []);
   when(() => repo.ligasAbiertas()).thenAnswer((_) async => const []);
+  when(
+    () => repo.inscripcionesEscuela(any()),
+  ).thenAnswer((_) async => const []);
+  when(() => repo.misLigas()).thenAnswer((_) async => const []);
   when(() => repo.misInvitaciones()).thenAnswer((_) async => const []);
   when(() => repo.categorias(any())).thenAnswer((_) async => const []);
   when(() => repo.deportes()).thenAnswer((_) async => const []);
@@ -277,6 +292,121 @@ void main() {
     await tester.pumpAndSettle();
 
     verify(() => repo.inscribirEquipo('L1', 'eqT')).called(1);
+  });
+
+  testWidgets('inscribir no ofrece equipos ya inscritos en la liga', (
+    tester,
+  ) async {
+    final repo = repoBase();
+    when(() => repo.ligasAbiertas()).thenAnswer(
+      (_) async => const [
+        LigaAbierta(
+          id: 'L1',
+          nombre: 'Liga infantil',
+          deporteId: 'tenis',
+          deporte: 'Tenis',
+          organizadora: 'Escuela B',
+        ),
+      ],
+    );
+    when(() => repo.equipos('esc1')).thenAnswer(
+      (_) async => const [
+        EquipoLite(id: 'eqT', nombre: 'Tenis Sub12', deporteId: 'tenis'),
+        EquipoLite(id: 'eqT2', nombre: 'Tenis Sub14', deporteId: 'tenis'),
+      ],
+    );
+    when(
+      () => repo.inscripcionesEscuela('esc1'),
+    ).thenAnswer((_) async => [_insc('L1', 'eqT', 'Tenis Sub12', 'pendiente')]);
+    await abrir(tester, repo);
+
+    await tester.ensureVisible(find.text('Inscribirme en ligas'));
+    await tester.tap(find.text('Inscribirme en ligas'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('inscribir-L1')));
+    await tester.pumpAndSettle();
+    expect(find.text('Tenis Sub12'), findsNothing);
+    expect(find.text('Tenis Sub14'), findsOneWidget);
+  });
+
+  testWidgets('sin equipos libres del deporte no se ofrece inscribir', (
+    tester,
+  ) async {
+    final repo = repoBase();
+    when(() => repo.ligasAbiertas()).thenAnswer(
+      (_) async => const [
+        LigaAbierta(
+          id: 'L1',
+          nombre: 'Liga infantil',
+          deporteId: 'tenis',
+          deporte: 'Tenis',
+          organizadora: 'Escuela B',
+        ),
+      ],
+    );
+    when(() => repo.equipos('esc1')).thenAnswer(
+      (_) async => const [
+        EquipoLite(id: 'eqT', nombre: 'Tenis Sub12', deporteId: 'tenis'),
+      ],
+    );
+    when(
+      () => repo.inscripcionesEscuela('esc1'),
+    ).thenAnswer((_) async => [_insc('L1', 'eqT', 'Tenis Sub12', 'aceptada')]);
+    await abrir(tester, repo);
+    await tester.ensureVisible(find.text('Inscribirme en ligas'));
+    await tester.tap(find.text('Inscribirme en ligas'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('inscribir-L1')), findsNothing);
+    expect(find.byKey(const Key('inscrita-L1')), findsOneWidget);
+  });
+
+  testWidgets('las ligas en las que participo se listan y se abren', (
+    tester,
+  ) async {
+    final repo = repoBase();
+    when(() => repo.misLigas()).thenAnswer(
+      (_) async => const [
+        Liga(
+          id: 'L9',
+          nombre: 'Liga municipal',
+          estado: 'en_curso',
+          deporte: 'Tenis',
+          organizationId: 'ayto',
+        ),
+        Liga(
+          id: 'P1',
+          nombre: 'Liga propia',
+          estado: 'en_curso',
+          deporte: 'Tenis',
+          organizationId: 'esc1',
+        ),
+      ],
+    );
+    when(() => repo.inscripcionesEscuela('esc1')).thenAnswer(
+      (_) async => [
+        _insc('L9', 'eqT', 'Tenis Sub12', 'aceptada'),
+        _insc('P1', 'eqT', 'Tenis Sub12', 'aceptada'),
+      ],
+    );
+    when(() => repo.encuentros('L9')).thenAnswer((_) async => const []);
+    when(() => repo.descansos('L9')).thenAnswer((_) async => const []);
+    when(() => repo.clasificacion('L9')).thenAnswer((_) async => const []);
+    await abrir(tester, repo);
+    await tester.ensureVisible(find.text('Inscribirme en ligas'));
+    await tester.tap(find.text('Inscribirme en ligas'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ligas en las que participo'), findsOneWidget);
+    expect(find.byKey(const Key('participo-L9')), findsOneWidget);
+    // Las ligas que organiza la propia escuela van en «Ligas que organizo».
+    expect(find.byKey(const Key('participo-P1')), findsNothing);
+    expect(find.text('Tenis Sub12 · Aceptada'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('participo-L9')));
+    await tester.pumpAndSettle();
+    expect(find.text('Liga municipal'), findsOneWidget);
+    expect(find.text('Tenis Sub12'), findsOneWidget);
   });
 
   testWidgets('error de inscripción traducido', (tester) async {

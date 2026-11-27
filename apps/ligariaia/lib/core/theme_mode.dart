@@ -9,7 +9,8 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
     _cargar();
-    return ThemeMode.dark;
+    // Para volver a la estética oscura original: ThemeMode.dark.
+    return ThemeMode.light;
   }
 
   Future<void> _cargar() async {}

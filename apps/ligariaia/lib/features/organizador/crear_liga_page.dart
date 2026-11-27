@@ -633,7 +633,10 @@ class _Cabecera extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [lima.withValues(alpha: .18), menta.withValues(alpha: .05)],
+          colors: [
+            acentoDe(context).withValues(alpha: .18),
+            acentoSuaveDe(context).withValues(alpha: .05),
+          ],
         ),
         border: Border.all(color: Marca.de(context).borde),
       ),
@@ -644,14 +647,14 @@ class _Cabecera extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(18),
-              gradient: const LinearGradient(
+              gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [lima, menta],
+                colors: [acentoDe(context), acentoSuaveDe(context)],
               ),
               boxShadow: [
                 BoxShadow(
-                  color: lima.withValues(alpha: .35),
+                  color: acentoDe(context).withValues(alpha: .35),
                   blurRadius: 18,
                   offset: const Offset(0, 6),
                 ),

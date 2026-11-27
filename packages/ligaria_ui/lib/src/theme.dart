@@ -279,8 +279,280 @@ class Marca extends ThemeExtension<Marca> {
         );
 }
 
+/// Paleta clara neutra: fondo casi blanco, tarjetas blancas y tinta gris-oscura como principal.
+/// El albaricoque suave (derivado del naranja de la marca) es el acento: pestañas, botón flotante,
+/// tarjeta destacada y logo. En oscuro el acento sigue siendo la lima de siempre.
+const acentoClaro = Color(0xFFFFC48C);
+const acentoClaroSuave = Color(0xFFFFEAD4);
+
+/// Acento destacado según el modo: lima en oscuro, albaricoque en claro.
+Color acentoDe(BuildContext c) =>
+    Theme.of(c).brightness == Brightness.light ? acentoClaro : lima;
+
+/// Segundo tono del degradado de acento: menta en oscuro, albaricoque muy suave en claro.
+Color acentoSuaveDe(BuildContext c) =>
+    Theme.of(c).brightness == Brightness.light ? acentoClaroSuave : menta;
+
+const primarioClaro = Color(0xFF26302C); // texto/iconos/botones sobre claro
+const fondoClaro = Color(0xFFFAFBFA);
+const superficieClara = Colors.white;
+const tintaClara = Color(0xFF1B2421); // texto principal sobre claro
+const bordeClaro = Color(0xFFE7EBE8);
+
+ThemeData _construirClaro(Color acento) {
+  final cs =
+      ColorScheme.fromSeed(
+        seedColor: primarioClaro,
+        brightness: Brightness.light,
+      ).copyWith(
+        primary: primarioClaro,
+        onPrimary: Colors.white,
+        primaryContainer: acentoClaroSuave,
+        onPrimaryContainer: const Color(0xFF4A2A00),
+        secondary: const Color(0xFF6B7773),
+        onSecondary: Colors.white,
+        secondaryContainer: const Color(0xFFEEF1EF),
+        onSecondaryContainer: const Color(0xFF26302C),
+        tertiary: acento,
+        onTertiary: tinta,
+        surface: fondoClaro,
+        onSurface: tintaClara,
+        onSurfaceVariant: const Color(0xFF5E6965),
+        outline: const Color(0xFFCBD2CE),
+        outlineVariant: bordeClaro,
+        surfaceContainerLowest: Colors.white,
+        surfaceContainerLow: const Color(0xFFFDFDFD),
+        surfaceContainer: Colors.white,
+        surfaceContainerHigh: const Color(0xFFF2F4F3),
+        surfaceContainerHighest: const Color(0xFFEAEDEB),
+      );
+
+  final base = ThemeData(useMaterial3: true, colorScheme: cs);
+  final t = base.textTheme.apply(bodyColor: tintaClara, displayColor: tintaClara);
+  final tt = t.copyWith(
+    displaySmall: t.displaySmall?.copyWith(
+      fontWeight: FontWeight.w900,
+      letterSpacing: -1.5,
+    ),
+    headlineMedium: t.headlineMedium?.copyWith(
+      fontWeight: FontWeight.w900,
+      letterSpacing: -1,
+    ),
+    headlineSmall: t.headlineSmall?.copyWith(
+      fontWeight: FontWeight.w800,
+      letterSpacing: -.8,
+    ),
+    titleLarge: t.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+    titleMedium: t.titleMedium?.copyWith(fontWeight: FontWeight.w800),
+    labelLarge: t.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+  );
+  const borde = bordeClaro;
+  RoundedRectangleBorder redondo(double r) =>
+      RoundedRectangleBorder(borderRadius: BorderRadius.circular(r));
+  OutlineInputBorder campo(Color c, [double w = 1]) => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(14),
+    borderSide: BorderSide(color: c, width: w),
+  );
+
+  return base.copyWith(
+    scaffoldBackgroundColor: fondoClaro,
+    textTheme: tt,
+    visualDensity: VisualDensity.adaptivePlatformDensity,
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      foregroundColor: tintaClara,
+      iconTheme: const IconThemeData(color: tintaClara),
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: false,
+      titleTextStyle: tt.titleLarge?.copyWith(
+        fontWeight: FontWeight.w900,
+        letterSpacing: -.5,
+        color: tintaClara,
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: superficieClara,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: const Color(0xFF1B2421).withValues(alpha: .10),
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: borde),
+      ),
+      clipBehavior: Clip.antiAlias,
+    ),
+    iconTheme: const IconThemeData(color: tintaClara),
+    tabBarTheme: TabBarThemeData(
+      dividerColor: Colors.transparent,
+      indicatorSize: TabBarIndicatorSize.tab,
+      indicator: BoxDecoration(
+        color: acentoClaro,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: [
+          BoxShadow(color: acentoClaro.withValues(alpha: .5), blurRadius: 12),
+        ],
+      ),
+      labelColor: tintaClara,
+      unselectedLabelColor: cs.onSurfaceVariant,
+      labelStyle: tt.labelLarge,
+      splashBorderRadius: BorderRadius.circular(999),
+      labelPadding: const EdgeInsets.symmetric(horizontal: 18),
+      overlayColor: WidgetStatePropertyAll(
+        primarioClaro.withValues(alpha: .08),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: campo(borde),
+      enabledBorder: campo(borde),
+      focusedBorder: campo(primarioClaro, 1.5),
+      errorBorder: campo(cs.error),
+      focusedErrorBorder: campo(cs.error, 2),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        backgroundColor: primarioClaro,
+        foregroundColor: Colors.white,
+        minimumSize: const Size(64, 48),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        shape: redondo(16),
+        textStyle: const TextStyle(fontWeight: FontWeight.w800),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primarioClaro,
+        foregroundColor: Colors.white,
+        minimumSize: const Size(64, 48),
+        shape: redondo(16),
+      ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: primarioClaro,
+        side: BorderSide(color: primarioClaro.withValues(alpha: .5)),
+        minimumSize: const Size(64, 48),
+        shape: redondo(16),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: primarioClaro,
+        shape: redondo(12),
+      ),
+    ),
+    floatingActionButtonTheme: FloatingActionButtonThemeData(
+      backgroundColor: acentoClaro,
+      foregroundColor: tintaClara,
+      shape: redondo(16),
+    ),
+    chipTheme: base.chipTheme.copyWith(
+      shape: const StadiumBorder(),
+      side: BorderSide(color: primarioClaro.withValues(alpha: .25)),
+      backgroundColor: primarioClaro.withValues(alpha: .08),
+      labelStyle: const TextStyle(
+        color: primarioClaro,
+        fontWeight: FontWeight.w700,
+        fontSize: 12,
+      ),
+    ),
+    listTileTheme: ListTileThemeData(
+      shape: redondo(16),
+      iconColor: primarioClaro,
+    ),
+    dialogTheme: DialogThemeData(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: const BorderSide(color: borde),
+      ),
+      constraints: const BoxConstraints(minWidth: 400, maxWidth: 560),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 32),
+      actionsPadding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      titleTextStyle: const TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        color: tintaClara,
+      ),
+    ),
+    bottomSheetTheme: const BottomSheetThemeData(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+    ),
+    snackBarTheme: SnackBarThemeData(
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: tintaClara,
+      contentTextStyle: const TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w700,
+      ),
+      actionTextColor: acentoClaro,
+      shape: redondo(16),
+      insetPadding: const EdgeInsets.all(12),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
+      backgroundColor: Colors.white.withValues(alpha: .92),
+      surfaceTintColor: Colors.transparent,
+      indicatorColor: cs.primaryContainer,
+      height: 68,
+      iconTheme: WidgetStateProperty.resolveWith(
+        (s) => IconThemeData(
+          color: s.contains(WidgetState.selected)
+              ? primarioClaro
+              : cs.onSurfaceVariant,
+        ),
+      ),
+      labelTextStyle: WidgetStateProperty.resolveWith(
+        (s) => TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: s.contains(WidgetState.selected)
+              ? primarioClaro
+              : cs.onSurfaceVariant,
+        ),
+      ),
+    ),
+    navigationRailTheme: NavigationRailThemeData(
+      backgroundColor: Colors.white.withValues(alpha: .7),
+      indicatorColor: cs.primaryContainer,
+      selectedIconTheme: const IconThemeData(color: primarioClaro),
+      unselectedIconTheme: IconThemeData(color: cs.onSurfaceVariant),
+      selectedLabelTextStyle: const TextStyle(
+        fontWeight: FontWeight.w800,
+        color: primarioClaro,
+      ),
+      unselectedLabelTextStyle: TextStyle(color: cs.onSurfaceVariant),
+    ),
+    drawerTheme: const DrawerThemeData(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.horizontal(right: Radius.circular(24)),
+      ),
+    ),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      color: primarioClaro,
+    ),
+    dividerTheme: const DividerThemeData(color: borde, space: 1, thickness: 1),
+    extensions: [
+      Marca(acento: acento, borde: borde, superficie: superficieClara),
+    ],
+  );
+}
+
 /// [acento] diferencia cada app (ligariaia: naranja, friends: otro) sin cambiar la base.
-ThemeData temaClaro({Color acento = acentoNaranja}) =>
-    _construir(Brightness.light, acento);
+///
+/// `temaOscuro` es la estética original "punch" (tinta + lima); `temaClaro` la variante clara.
+/// Para volver atrás basta con usar `ThemeMode.dark` (o la etiqueta git `tema-oscuro-lima-v1`).
+ThemeData temaClaro({Color acento = acentoNaranja}) => _construirClaro(acento);
 ThemeData temaOscuro({Color acento = acentoNaranja}) =>
     _construir(Brightness.dark, acento);

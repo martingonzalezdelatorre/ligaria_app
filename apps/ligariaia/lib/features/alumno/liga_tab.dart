@@ -484,13 +484,22 @@ class ResumenLiga extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [lima, Color(0xFF5FE08A)],
+          // En claro, de albaricoque a crema; en oscuro, el degradado lima original.
+          colors: [
+            acentoDe(context),
+            tema.brightness == Brightness.light
+                ? const Color(0xFFFFE3C4)
+                : const Color(0xFF5FE08A),
+          ],
         ),
         boxShadow: [
-          BoxShadow(color: lima.withValues(alpha: .28), blurRadius: 36),
+          BoxShadow(
+            color: acentoDe(context).withValues(alpha: .28),
+            blurRadius: 36,
+          ),
         ],
       ),
       child: Stack(
@@ -604,7 +613,7 @@ class ResumenLiga extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: tema.textTheme.titleSmall?.copyWith(
-                                color: lima,
+                                color: acentoDe(context),
                                 fontWeight: FontWeight.w800,
                               ),
                             ),

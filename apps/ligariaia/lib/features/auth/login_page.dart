@@ -110,15 +110,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       );
     }
     return Scaffold(
-      backgroundColor: tinta,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: FondoBlobs(
         child: Stack(
           children: [
             Positioned.fill(child: cuerpo),
-            const Positioned(
+            Positioned(
               top: 8,
               right: 8,
-              child: SafeArea(child: SelectorIdioma(color: Colors.white70)),
+              child: SafeArea(
+                child: SelectorIdioma(color: _Tono.de(context).textoSuave),
+              ),
             ),
           ],
         ),
@@ -126,22 +128,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  /// Tarjeta de cristal esmerilado con el formulario.
+  /// Tarjeta de cristal esmerilado (oscuro) o tarjeta blanca (claro) con el formulario.
   Widget _tarjeta(BuildContext context, {bool compacta = false}) {
     final base = Theme.of(context);
+    final tono = _Tono.de(context);
     final borde = OutlineInputBorder(
       borderRadius: BorderRadius.circular(16),
-      borderSide: const BorderSide(color: Color(0x24FFFFFF)),
+      borderSide: BorderSide(color: tono.campoBorde),
     );
-    final oscuro = base.copyWith(
+    final tema = base.copyWith(
       textTheme: base.textTheme.apply(
-        bodyColor: Colors.white,
-        displayColor: Colors.white,
+        bodyColor: tono.texto,
+        displayColor: tono.texto,
       ),
-      iconTheme: const IconThemeData(color: Colors.white70),
+      iconTheme: IconThemeData(color: tono.textoSuave),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white.withValues(alpha: .07),
+        fillColor: tono.campoRelleno,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 18,
@@ -149,25 +152,23 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         border: borde,
         enabledBorder: borde,
         focusedBorder: borde.copyWith(
-          borderSide: const BorderSide(color: lima, width: 1.6),
+          borderSide: BorderSide(color: tono.acento, width: 1.6),
         ),
-        errorBorder: borde.copyWith(
-          borderSide: const BorderSide(color: Color(0xFFFF8A80)),
-        ),
+        errorBorder: borde.copyWith(borderSide: BorderSide(color: tono.error)),
         focusedErrorBorder: borde.copyWith(
-          borderSide: const BorderSide(color: Color(0xFFFF8A80), width: 1.6),
+          borderSide: BorderSide(color: tono.error, width: 1.6),
         ),
-        labelStyle: const TextStyle(color: Colors.white60),
-        floatingLabelStyle: const TextStyle(color: lima),
+        labelStyle: TextStyle(color: tono.textoTenue),
+        floatingLabelStyle: TextStyle(color: tono.acento),
         prefixIconColor: WidgetStateColor.resolveWith(
-          (s) => s.contains(WidgetState.focused) ? lima : Colors.white60,
+          (s) => s.contains(WidgetState.focused) ? tono.acento : tono.textoTenue,
         ),
-        suffixIconColor: Colors.white60,
-        errorStyle: const TextStyle(color: Color(0xFFFF8A80)),
+        suffixIconColor: tono.textoTenue,
+        errorStyle: TextStyle(color: tono.error),
       ),
-      textSelectionTheme: const TextSelectionThemeData(cursorColor: lima),
+      textSelectionTheme: TextSelectionThemeData(cursorColor: tono.acento),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(foregroundColor: lima),
+        style: TextButton.styleFrom(foregroundColor: tono.acento),
       ),
     );
     return ClipRRect(
@@ -178,24 +179,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           padding: EdgeInsets.all(compacta ? 24 : 36),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(32),
-            border: Border.all(color: Colors.white.withValues(alpha: .16)),
+            border: Border.all(color: tono.tarjetaBorde),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Colors.white.withValues(alpha: .13),
-                Colors.white.withValues(alpha: .04),
-              ],
+              colors: tono.tarjetaGradiente,
             ),
-            boxShadow: const [
+            boxShadow: [
               BoxShadow(
-                color: Color(0x66000000),
+                color: tono.tarjetaSombra,
                 blurRadius: 50,
-                offset: Offset(0, 24),
+                offset: const Offset(0, 24),
               ),
             ],
           ),
-          child: Theme(data: oscuro, child: _formulario(context)),
+          child: Theme(data: tema, child: _formulario(context)),
         ),
       ),
     );
@@ -203,6 +201,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Widget _formulario(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    final tono = _Tono.de(context);
     return AutofillGroup(
       child: Form(
         key: _form,
@@ -220,7 +219,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     child: Icon(
                       Icons.waving_hand_rounded,
                       size: t.headlineSmall?.fontSize,
-                      color: const Color(0xFFFFC857),
+                      color: tono.claro
+                          ? const Color(0xFFF2A93B)
+                          : const Color(0xFFFFC857),
                     ),
                   ),
                 ],
@@ -233,7 +234,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             const SizedBox(height: 6),
             Text(
               context.l10n.loginSubtitulo,
-              style: t.bodyMedium?.copyWith(color: Colors.white60),
+              style: t.bodyMedium?.copyWith(color: tono.textoTenue),
             ),
             const SizedBox(height: 28),
             TextFormField(
@@ -281,22 +282,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 decoration: BoxDecoration(
                   color: const Color(0xFFFF5252).withValues(alpha: .14),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: const Color(0xFFFF8A80).withValues(alpha: .5),
-                  ),
+                  border: Border.all(color: tono.error.withValues(alpha: .5)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.error_outline_rounded,
                       size: 20,
-                      color: Color(0xFFFF8A80),
+                      color: tono.error,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
                         _error!,
-                        style: const TextStyle(color: Color(0xFFFFB4AB)),
+                        style: TextStyle(color: tono.errorTexto),
                       ),
                     ),
                   ],
@@ -316,7 +315,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 borderRadius: BorderRadius.circular(18),
                 boxShadow: [
                   BoxShadow(
-                    color: lima.withValues(alpha: .35),
+                    color: tono.botonFondo.withValues(alpha: .35),
                     blurRadius: 28,
                     offset: const Offset(0, 8),
                   ),
@@ -325,8 +324,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               child: FilledButton(
                 style: FilledButton.styleFrom(
                   minimumSize: const Size.fromHeight(56),
-                  backgroundColor: lima,
-                  foregroundColor: tinta,
+                  backgroundColor: tono.botonFondo,
+                  foregroundColor: tono.botonTexto,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
                   ),
@@ -337,12 +336,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 onPressed: _cargando ? null : _entrar,
                 child: _cargando
-                    ? const SizedBox(
+                    ? SizedBox(
                         height: 22,
                         width: 22,
                         child: CircularProgressIndicator(
                           strokeWidth: 2.5,
-                          color: tinta,
+                          color: tono.botonTexto,
                         ),
                       )
                     : Row(
@@ -358,15 +357,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             const SizedBox(height: 24),
             Row(
               children: [
-                const Expanded(child: Divider(color: Colors.white24)),
+                Expanded(child: Divider(color: tono.divisor)),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Text(
                     context.l10n.loginPrimeraVez,
-                    style: t.bodySmall?.copyWith(color: Colors.white60),
+                    style: t.bodySmall?.copyWith(color: tono.textoTenue),
                   ),
                 ),
-                const Expanded(child: Divider(color: Colors.white24)),
+                Expanded(child: Divider(color: tono.divisor)),
               ],
             ),
             const SizedBox(height: 14),
@@ -374,8 +373,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               key: const Key('login-registro'),
               style: OutlinedButton.styleFrom(
                 minimumSize: const Size.fromHeight(52),
-                foregroundColor: Colors.white,
-                side: const BorderSide(color: Colors.white38),
+                foregroundColor: tono.texto,
+                side: BorderSide(color: tono.botonBorde),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -401,6 +400,47 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 }
 
+/// Colores de la pantalla de acceso según el modo: cristal blanco sobre fondo oscuro, o tarjeta
+/// blanca limpia sobre fondo claro.
+class _Tono {
+  const _Tono(this.claro);
+  factory _Tono.de(BuildContext c) =>
+      _Tono(Theme.of(c).brightness == Brightness.light);
+  final bool claro;
+
+  Color get texto => claro ? tintaClara : Colors.white;
+  Color get textoSuave => claro ? const Color(0xFF4A5551) : Colors.white70;
+  Color get textoTenue => claro ? const Color(0xFF6A7570) : Colors.white60;
+  Color get acento => claro ? primarioClaro : lima;
+  Color get error => claro ? const Color(0xFFD32F2F) : const Color(0xFFFF8A80);
+  Color get errorTexto =>
+      claro ? const Color(0xFFB71C1C) : const Color(0xFFFFB4AB);
+  Color get divisor => claro ? bordeClaro : Colors.white24;
+  Color get botonFondo => claro ? primarioClaro : lima;
+  Color get botonTexto => claro ? Colors.white : tinta;
+  Color get botonBorde => claro ? const Color(0xFFCBD2CE) : Colors.white38;
+  Color get campoBorde => claro ? bordeClaro : const Color(0x24FFFFFF);
+  Color get campoRelleno =>
+      claro ? const Color(0xFFF7F8F7) : Colors.white.withValues(alpha: .07);
+  Color get tarjetaBorde =>
+      claro ? Colors.white : Colors.white.withValues(alpha: .16);
+  List<Color> get tarjetaGradiente => claro
+      ? [Colors.white.withValues(alpha: .96), Colors.white.withValues(alpha: .86)]
+      : [
+          Colors.white.withValues(alpha: .13),
+          Colors.white.withValues(alpha: .04),
+        ];
+  Color get tarjetaSombra =>
+      claro ? const Color(0xFF1B2421).withValues(alpha: .16) : const Color(0x66000000);
+  Color get chipFondo =>
+      claro ? Colors.white.withValues(alpha: .8) : Colors.white.withValues(alpha: .07);
+  Color get chipBorde =>
+      claro ? bordeClaro : Colors.white.withValues(alpha: .14);
+  List<Color> get titular =>
+      claro ? const [tintaClara, primarioClaro] : const [Colors.white, lima];
+  Color get brillo => claro ? primarioClaro : lima;
+}
+
 class _Marca extends StatelessWidget {
   const _Marca();
   @override
@@ -412,7 +452,7 @@ class _Marca extends StatelessWidget {
       Text(
         'Ligaria',
         style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-          color: Colors.white,
+          color: _Tono.de(context).texto,
           fontWeight: FontWeight.w800,
           letterSpacing: -.5,
         ),
@@ -426,22 +466,22 @@ class _Portada extends StatelessWidget {
   const _Portada({required this.alto});
   final double alto;
 
-  Widget _chip(IconData i, String t) => Container(
+  Widget _chip(_Tono tono, IconData i, String t) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
     decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: .07),
+      color: tono.chipFondo,
       borderRadius: BorderRadius.circular(40),
-      border: Border.all(color: Colors.white.withValues(alpha: .14)),
+      border: Border.all(color: tono.chipBorde),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(i, size: 16, color: lima),
+        Icon(i, size: 16, color: tono.acento),
         const SizedBox(width: 8),
         Text(
           t,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: tono.texto,
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),
@@ -453,6 +493,7 @@ class _Portada extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    final tono = _Tono.de(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -463,9 +504,8 @@ class _Portada extends StatelessWidget {
           retardo: 100,
           child: ShaderMask(
             blendMode: BlendMode.srcIn,
-            shaderCallback: (r) => const LinearGradient(
-              colors: [Colors.white, lima],
-            ).createShader(r),
+            shaderCallback: (r) =>
+                LinearGradient(colors: tono.titular).createShader(r),
             child: Text(
               context.l10n.portadaTitular,
               style: t.displayMedium?.copyWith(
@@ -481,7 +521,7 @@ class _Portada extends StatelessWidget {
           retardo: 200,
           child: Text(
             context.l10n.portadaSub,
-            style: t.titleMedium?.copyWith(color: Colors.white70, height: 1.4),
+            style: t.titleMedium?.copyWith(color: tono.textoSuave, height: 1.4),
           ),
         ),
         const SizedBox(height: 22),
@@ -491,9 +531,9 @@ class _Portada extends StatelessWidget {
             spacing: 10,
             runSpacing: 10,
             children: [
-              _chip(Icons.calendar_month_rounded, context.l10n.calendarios),
-              _chip(Icons.scoreboard_rounded, context.l10n.resultados),
-              _chip(Icons.leaderboard_rounded, context.l10n.clasificacion),
+              _chip(tono, Icons.calendar_month_rounded, context.l10n.calendarios),
+              _chip(tono, Icons.scoreboard_rounded, context.l10n.resultados),
+              _chip(tono, Icons.leaderboard_rounded, context.l10n.clasificacion),
             ],
           ),
         ),
@@ -505,7 +545,7 @@ class _Portada extends StatelessWidget {
               borderRadius: BorderRadius.circular(32),
               boxShadow: [
                 BoxShadow(
-                  color: lima.withValues(alpha: .18),
+                  color: tono.brillo.withValues(alpha: .18),
                   blurRadius: 60,
                   offset: const Offset(0, 20),
                 ),

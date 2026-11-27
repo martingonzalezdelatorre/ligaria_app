@@ -118,7 +118,10 @@ class _CuentaPageState extends ConsumerState<CuentaPage> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [lima.withValues(alpha: .16), menta.withValues(alpha: .04)],
+            colors: [
+              acentoDe(context).withValues(alpha: .16),
+              acentoSuaveDe(context).withValues(alpha: .04),
+            ],
           ),
         ),
         child: Row(

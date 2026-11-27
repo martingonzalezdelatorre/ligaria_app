@@ -71,8 +71,8 @@ class HojaFormulario extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                lima.withValues(alpha: .16),
-                menta.withValues(alpha: .04),
+                acentoDe(context).withValues(alpha: .16),
+                acentoSuaveDe(context).withValues(alpha: .04),
               ],
             ),
             border: Border(bottom: BorderSide(color: Marca.de(context).borde)),
@@ -85,14 +85,14 @@ class HojaFormulario extends StatelessWidget {
                 height: 52,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16),
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [lima, menta],
+                    colors: [acentoDe(context), acentoSuaveDe(context)],
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: lima.withValues(alpha: .35),
+                      color: acentoDe(context).withValues(alpha: .35),
                       blurRadius: 18,
                       offset: const Offset(0, 6),
                     ),
@@ -332,10 +332,12 @@ class _Tarjeta<T> extends StatelessWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 180),
       decoration: BoxDecoration(
-        color: activa ? lima.withValues(alpha: .12) : cristal,
+        color: activa
+            ? cs.primary.withValues(alpha: .12)
+            : Marca.de(context).superficie,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: activa ? lima : bordeCristal,
+          color: activa ? cs.primary : Marca.de(context).borde,
           width: activa ? 1.6 : 1,
         ),
       ),
@@ -351,7 +353,7 @@ class _Tarjeta<T> extends StatelessWidget {
               children: [
                 Icon(
                   opcion.icono,
-                  color: activa ? lima : cs.onSurfaceVariant,
+                  color: activa ? cs.primary : cs.onSurfaceVariant,
                   size: 24,
                 ),
                 const SizedBox(width: 10),
@@ -376,7 +378,7 @@ class _Tarjeta<T> extends StatelessWidget {
                   ),
                 ),
                 if (activa)
-                  const Icon(Icons.check_circle, color: lima, size: 20),
+                  Icon(Icons.check_circle, color: cs.primary, size: 20),
               ],
             ),
           ),
@@ -450,10 +452,10 @@ Future<T?> elegirDeLista<T>(
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Material(
-              color: cristal,
+              color: Marca.de(ctx).superficie,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: const BorderSide(color: bordeCristal),
+                side: BorderSide(color: Marca.de(ctx).borde),
               ),
               clipBehavior: Clip.antiAlias,
               child: InkWell(

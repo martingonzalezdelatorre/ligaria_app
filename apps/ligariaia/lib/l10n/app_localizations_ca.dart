@@ -759,6 +759,12 @@ class AppL10nCa extends AppL10n {
   String get ligasAbiertas => 'Lligues obertes';
 
   @override
+  String get ligasParticipo => 'Lligues on participo';
+
+  @override
+  String get equiposYaInscritos => 'Equips ja inscrits';
+
+  @override
   String organizaPor(String deporte, String org) {
     return '$deporte · organitza $org';
   }

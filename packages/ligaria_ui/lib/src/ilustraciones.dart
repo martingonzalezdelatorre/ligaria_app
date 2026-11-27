@@ -414,26 +414,31 @@ class _FondoBlobsState extends State<FondoBlobs>
   }
 
   @override
-  Widget build(BuildContext context) => ColoredBox(
-    color: tinta,
-    child: Stack(
-      fit: StackFit.expand,
-      children: [
-        RepaintBoundary(
-          child: AnimatedBuilder(
-            animation: _c,
-            builder: (_, _) => CustomPaint(painter: _AuroraPainter(_c.value)),
+  Widget build(BuildContext context) {
+    final claro = Theme.of(context).brightness == Brightness.light;
+    return ColoredBox(
+      color: claro ? fondoClaro : tinta,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          RepaintBoundary(
+            child: AnimatedBuilder(
+              animation: _c,
+              builder: (_, _) =>
+                  CustomPaint(painter: _AuroraPainter(_c.value, claro: claro)),
+            ),
           ),
-        ),
-        widget.child,
-      ],
-    ),
-  );
+          widget.child,
+        ],
+      ),
+    );
+  }
 }
 
 class _AuroraPainter extends CustomPainter {
-  _AuroraPainter(this.t);
+  _AuroraPainter(this.t, {this.claro = false});
   final double t;
+  final bool claro;
   @override
   void paint(Canvas canvas, Size s) {
     final a = t * 2 * math.pi;
@@ -454,12 +459,22 @@ class _AuroraPainter extends CustomPainter {
       );
     }
 
-    aurora(.1, .15, .55, menta.withValues(alpha: .55), 0);
-    aurora(.95, .25, .45, const Color(0xFFFF8A3D).withValues(alpha: .4), 2.1);
-    aurora(.6, 1.0, .6, lima.withValues(alpha: .28), 4.2);
-    aurora(0, .95, .4, verdeMarca.withValues(alpha: .6), 5.5);
+    if (claro) {
+      // Tonos pastel muy suaves (celeste, melocotón, crema y lila) sobre el fondo casi blanco.
+      aurora(.1, .1, .55, const Color(0xFFBFE3FF).withValues(alpha: .28), 0);
+      aurora(.95, .2, .45, const Color(0xFFFFC9A0).withValues(alpha: .26), 2.1);
+      aurora(.6, 1.0, .6, const Color(0xFFFFE9B8).withValues(alpha: .38), 4.2);
+      aurora(0, .95, .4, const Color(0xFFE0D4FF).withValues(alpha: .26), 5.5);
+    } else {
+      aurora(.1, .15, .55, menta.withValues(alpha: .55), 0);
+      aurora(.95, .25, .45, const Color(0xFFFF8A3D).withValues(alpha: .4), 2.1);
+      aurora(.6, 1.0, .6, lima.withValues(alpha: .28), 4.2);
+      aurora(0, .95, .4, verdeMarca.withValues(alpha: .6), 5.5);
+    }
     final linea = Paint()
-      ..color = Colors.white.withValues(alpha: .035)
+      ..color = (claro ? const Color(0xFF1B2421) : Colors.white).withValues(
+        alpha: .035,
+      )
       ..strokeWidth = 1;
     for (var x = 0.0; x < s.width; x += 48) {
       canvas.drawLine(Offset(x, 0), Offset(x, s.height), linea);
@@ -470,5 +485,5 @@ class _AuroraPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_AuroraPainter old) => old.t != t;
+  bool shouldRepaint(_AuroraPainter old) => old.t != t || old.claro != claro;
 }

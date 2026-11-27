@@ -345,6 +345,8 @@
     }
   },
   "ligasAbiertas": "Ligas abiertas",
+  "ligasParticipo": "Ligas en las que participo",
+  "equiposYaInscritos": "Equipos ya inscritos",
   "organizaPor": "{deporte} · organiza {org}",
   "@organizaPor": {
     "placeholders": {

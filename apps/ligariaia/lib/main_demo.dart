@@ -217,5 +217,9 @@ class _LigaDemo implements LigaRepository {
   Future<List<Liga>> ligasOrganizadas(String escuelaId) => misLigas();
 
   @override
+  Future<List<InscripcionVista>> inscripcionesEscuela(String orgId) async =>
+      const [];
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => Future.value(const []);
 }

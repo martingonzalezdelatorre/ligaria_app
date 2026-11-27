@@ -1,0 +1,15 @@
+- generic [active] [ref=f1e1]:
+  - generic [ref=f1e4]: Juntio
+  - heading "Gastos compartidos sin cuentas ni dramas." [level=1] [ref=f1e10]
+  - paragraph [ref=f1e11]: Reparte al céntimo, en cualquier moneda, y salda con el mínimo de pagos.
+  - generic [ref=f1e12]: 100,00 € ÷ 3 = 33,34 + 33,33 + 33,33
+  - generic [ref=f1e13]:
+    - generic [ref=f1e14]:
+      - generic [ref=f1e15]: Tu saldo
+      - text: Te deben 42,50 €
+    - generic [ref=f1e16]:
+      - generic [ref=f1e17]: 🍽️ Cena
+      - generic [ref=f1e18]: 84,00 €
+    - generic [ref=f1e19]:
+      - generic [ref=f1e20]: 🚕 Taxi
+      - generic [ref=f1e21]: 23,00 €

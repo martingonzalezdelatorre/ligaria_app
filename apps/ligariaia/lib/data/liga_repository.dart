@@ -53,6 +53,9 @@ abstract class LigaRepository {
   /// ¿Tiene algún equipo de la organización inscrito (o con la inscripción pendiente) en una liga?
   Future<bool> tieneInscripciones(String orgId);
 
+  /// Inscripciones (en cualquier estado) de los equipos de [orgId] en ligas de cualquier organizador.
+  Future<List<InscripcionVista>> inscripcionesEscuela(String orgId);
+
   /// ¿Se ha invitado ya a algún entrenador a la organización (aunque aún no se haya registrado)?
   Future<bool> tieneInvitacionEntrenador(String orgId);
   Future<void> crearEquipo(String orgId, String nombre, String deporteId);
@@ -421,6 +424,32 @@ class SupabaseLigaRepository implements LigaRepository {
         .eq('equipo.organizacion_id', orgId)
         .limit(1),
   ).isNotEmpty;
+
+  @override
+  Future<List<InscripcionVista>> inscripcionesEscuela(String orgId) async =>
+      _rows(
+        await _c
+            .from('inscripcion')
+            .select(
+              'id, estado, equipo_id, equipo!inner(nombre, organizacion_id), '
+              'categoria!inner(nombre, competicion_id)',
+            )
+            .eq('equipo.organizacion_id', orgId)
+            .order('fecha'),
+      ).map((r) {
+        final eq = r['equipo'] as Map<String, dynamic>;
+        final cat = r['categoria'] as Map<String, dynamic>;
+        return InscripcionVista(
+          id: r['id'] as String,
+          ligaId: cat['competicion_id'] as String,
+          equipoId: r['equipo_id'] as String,
+          equipo: eq['nombre'] as String,
+          escuelaId: eq['organizacion_id'] as String,
+          escuela: '',
+          estado: (r['estado'] as String).toLowerCase(),
+          categoria: cat['nombre'] as String?,
+        );
+      }).toList();
 
   @override
   Future<bool> tieneInvitacionEntrenador(String orgId) async => _rows(

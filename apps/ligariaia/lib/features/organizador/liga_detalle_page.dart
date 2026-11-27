@@ -136,22 +136,38 @@ class _FondoSuave extends StatelessWidget {
   );
 
   @override
-  Widget build(BuildContext context) => ColoredBox(
-    color: tinta,
-    child: Stack(
-      fit: StackFit.expand,
-      children: [
-        _aurora(const Alignment(-1, -.8), 1.1, menta.withValues(alpha: .45)),
-        _aurora(
-          const Alignment(1, -.5),
-          .9,
-          const Color(0xFFFF8A3D).withValues(alpha: .28),
-        ),
-        _aurora(const Alignment(.4, 1.1), 1.2, lima.withValues(alpha: .18)),
-        child,
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final claro = Theme.of(context).brightness == Brightness.light;
+    return ColoredBox(
+      color: claro ? fondoClaro : tinta,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _aurora(
+            const Alignment(-1, -.8),
+            1.1,
+            claro
+                ? const Color(0xFFBFE3FF).withValues(alpha: .28)
+                : menta.withValues(alpha: .45),
+          ),
+          _aurora(
+            const Alignment(1, -.5),
+            .9,
+            (claro ? const Color(0xFFFFB27A) : const Color(0xFFFF8A3D))
+                .withValues(alpha: .28),
+          ),
+          _aurora(
+            const Alignment(.4, 1.1),
+            1.2,
+            claro
+                ? const Color(0xFFFFE9B8).withValues(alpha: .38)
+                : lima.withValues(alpha: .18),
+          ),
+          child,
+        ],
+      ),
+    );
+  }
 }
 
 /// Calendario (o cuadro) de la liga: una sección por jornada o ronda, separadas por categoría y grupo.

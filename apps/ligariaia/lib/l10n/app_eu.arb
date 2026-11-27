@@ -231,6 +231,8 @@
   "sinLigasAbiertas": "Une honetan ez dago izen-emateetarako ligarik irekita.",
   "invitacionesN": "Gonbidapenak ({n})",
   "ligasAbiertas": "Liga irekiak",
+  "ligasParticipo": "Parte hartzen dudan ligak",
+  "equiposYaInscritos": "Taldeek izena emanda dute",
   "organizaPor": "{deporte} · antolatzailea: {org}",
   "porInvitacion": "gonbidapenez",
   "inscribir": "Izena eman",

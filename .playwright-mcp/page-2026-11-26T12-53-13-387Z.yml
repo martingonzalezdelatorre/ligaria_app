@@ -1,0 +1,353 @@
+- generic [active] [ref=f3e1]:
+  - link "Saltar al contenido" [ref=f3e2] [cursor=pointer]:
+    - /url: "#main"
+  - banner [ref=f3e3]:
+    - generic [ref=f3e4]:
+      - link "Juntio, inicio" [ref=f3e5] [cursor=pointer]:
+        - /url: /
+        - text: Juntio
+      - navigation "Principal" [ref=f3e11]:
+        - link "Cómo funciona" [ref=f3e12] [cursor=pointer]:
+          - /url: "#como-funciona"
+        - link "Funciones" [ref=f3e13] [cursor=pointer]:
+          - /url: "#funciones"
+        - link "Pruébalo" [ref=f3e14] [cursor=pointer]:
+          - /url: "#probar"
+        - link "Confianza" [ref=f3e15] [cursor=pointer]:
+          - /url: "#confianza"
+        - link "Preguntas" [ref=f3e16] [cursor=pointer]:
+          - /url: "#faq"
+        - link "EN" [ref=f3e17] [cursor=pointer]:
+          - /url: /en/
+        - link "Empezar" [ref=f3e18] [cursor=pointer]:
+          - /url: https://app.juntio.app/
+  - main [ref=f3e19]:
+    - region "Gastos compartidos sin cuentas ni dramas." [ref=f3e20]:
+      - generic [ref=f3e21]:
+        - generic [ref=f3e22]:
+          - paragraph [ref=f3e23]: 🧾 Gastos compartidos · Web, móvil y escritorio
+          - heading "Gastos compartidos sin cuentas ni dramas." [level=1] [ref=f3e24]
+          - paragraph [ref=f3e25]:
+            - strong [ref=f3e26]: Juntio
+            - text: reparte los gastos entre amigos, pareja o compañeros de piso, calcula quién debe a quién
+            - strong [ref=f3e27]: al céntimo
+            - text: y propone los pagos mínimos para quedar a mano.
+          - generic [ref=f3e28]:
+            - link "Crear mi primer grupo →" [ref=f3e29] [cursor=pointer]:
+              - /url: https://app.juntio.app/
+            - link "Probar el reparto" [ref=f3e30] [cursor=pointer]:
+              - /url: "#probar"
+          - list "Puntos clave" [ref=f3e31]:
+            - listitem [ref=f3e32]: 💶 Multimoneda
+            - listitem [ref=f3e33]: 🌍 6 idiomas
+            - listitem [ref=f3e34]: 📴 Modo sin conexión
+            - listitem [ref=f3e35]: 🌓 Claro y oscuro
+        - generic [aria-hidden] [ref=f3e36]:
+          - generic [ref=f3e37]:
+            - generic [ref=f3e39]:
+              - strong [ref=f3e40]: Escapada a Lisboa
+              - generic [ref=f3e41]: 4 miembros
+            - generic [ref=f3e42]:
+              - generic [ref=f3e43]: Tu saldo
+              - text: Te deben 42,50 €
+            - list [ref=f3e44]:
+              - listitem [ref=f3e45]:
+                - generic [ref=f3e46]: 🍽️
+                - generic [ref=f3e47]:
+                  - generic [ref=f3e48]: Cena en Alfama
+                  - emphasis [ref=f3e49]: Pagó Ana
+                - generic [ref=f3e50]: 84,00 €
+              - listitem [ref=f3e51]:
+                - generic [ref=f3e52]: 🚕
+                - generic [ref=f3e53]:
+                  - generic [ref=f3e54]: Taxi aeropuerto
+                  - emphasis [ref=f3e55]: Pagaste tú
+                - generic [ref=f3e56]: 23,00 €
+              - listitem [ref=f3e57]:
+                - generic [ref=f3e58]: 🏨
+                - generic [ref=f3e59]:
+                  - generic [ref=f3e60]: Apartamento
+                  - emphasis [ref=f3e61]: Pagó Bruno
+                - generic [ref=f3e62]: 320,00 €
+            - generic [ref=f3e63]: Saldar cuentas
+          - generic [ref=f3e64]:
+            - text: Bruno → Ana
+            - generic [ref=f3e65]: 21,00 € · pago sugerido
+          - generic [ref=f3e66]:
+            - text: ✓ Saldado
+            - generic [ref=f3e67]: Carla y Dani, a mano
+          - generic [ref=f3e68]:
+            - text: 100,00 € ÷ 3
+            - generic [ref=f3e69]: 33,34 + 33,33 + 33,33
+    - generic [ref=f3e72]:
+      - generic [ref=f3e73]:
+        - generic [ref=f3e74]: 0 cént.
+        - text: "perdidos: el reparto suma siempre el total"
+      - generic [ref=f3e75]:
+        - generic [ref=f3e76]: "6"
+        - text: "idiomas: es, en, fr, gl, ca y eu"
+      - generic [ref=f3e77]:
+        - generic [ref=f3e78]: "3"
+        - text: "plataformas: web, móvil y escritorio"
+      - generic [ref=f3e79]:
+        - generic [ref=f3e80]: CSV · PDF
+        - text: tus cuentas, siempre exportables
+    - region "Dividir gastos en grupo, en tres pasos" [ref=f3e81]:
+      - generic [ref=f3e82]:
+        - generic [ref=f3e83]:
+          - generic [ref=f3e84]: Cómo funciona
+          - heading "Dividir gastos en grupo, en tres pasos" [level=2] [ref=f3e85]
+          - paragraph [ref=f3e86]: Pensado para que nadie tenga que abrir una hoja de cálculo ni perseguir a nadie por Bizum.
+        - list [ref=f3e87]:
+          - listitem [ref=f3e88]:
+            - heading "Crea el grupo e invita" [level=3] [ref=f3e89]
+            - paragraph [ref=f3e90]: Ponle nombre (“Piso Gràcia”, “Roadtrip Islandia”), elige la moneda y comparte el enlace de invitación. Cada persona se une con su cuenta.
+          - listitem [ref=f3e91]:
+            - heading "Añade gastos al momento" [level=3] [ref=f3e92]
+            - paragraph [ref=f3e93]: "Indica quién pagó y entre quién se reparte: a partes iguales, por importes, porcentajes o partes. Adjunta la foto del ticket si quieres."
+          - listitem [ref=f3e94]:
+            - heading "Salda con los mínimos pagos" [level=3] [ref=f3e95]
+            - paragraph [ref=f3e96]: Juntio calcula los saldos y sugiere quién paga a quién para quedar a mano con el menor número de transferencias. Registra cada pago y listo.
+    - region "Todo lo que necesitas para llevar las cuentas claras" [ref=f3e97]:
+      - generic [ref=f3e98]:
+        - generic [ref=f3e99]:
+          - generic [ref=f3e100]: Funciones
+          - heading "Todo lo que necesitas para llevar las cuentas claras" [level=2] [ref=f3e101]
+          - paragraph [ref=f3e102]: Una sola app, la misma experiencia en el navegador, el móvil y el ordenador.
+        - generic [ref=f3e103]:
+          - article [ref=f3e104]:
+            - generic [aria-hidden] [ref=f3e105]: 🎯
+            - heading "Exacto al céntimo" [level=3] [ref=f3e106]
+            - paragraph [ref=f3e107]: Los importes son siempre enteros en la unidad mínima de cada moneda, sin decimales “flotantes”. Los céntimos sobrantes se reparten por el método del mayor resto, así que la suma coincide exactamente con el total.
+          - article [ref=f3e108]:
+            - generic [aria-hidden] [ref=f3e109]: 🧮
+            - heading "Reparto a tu medida" [level=3] [ref=f3e110]
+            - paragraph [ref=f3e111]: Partes iguales, importes exactos, porcentajes o partes (2 para quien durmió dos noches). Varias personas pueden pagar el mismo gasto.
+          - article [ref=f3e112]:
+            - generic [aria-hidden] [ref=f3e113]: 💱
+            - heading "Multimoneda" [level=3] [ref=f3e114]
+            - paragraph [ref=f3e115]: Cada gasto en su moneda, con tipo de cambio sugerido. Los saldos se calculan con importes convertidos exactos.
+          - article [ref=f3e116]:
+            - generic [aria-hidden] [ref=f3e117]: 🔀
+            - heading "Pagos mínimos" [level=3] [ref=f3e118]
+            - paragraph [ref=f3e119]: En vez de cruzar deudas, Juntio propone las transferencias justas para dejar el saldo de todos a cero.
+          - article [ref=f3e120]:
+            - generic [aria-hidden] [ref=f3e121]: 🧾
+            - heading "Tickets adjuntos" [level=3] [ref=f3e122]
+            - paragraph [ref=f3e123]: Sube la foto o el PDF del ticket a cada gasto. Solo los miembros del grupo pueden verlo.
+          - article [ref=f3e124]:
+            - generic [aria-hidden] [ref=f3e125]: ⚡
+            - heading "Tiempo real" [level=3] [ref=f3e126]
+            - paragraph [ref=f3e127]: Cuando alguien añade un gasto, los demás lo ven al instante, sin recargar.
+          - article [ref=f3e128]:
+            - generic [aria-hidden] [ref=f3e129]: 📴
+            - heading "Sin conexión" [level=3] [ref=f3e130]
+            - paragraph [ref=f3e131]: "En móvil y escritorio, añade gastos y pagos sin red: se sincronizan solos al volver la conexión."
+          - article [ref=f3e132]:
+            - generic [aria-hidden] [ref=f3e133]: 📤
+            - heading "Exporta a CSV y PDF" [level=3] [ref=f3e134]
+            - paragraph [ref=f3e135]: Informe del grupo con gastos, pagos y saldos, listo para guardar o compartir.
+          - article [ref=f3e136]:
+            - generic [aria-hidden] [ref=f3e137]: 👥
+            - heading "Roles y control" [level=3] [ref=f3e138]
+            - paragraph [ref=f3e139]: Administradores y miembros, archivado de grupos y salida de miembros solo cuando su saldo está a cero.
+          - article [ref=f3e140]:
+            - generic [aria-hidden] [ref=f3e141]: ♿
+            - heading "Accesible y en tu idioma" [level=3] [ref=f3e142]
+            - paragraph [ref=f3e143]: Español, inglés, francés, gallego, catalán y euskera. Material 3, modo claro y oscuro, textos hasta un 300 % y áreas táctiles amplias.
+          - article [ref=f3e144]:
+            - generic [aria-hidden] [ref=f3e145]: 💻
+            - heading "Donde la uses" [level=3] [ref=f3e146]
+            - paragraph [ref=f3e147]: Navegador, Android, iOS, Windows, macOS y Linux. Una cuenta, los mismos grupos en todos tus dispositivos.
+    - region "Mira cómo cuadra cada céntimo" [ref=f3e148]:
+      - generic [ref=f3e149]:
+        - generic [ref=f3e150]:
+          - generic [ref=f3e151]: Pruébalo ahora
+          - heading "Mira cómo cuadra cada céntimo" [level=2] [ref=f3e152]
+          - paragraph [ref=f3e153]: "100 € entre 3 personas no son 33,33 € cada una: faltaría un céntimo. Juntio lo asigna con el método del mayor resto y la suma siempre es exacta. Cambia el importe, añade personas o dale más partes a alguien."
+        - group "Mira cómo cuadra cada céntimo" [ref=f3e154]:
+          - generic [ref=f3e155]:
+            - generic [ref=f3e156]: Importe del gasto (€)
+            - textbox "Importe del gasto (€)" [ref=f3e157]: 100,00
+          - list [ref=f3e158]:
+            - listitem [ref=f3e159]:
+              - generic [ref=f3e160]:
+                - text: Ana
+                - generic [ref=f3e161]: +1 céntimo
+              - generic [ref=f3e162]:
+                - button "Quitar una parte a Ana" [disabled] [ref=f3e163] [cursor=pointer]: −
+                - status [ref=f3e164]: 1 parte
+                - button "Añadir una parte a Ana" [ref=f3e165] [cursor=pointer]: +
+              - generic [ref=f3e166]: 33,34 €
+            - listitem [ref=f3e167]:
+              - generic [ref=f3e168]: Bruno
+              - generic [ref=f3e170]:
+                - button "Quitar una parte a Bruno" [disabled] [ref=f3e171] [cursor=pointer]: −
+                - status [ref=f3e172]: 1 parte
+                - button "Añadir una parte a Bruno" [ref=f3e173] [cursor=pointer]: +
+              - generic [ref=f3e174]: 33,33 €
+            - listitem [ref=f3e175]:
+              - generic [ref=f3e176]: Carla
+              - generic [ref=f3e178]:
+                - button "Quitar una parte a Carla" [disabled] [ref=f3e179] [cursor=pointer]: −
+                - status [ref=f3e180]: 1 parte
+                - button "Añadir una parte a Carla" [ref=f3e181] [cursor=pointer]: +
+              - generic [ref=f3e182]: 33,33 €
+          - generic [ref=f3e183]:
+            - button "+ Añadir persona" [ref=f3e184] [cursor=pointer]
+            - button "Reiniciar" [ref=f3e185] [cursor=pointer]
+          - status [ref=f3e186]: "Suma: 100,00 € = 100,00 € ✓"
+    - region "Para cada plan que compartes" [ref=f3e187]:
+      - generic [ref=f3e188]:
+        - generic [ref=f3e189]:
+          - generic [ref=f3e190]: Para quién
+          - heading "Para cada plan que compartes" [level=2] [ref=f3e191]
+        - generic [ref=f3e192]:
+          - article [ref=f3e193]:
+            - generic [aria-hidden] [ref=f3e194]: ✈️
+            - heading "Viajes" [level=3] [ref=f3e195]
+            - paragraph [ref=f3e196]: Gastos en varias monedas y con tickets, sin discutir al volver.
+          - article [ref=f3e197]:
+            - generic [aria-hidden] [ref=f3e198]: 🏠
+            - heading "Pisos compartidos" [level=3] [ref=f3e199]
+            - paragraph [ref=f3e200]: "Alquiler, luz, compra: quién puso qué y cuánto toca, mes a mes."
+          - article [ref=f3e201]:
+            - generic [aria-hidden] [ref=f3e202]: 💑
+            - heading "Parejas" [level=3] [ref=f3e203]
+            - paragraph [ref=f3e204]: "Cuentas claras sin hacer números: el saldo siempre a la vista."
+          - article [ref=f3e205]:
+            - generic [aria-hidden] [ref=f3e206]: 🍻
+            - heading "Cenas y eventos" [level=3] [ref=f3e207]
+            - paragraph [ref=f3e208]: Reparte la cuenta en segundos, aunque cada uno haya pedido distinto.
+          - article [ref=f3e209]:
+            - generic [aria-hidden] [ref=f3e210]: ⚽
+            - heading "Grupos y clubes" [level=3] [ref=f3e211]
+            - paragraph [ref=f3e212]: Equipos, peñas y asociaciones con roles de administrador y exportación.
+    - region "Tu dinero y tus datos, explicados sin letra pequeña" [ref=f3e213]:
+      - generic [ref=f3e214]:
+        - generic [ref=f3e215]:
+          - generic [ref=f3e216]: Confianza
+          - heading "Tu dinero y tus datos, explicados sin letra pequeña" [level=2] [ref=f3e217]
+          - paragraph [ref=f3e218]: Cuando hay dinero de por medio, la confianza se demuestra con cómo está construido. Esto es lo que hace Juntio, concretamente.
+        - generic [ref=f3e219]:
+          - article [ref=f3e220]:
+            - generic [aria-hidden] [ref=f3e221]: 🧮
+            - heading "Cálculo verificable" [level=3] [ref=f3e222]
+            - paragraph [ref=f3e223]: Los repartos los calcula el servidor y la app los replica para validarlos y previsualizarlos. Hay pruebas automáticas que garantizan que la suma sea exactamente el total.
+          - article [ref=f3e224]:
+            - generic [aria-hidden] [ref=f3e225]: 🔐
+            - heading "Sesión protegida" [level=3] [ref=f3e226]
+            - paragraph [ref=f3e227]: Acceso con tokens de corta duración (15 minutos) y renovación segura. En el dispositivo, la sesión se guarda en el almacenamiento seguro del sistema, no en texto plano.
+          - article [ref=f3e228]:
+            - generic [aria-hidden] [ref=f3e229]: 🗑️
+            - heading "Tu cuenta, tu decisión" [level=3] [ref=f3e230]
+            - paragraph [ref=f3e231]: Puedes borrar tu cuenta desde la app. Se anonimiza tu usuario y se cierran tus sesiones; los gastos del grupo se conservan sin tu nombre para no descuadrar a los demás.
+          - article [ref=f3e232]:
+            - generic [aria-hidden] [ref=f3e233]: 📤
+            - heading "Tus datos, siempre contigo" [level=3] [ref=f3e234]
+            - paragraph [ref=f3e235]: Exporta cuando quieras gastos, pagos y saldos a CSV o PDF. El aviso en tiempo real a tu grupo no incluye datos personales.
+    - region "¿Buscas una alternativa a Splitwise o Tricount?" [ref=f3e236]:
+      - generic [ref=f3e237]:
+        - generic [ref=f3e238]:
+          - generic [ref=f3e239]: Comparativa
+          - heading "¿Buscas una alternativa a Splitwise o Tricount?" [level=2] [ref=f3e240]
+          - paragraph [ref=f3e241]: Juntio resuelve lo mismo —dividir gastos en grupo y saldar deudas— con estos detalles que marcan la diferencia.
+        - table "Qué ofrece Juntio frente a una app de gastos compartidos básica" [ref=f3e243]:
+          - caption [ref=f3e244]: Qué ofrece Juntio frente a una app de gastos compartidos básica
+          - rowgroup [ref=f3e245]:
+            - row [ref=f3e246]:
+              - columnheader "Lo que importa" [ref=f3e247]
+              - columnheader "Una app básica" [ref=f3e248]
+              - columnheader "Juntio" [ref=f3e249]
+          - rowgroup [ref=f3e250]:
+            - row [ref=f3e251]:
+              - rowheader "Céntimos sobrantes" [ref=f3e252]
+              - 'cell "Redondeo: el total puede no cuadrar" [ref=f3e253]'
+              - 'cell "✓ Mayor resto: la suma es exacta" [ref=f3e254]'
+            - row [ref=f3e255]:
+              - rowheader "Varias monedas" [ref=f3e256]
+              - cell "Aproximaciones o solo una moneda" [ref=f3e257]
+              - cell "✓ Importes convertidos exactos por gasto" [ref=f3e258]
+            - row [ref=f3e259]:
+              - rowheader "Tipos de reparto" [ref=f3e260]
+              - cell "Iguales o importes" [ref=f3e261]
+              - cell "✓ Iguales, importes, porcentajes y partes" [ref=f3e262]
+            - row [ref=f3e263]:
+              - rowheader "Sin conexión" [ref=f3e264]
+              - cell "Solo con red" [ref=f3e265]
+              - cell "✓ Cola de gastos y pagos en móvil y escritorio" [ref=f3e266]
+            - row [ref=f3e267]:
+              - rowheader "Tickets y exportación" [ref=f3e268]
+              - cell "Limitado o de pago" [ref=f3e269]
+              - cell "✓ Tickets adjuntos y exportación CSV/PDF" [ref=f3e270]
+            - row [ref=f3e271]:
+              - rowheader "Idiomas y accesibilidad" [ref=f3e272]
+              - cell "Pocos idiomas" [ref=f3e273]
+              - cell "✓ 6 idiomas, modo oscuro y texto hasta 300 %" [ref=f3e274]
+    - region "Todo lo que te vas a preguntar" [ref=f3e275]:
+      - generic [ref=f3e276]:
+        - generic [ref=f3e277]:
+          - generic [ref=f3e278]: Preguntas frecuentes
+          - heading "Todo lo que te vas a preguntar" [level=2] [ref=f3e279]
+        - generic [ref=f3e280]:
+          - group [ref=f3e281]:
+            - generic "¿Qué es Juntio? +" [ref=f3e282] [cursor=pointer]
+            - paragraph [ref=f3e284]: Juntio es una app de gastos compartidos. Creas un grupo (un viaje, un piso, una pareja), registras quién pagó cada gasto y entre quién se reparte, y Juntio calcula quién debe a quién y cuánto, con importes exactos al céntimo. Funciona en web, móvil (Android e iOS) y escritorio (Windows, macOS y Linux).
+          - group [ref=f3e285]:
+            - generic "¿Cómo dividir gastos con amigos usando Juntio? +" [ref=f3e286] [cursor=pointer]
+          - group [ref=f3e287]:
+            - generic "¿Se puede repartir un gasto de forma desigual? +" [ref=f3e288] [cursor=pointer]
+          - group [ref=f3e289]:
+            - generic "¿Cómo reparte Juntio los céntimos sobrantes? +" [ref=f3e290] [cursor=pointer]
+          - group [ref=f3e291]:
+            - generic "¿Puedo dividir gastos en distintas monedas? +" [ref=f3e292] [cursor=pointer]
+          - group [ref=f3e293]:
+            - generic "¿Funciona sin conexión? +" [ref=f3e294] [cursor=pointer]
+          - group [ref=f3e295]:
+            - generic "¿Qué pasa con mis datos? ¿Puedo borrar mi cuenta? +" [ref=f3e296] [cursor=pointer]
+          - group [ref=f3e297]:
+            - generic "¿En qué idiomas está disponible Juntio? +" [ref=f3e298] [cursor=pointer]
+          - group [ref=f3e299]:
+            - generic "¿Juntio es una alternativa a Splitwise o Tricount? +" [ref=f3e300] [cursor=pointer]
+    - region "Que la próxima cuenta se resuelva en un minuto." [ref=f3e301]:
+      - generic [ref=f3e304]:
+        - heading "Que la próxima cuenta se resuelva en un minuto." [level=2] [ref=f3e305]
+        - paragraph [ref=f3e306]: Crea tu grupo, invita a los tuyos y deja que Juntio haga los números.
+        - link "Crear mi primer grupo →" [ref=f3e308] [cursor=pointer]:
+          - /url: https://app.juntio.app/
+  - contentinfo [ref=f3e309]:
+    - generic [ref=f3e310]:
+      - generic [ref=f3e311]:
+        - generic [ref=f3e312]:
+          - link "Juntio, inicio" [ref=f3e313] [cursor=pointer]:
+            - /url: /
+            - text: Juntio
+          - paragraph [ref=f3e319]: Gastos compartidos sin cuentas ni dramas. Reparte, calcula y salda con Juntio.
+        - navigation "Secciones" [ref=f3e320]:
+          - heading "Explora" [level=2] [ref=f3e321]
+          - list [ref=f3e322]:
+            - listitem [ref=f3e323]:
+              - link "Cómo funciona" [ref=f3e324] [cursor=pointer]:
+                - /url: "#como-funciona"
+            - listitem [ref=f3e325]:
+              - link "Funciones" [ref=f3e326] [cursor=pointer]:
+                - /url: "#funciones"
+            - listitem [ref=f3e327]:
+              - link "Pruébalo" [ref=f3e328] [cursor=pointer]:
+                - /url: "#probar"
+            - listitem [ref=f3e329]:
+              - link "Preguntas frecuentes" [ref=f3e330] [cursor=pointer]:
+                - /url: "#faq"
+        - navigation "Idiomas y recursos" [ref=f3e331]:
+          - heading "Más" [level=2] [ref=f3e332]
+          - list [ref=f3e333]:
+            - listitem [ref=f3e334]:
+              - link "English" [ref=f3e335] [cursor=pointer]:
+                - /url: /en/
+            - listitem [ref=f3e336]:
+              - link "Abrir la app" [ref=f3e337] [cursor=pointer]:
+                - /url: https://app.juntio.app/
+            - listitem [ref=f3e338]:
+              - link "llms.txt" [ref=f3e339] [cursor=pointer]:
+                - /url: /llms.txt
+      - paragraph [ref=f3e340]: © 2026 Juntio. Todos los derechos reservados.

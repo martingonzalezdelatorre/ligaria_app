@@ -231,6 +231,8 @@
   "sinLigasAbiertas": "Aucune ligue n'est ouverte aux inscriptions pour le moment.",
   "invitacionesN": "Invitations ({n})",
   "ligasAbiertas": "Ligues ouvertes",
+  "ligasParticipo": "Ligues auxquelles je participe",
+  "equiposYaInscritos": "Équipes déjà inscrites",
   "organizaPor": "{deporte} · organisée par {org}",
   "porInvitacion": "sur invitation",
   "inscribir": "Inscrire",

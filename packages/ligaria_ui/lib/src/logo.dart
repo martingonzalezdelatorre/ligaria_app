@@ -12,18 +12,23 @@ class LogoLigaria extends StatelessWidget {
   final IconData icono;
   @override
   Widget build(BuildContext context) {
+    final claro = Theme.of(context).brightness == Brightness.light;
+    final color = acentoDe(context);
     return Container(
       width: tam,
       height: tam,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(tam * .3),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [lima, Color(0xFF7BE36B)],
+          colors: [color, claro ? const Color(0xFFFFA566) : const Color(0xFF7BE36B)],
         ),
         boxShadow: [
-          BoxShadow(color: lima.withValues(alpha: .45), blurRadius: tam * .6),
+          BoxShadow(
+            color: color.withValues(alpha: claro ? .35 : .45),
+            blurRadius: tam * .6,
+          ),
         ],
       ),
       child: Icon(icono, color: tinta, size: tam * .55),

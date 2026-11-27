@@ -762,6 +762,12 @@ class AppL10nEn extends AppL10n {
   String get ligasAbiertas => 'Open leagues';
 
   @override
+  String get ligasParticipo => 'Leagues I take part in';
+
+  @override
+  String get equiposYaInscritos => 'Teams already enrolled';
+
+  @override
   String organizaPor(String deporte, String org) {
     return '$deporte · organised by $org';
   }

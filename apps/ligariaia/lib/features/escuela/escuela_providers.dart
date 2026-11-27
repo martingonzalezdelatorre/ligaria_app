@@ -44,7 +44,37 @@ final jugadoresEquipoEscuelaProvider =
 final ligasAbiertasProvider = FutureProvider<List<LigaAbierta>>(
   (ref) => ref.watch(ligaRepositoryProvider).ligasAbiertas(),
 );
-final misInvitacionesProvider = FutureProvider.autoDispose<List<MiInvitacion>>(
+/// Inscripciones de los equipos de la escuela en cualquier liga (pendientes, aceptadas y rechazadas).
+final inscripcionesEscuelaProvider =
+    FutureProvider.family<List<InscripcionVista>, String>(
+      (ref, escuelaId) =>
+          ref.watch(ligaRepositoryProvider).inscripcionesEscuela(escuelaId),
+    );
+
+/// Ligas de otros organizadores en las que la escuela tiene algún equipo inscrito, con sus inscripciones.
+final ligasParticipoProvider =
+    FutureProvider.family<
+      List<({Liga liga, List<InscripcionVista> inscripciones})>,
+      String
+    >((ref, escuelaId) async {
+      final repo = ref.watch(ligaRepositoryProvider);
+      final (ligas, inscripciones) = await (
+        repo.misLigas(),
+        ref.watch(inscripcionesEscuelaProvider(escuelaId).future),
+      ).wait;
+      return [
+        for (final l in ligas)
+          if (l.organizationId != escuelaId &&
+              inscripciones.any((i) => i.ligaId == l.id))
+            (
+              liga: l,
+              inscripciones: inscripciones
+                  .where((i) => i.ligaId == l.id)
+                  .toList(),
+            ),
+      ];
+    });
+final misInvitacionesProvider =FutureProvider.autoDispose<List<MiInvitacion>>(
   (ref) => ref.watch(ligaRepositoryProvider).misInvitaciones(),
 );
 final deportesProvider = FutureProvider<List<Deporte>>(

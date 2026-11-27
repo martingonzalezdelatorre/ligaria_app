@@ -1491,6 +1491,18 @@ abstract class AppL10n {
   /// **'Ligas abiertas'**
   String get ligasAbiertas;
 
+  /// No description provided for @ligasParticipo.
+  ///
+  /// In es, this message translates to:
+  /// **'Ligas en las que participo'**
+  String get ligasParticipo;
+
+  /// No description provided for @equiposYaInscritos.
+  ///
+  /// In es, this message translates to:
+  /// **'Equipos ya inscritos'**
+  String get equiposYaInscritos;
+
   /// No description provided for @organizaPor.
   ///
   /// In es, this message translates to:
