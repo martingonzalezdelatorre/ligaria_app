@@ -22,7 +22,7 @@ class LogoLigaria extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [color, claro ? const Color(0xFFFFA566) : const Color(0xFF7BE36B)],
+          colors: [color, claro ? const Color(0xFF3FAF7E) : const Color(0xFF7BE36B)],
         ),
         boxShadow: [
           BoxShadow(

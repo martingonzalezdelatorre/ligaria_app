@@ -487,11 +487,11 @@ class ResumenLiga extends ConsumerWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          // En claro, de albaricoque a crema; en oscuro, el degradado lima original.
+          // En claro, de salvia clara a salvia pálida; en oscuro, el degradado lima original.
           colors: [
             acentoDe(context),
             tema.brightness == Brightness.light
-                ? const Color(0xFFFFE3C4)
+                ? acentoClaroSuave
                 : const Color(0xFF5FE08A),
           ],
         ),
@@ -592,7 +592,10 @@ class ResumenLiga extends ConsumerWidget {
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: tinta,
+                          // En claro, verde salvia en vez de negro: menos contraste duro.
+                          color: tema.brightness == Brightness.light
+                              ? primarioClaro
+                              : tinta,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
@@ -613,7 +616,9 @@ class ResumenLiga extends ConsumerWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: tema.textTheme.titleSmall?.copyWith(
-                                color: acentoDe(context),
+                                color: tema.brightness == Brightness.light
+                                    ? Colors.white
+                                    : acentoDe(context),
                                 fontWeight: FontWeight.w800,
                               ),
                             ),

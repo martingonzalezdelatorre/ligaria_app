@@ -220,7 +220,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Icons.waving_hand_rounded,
                       size: t.headlineSmall?.fontSize,
                       color: tono.claro
-                          ? const Color(0xFFF2A93B)
+                          ? const Color(0xFFD4A85A)
                           : const Color(0xFFFFC857),
                     ),
                   ),
@@ -409,19 +409,19 @@ class _Tono {
   final bool claro;
 
   Color get texto => claro ? tintaClara : Colors.white;
-  Color get textoSuave => claro ? const Color(0xFF4A5551) : Colors.white70;
-  Color get textoTenue => claro ? const Color(0xFF6A7570) : Colors.white60;
+  Color get textoSuave => claro ? const Color(0xFF4F5A56) : Colors.white70;
+  Color get textoTenue => claro ? textoSecundarioClaro : Colors.white60;
   Color get acento => claro ? primarioClaro : lima;
-  Color get error => claro ? const Color(0xFFD32F2F) : const Color(0xFFFF8A80);
+  Color get error => claro ? const Color(0xFFB4473F) : const Color(0xFFFF8A80);
   Color get errorTexto =>
-      claro ? const Color(0xFFB71C1C) : const Color(0xFFFFB4AB);
+      claro ? const Color(0xFF8E342E) : const Color(0xFFFFB4AB);
   Color get divisor => claro ? bordeClaro : Colors.white24;
   Color get botonFondo => claro ? primarioClaro : lima;
   Color get botonTexto => claro ? Colors.white : tinta;
-  Color get botonBorde => claro ? const Color(0xFFCBD2CE) : Colors.white38;
+  Color get botonBorde => claro ? const Color(0xFFC5CEC8) : Colors.white38;
   Color get campoBorde => claro ? bordeClaro : const Color(0x24FFFFFF);
   Color get campoRelleno =>
-      claro ? const Color(0xFFF7F8F7) : Colors.white.withValues(alpha: .07);
+      claro ? const Color(0xFFF7F9F6) : Colors.white.withValues(alpha: .07);
   Color get tarjetaBorde =>
       claro ? Colors.white : Colors.white.withValues(alpha: .16);
   List<Color> get tarjetaGradiente => claro
@@ -431,7 +431,7 @@ class _Tono {
           Colors.white.withValues(alpha: .04),
         ];
   Color get tarjetaSombra =>
-      claro ? const Color(0xFF1B2421).withValues(alpha: .16) : const Color(0x66000000);
+      claro ? tintaClara.withValues(alpha: .10) : const Color(0x66000000);
   Color get chipFondo =>
       claro ? Colors.white.withValues(alpha: .8) : Colors.white.withValues(alpha: .07);
   Color get chipBorde =>

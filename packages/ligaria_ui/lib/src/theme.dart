@@ -279,25 +279,29 @@ class Marca extends ThemeExtension<Marca> {
         );
 }
 
-/// Paleta clara neutra: fondo casi blanco, tarjetas blancas y tinta gris-oscura como principal.
-/// El albaricoque suave (derivado del naranja de la marca) es el acento: pestañas, botón flotante,
-/// tarjeta destacada y logo. En oscuro el acento sigue siendo la lima de siempre.
-const acentoClaro = Color(0xFFFFC48C);
-const acentoClaroSuave = Color(0xFFFFEAD4);
+/// Paleta clara "Salvia": pensada para cansar poco la vista. Fondo gris-verdoso muy suave
+/// (no blanco puro), texto gris pizarra (no negro) y un verde salvia poco saturado como principal.
+/// La salvia clara es el acento (logo, tarjeta destacada, degradados) y la arena da el toque cálido.
+/// En oscuro el acento sigue siendo la lima de siempre.
+const acentoClaro = Color(0xFF86CFA6); // salvia clara
+const acentoClaroSuave = Color(0xFFD5F0E0); // salvia muy pálida
+const arenaClaro = Color(0xFFE9D3A8); // arena: toque cálido
+const arenaClaroSuave = Color(0xFFF3E3C8);
 
-/// Acento destacado según el modo: lima en oscuro, albaricoque en claro.
+/// Acento destacado según el modo: lima en oscuro, salvia clara en claro.
 Color acentoDe(BuildContext c) =>
     Theme.of(c).brightness == Brightness.light ? acentoClaro : lima;
 
-/// Segundo tono del degradado de acento: menta en oscuro, albaricoque muy suave en claro.
+/// Segundo tono del degradado de acento: menta en oscuro, salvia muy pálida en claro.
 Color acentoSuaveDe(BuildContext c) =>
     Theme.of(c).brightness == Brightness.light ? acentoClaroSuave : menta;
 
-const primarioClaro = Color(0xFF26302C); // texto/iconos/botones sobre claro
-const fondoClaro = Color(0xFFFAFBFA);
-const superficieClara = Colors.white;
-const tintaClara = Color(0xFF1B2421); // texto principal sobre claro
-const bordeClaro = Color(0xFFE7EBE8);
+const primarioClaro = Color(0xFF2E7A5C); // verde salvia: botones, pestañas, iconos activos
+const fondoClaro = Color(0xFFF4F6F2);
+const superficieClara = Color(0xFFFFFFFF);
+const tintaClara = Color(0xFF2B3532); // texto principal: gris pizarra, no negro
+const textoSecundarioClaro = Color(0xFF66716D);
+const bordeClaro = Color(0xFFE1E6E1);
 
 ThemeData _construirClaro(Color acento) {
   final cs =
@@ -307,24 +311,24 @@ ThemeData _construirClaro(Color acento) {
       ).copyWith(
         primary: primarioClaro,
         onPrimary: Colors.white,
-        primaryContainer: acentoClaroSuave,
-        onPrimaryContainer: const Color(0xFF4A2A00),
-        secondary: const Color(0xFF6B7773),
+        primaryContainer: const Color(0xFFD2EEDD),
+        onPrimaryContainer: const Color(0xFF14412F),
+        secondary: const Color(0xFF8A6D3B),
         onSecondary: Colors.white,
-        secondaryContainer: const Color(0xFFEEF1EF),
-        onSecondaryContainer: const Color(0xFF26302C),
+        secondaryContainer: arenaClaroSuave,
+        onSecondaryContainer: const Color(0xFF5C4317),
         tertiary: acento,
-        onTertiary: tinta,
+        onTertiary: tintaClara,
         surface: fondoClaro,
         onSurface: tintaClara,
-        onSurfaceVariant: const Color(0xFF5E6965),
-        outline: const Color(0xFFCBD2CE),
+        onSurfaceVariant: textoSecundarioClaro,
+        outline: const Color(0xFFC5CEC8),
         outlineVariant: bordeClaro,
         surfaceContainerLowest: Colors.white,
-        surfaceContainerLow: const Color(0xFFFDFDFD),
+        surfaceContainerLow: const Color(0xFFFAFBF9),
         surfaceContainer: Colors.white,
-        surfaceContainerHigh: const Color(0xFFF2F4F3),
-        surfaceContainerHighest: const Color(0xFFEAEDEB),
+        surfaceContainerHigh: const Color(0xFFEDF1EC),
+        surfaceContainerHighest: const Color(0xFFE5EBE6),
       );
 
   final base = ThemeData(useMaterial3: true, colorScheme: cs);
@@ -375,8 +379,8 @@ ThemeData _construirClaro(Color acento) {
     cardTheme: CardThemeData(
       color: superficieClara,
       surfaceTintColor: Colors.transparent,
-      shadowColor: const Color(0xFF1B2421).withValues(alpha: .10),
-      elevation: 2,
+      shadowColor: tintaClara.withValues(alpha: .06),
+      elevation: 1,
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
@@ -389,13 +393,10 @@ ThemeData _construirClaro(Color acento) {
       dividerColor: Colors.transparent,
       indicatorSize: TabBarIndicatorSize.tab,
       indicator: BoxDecoration(
-        color: acentoClaro,
+        color: primarioClaro,
         borderRadius: BorderRadius.circular(999),
-        boxShadow: [
-          BoxShadow(color: acentoClaro.withValues(alpha: .5), blurRadius: 12),
-        ],
       ),
-      labelColor: tintaClara,
+      labelColor: Colors.white,
       unselectedLabelColor: cs.onSurfaceVariant,
       labelStyle: tt.labelLarge,
       splashBorderRadius: BorderRadius.circular(999),
@@ -447,8 +448,8 @@ ThemeData _construirClaro(Color acento) {
       ),
     ),
     floatingActionButtonTheme: FloatingActionButtonThemeData(
-      backgroundColor: acentoClaro,
-      foregroundColor: tintaClara,
+      backgroundColor: primarioClaro,
+      foregroundColor: Colors.white,
       shape: redondo(16),
     ),
     chipTheme: base.chipTheme.copyWith(

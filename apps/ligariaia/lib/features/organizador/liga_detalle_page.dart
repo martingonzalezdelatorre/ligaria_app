@@ -118,7 +118,7 @@ class LigaDetallePage extends ConsumerWidget {
   }
 }
 
-/// Fondo de la pantalla de liga: la tinta de la marca con auroras suaves (menta, naranja y lima) fijas.
+/// Fondo de la pantalla de liga: auroras suaves fijas (en claro, salvia y arena; en oscuro, menta, naranja y lima).
 /// Mismo aire que [FondoBlobs] pero sin animación continua (más ligero y sin timers en los tests).
 class _FondoSuave extends StatelessWidget {
   const _FondoSuave({required this.child});
@@ -147,20 +147,20 @@ class _FondoSuave extends StatelessWidget {
             const Alignment(-1, -.8),
             1.1,
             claro
-                ? const Color(0xFFBFE3FF).withValues(alpha: .28)
+                ? acentoClaro.withValues(alpha: .30)
                 : menta.withValues(alpha: .45),
           ),
           _aurora(
             const Alignment(1, -.5),
             .9,
-            (claro ? const Color(0xFFFFB27A) : const Color(0xFFFF8A3D))
+            (claro ? arenaClaro : const Color(0xFFFF8A3D))
                 .withValues(alpha: .28),
           ),
           _aurora(
             const Alignment(.4, 1.1),
             1.2,
             claro
-                ? const Color(0xFFFFE9B8).withValues(alpha: .38)
+                ? arenaClaroSuave.withValues(alpha: .45)
                 : lima.withValues(alpha: .18),
           ),
           child,

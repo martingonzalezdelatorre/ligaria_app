@@ -460,11 +460,11 @@ class _AuroraPainter extends CustomPainter {
     }
 
     if (claro) {
-      // Tonos pastel muy suaves (celeste, melocotón, crema y lila) sobre el fondo casi blanco.
-      aurora(.1, .1, .55, const Color(0xFFBFE3FF).withValues(alpha: .28), 0);
-      aurora(.95, .2, .45, const Color(0xFFFFC9A0).withValues(alpha: .26), 2.1);
-      aurora(.6, 1.0, .6, const Color(0xFFFFE9B8).withValues(alpha: .38), 4.2);
-      aurora(0, .95, .4, const Color(0xFFE0D4FF).withValues(alpha: .26), 5.5);
+      // Tonos muy suaves de la paleta Salvia (salvia, arena y verde grisáceo) sobre el fondo claro.
+      aurora(.1, .1, .55, acentoClaro.withValues(alpha: .30), 0);
+      aurora(.95, .2, .45, arenaClaro.withValues(alpha: .30), 2.1);
+      aurora(.6, 1.0, .6, arenaClaroSuave.withValues(alpha: .45), 4.2);
+      aurora(0, .95, .4, acentoClaroSuave.withValues(alpha: .60), 5.5);
     } else {
       aurora(.1, .15, .55, menta.withValues(alpha: .55), 0);
       aurora(.95, .25, .45, const Color(0xFFFF8A3D).withValues(alpha: .4), 2.1);
@@ -472,7 +472,7 @@ class _AuroraPainter extends CustomPainter {
       aurora(0, .95, .4, verdeMarca.withValues(alpha: .6), 5.5);
     }
     final linea = Paint()
-      ..color = (claro ? const Color(0xFF1B2421) : Colors.white).withValues(
+      ..color = (claro ? tintaClara : Colors.white).withValues(
         alpha: .035,
       )
       ..strokeWidth = 1;
